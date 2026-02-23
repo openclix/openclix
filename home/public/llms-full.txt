@@ -1,0 +1,86 @@
+# OpenClix — Full Documentation for LLMs
+
+> Remote Config + On-Device Notification Journeys
+
+## Overview
+
+OpenClix is an open-source SDK for iOS and Android that ships onboarding, habit, and re-engagement campaigns that run entirely on the device—without FCM. No push tokens. No deliverability promises. Just deterministic, on-device control.
+
+## Core Features
+
+### Remote Config, Not Just Flags
+Typed values, JSON payloads, versioning, defaults, and safe fallbacks. Changes apply after the next config refresh (app start, foreground, and best-effort background refresh).
+
+### Targeting & Segments (On-Device)
+Evaluate rules locally using device/user attributes you choose to provide. No server roundtrip needed for targeting decisions.
+
+### Gradual Rollouts & Variants
+Percentage rollouts, A/B-style variants, and deterministic bucketing. Supports on-device variants and can emit exposure events to your analytics.
+
+### Local Notification Campaigns
+Schedule notifications with templates, quiet hours, and per-campaign frequency caps. Notifications are scheduled on the device and do not require push infrastructure.
+
+### On-Device Journey Engine
+Stateful flows with delays, conditions, and auto-cancel when goals are met. Journey state is managed locally on the device.
+
+### Deep Links & Personalization
+Route users to the right screen with parameterized deep links and message templates.
+
+### Event Hooks (Bring Your Own Analytics)
+Export exposure + notification events to your analytics stack via HTTP. Compatible with PostHog, Segment, Amplitude, Mixpanel, or your own collector.
+
+### Privacy-First by Design
+No push tokens required. Most decisions happen locally on the device.
+
+## Use Cases
+
+### Onboarding Journeys
+- Welcome series with step-by-step nudges
+- "Finish setup" reminders that auto-cancel when completed
+
+### Habit & Routine
+- Daily/weekly reminders at user-chosen times
+- Streak maintenance, quiet hours, cooldown windows
+
+### Re-Engagement (Last-Seen Based)
+- 1/3/7-day inactive nudges
+- "You haven't tried X yet" prompts (evaluated on next app run)
+
+### In-App Triggered Notifications
+- Immediate follow-ups after key actions
+- "Next best action" prompts after screen visits or events
+
+### Scheduled Promotions
+- Weekend/event reminders you can edit anytime via Remote Config
+- Deep links to offers, content, or paywalls
+
+## Quick Start
+
+1. Add the SDK: Install the OpenClix SDK for iOS or Android and initialize it in your app.
+2. Define flags + config: JSON values, variants, rollout rules — all managed remotely.
+3. Publish journeys: Local notification schedules + on-device rules. Updates propagate when the app fetches config.
+
+## Platform Compatibility
+
+- iOS + Android: Native SDKs with an on-device evaluation engine.
+- Any Backend: Fetch Remote Config from OpenClix Cloud or your own endpoint.
+- Any Analytics: PostHog, Segment, Amplitude, Mixpanel — or your own collector (via event hooks).
+
+## FAQ
+
+### Can OpenClix replace Braze or OneSignal?
+For scheduled/on-device journeys (onboarding, habits, last-seen re-engagement, in-app triggers): yes, partially. For server-triggered real-time push (payments, chat, security alerts, time-sensitive ops): no — use APNs/FCM push for that.
+
+### Will notifications work if the app hasn't been opened in a long time?
+Only if they were scheduled ahead of time on the device. OpenClix does not "wake" devices like push.
+
+### Can I change copy, links, targeting, and timing without shipping an app update?
+Yes — via Remote Config. Changes apply after the next config refresh.
+
+### Do you support A/B tests?
+OpenClix supports on-device variants and bucketing and can emit exposure events to your analytics.
+
+## Links
+
+- Website: https://openclix.ai
+- GitHub: https://github.com/clix-so/openclix

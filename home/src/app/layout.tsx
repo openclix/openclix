@@ -2,17 +2,81 @@ import type { Metadata } from "next";
 import { clashDisplay, satoshi } from "@/lib/fonts";
 import "./globals.css";
 
+const siteUrl = "https://openclix.ai";
+const siteName = "OpenClix";
+const siteDescription =
+  "Ship onboarding, habit, and re-engagement campaigns that run on the device—without FCM. No push tokens. No deliverability promises. Just deterministic, on-device control.";
+
 export const metadata: Metadata = {
-  title: "OpenClix — Remote Config + On-Device Notification Journeys",
-  description:
-    "Ship onboarding, habit, and re-engagement campaigns that run on the device—without FCM. No push tokens. No deliverability promises. Just deterministic, on-device control.",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: `${siteName} — Remote Config + On-Device Notification Journeys`,
+    template: `%s | ${siteName}`,
+  },
+  description: siteDescription,
+  keywords: [
+    "remote config",
+    "feature flags",
+    "local notifications",
+    "on-device notifications",
+    "mobile SDK",
+    "iOS",
+    "Android",
+    "push notifications",
+    "onboarding",
+    "re-engagement",
+    "A/B testing",
+    "notification journeys",
+    "OpenClix",
+  ],
+  authors: [{ name: siteName, url: siteUrl }],
+  creator: siteName,
+  publisher: siteName,
+
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
+  manifest: "/site.webmanifest",
+
   openGraph: {
-    title: "OpenClix",
-    description:
-      "Remote Config + On-Device Notification Journeys. Ship campaigns that run on the device—without FCM.",
-    url: "https://openclix.ai",
-    siteName: "OpenClix",
+    title: `${siteName} — Remote Config + On-Device Notification Journeys`,
+    description: siteDescription,
+    url: siteUrl,
+    siteName,
+    locale: "en_US",
     type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: `${siteName} — Remote Config + On-Device Notification Journeys`,
+      },
+    ],
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: `${siteName} — Remote Config + On-Device Notification Journeys`,
+    description: siteDescription,
+    images: ["/og-image.png"],
+  },
+
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+
+  alternates: {
+    canonical: siteUrl,
   },
 };
 

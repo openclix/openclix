@@ -1,0 +1,35 @@
+# OpenClix
+
+> Remote Config + On-Device Notification Journeys
+
+OpenClix is an open-source SDK for iOS and Android that enables remote config, feature flags, on-device notification journeys, and local notification campaigns—without requiring push tokens or FCM.
+
+## What It Does
+
+- Remote Config: Typed values, JSON payloads, versioning, defaults, and safe fallbacks.
+- Targeting & Segments: Evaluate rules locally using device/user attributes.
+- Gradual Rollouts & Variants: Percentage rollouts, A/B-style variants, and deterministic bucketing.
+- Local Notification Campaigns: Schedule notifications with templates, quiet hours, and per-campaign frequency caps.
+- On-Device Journey Engine: Stateful flows with delays, conditions, and auto-cancel when goals are met.
+- Deep Links & Personalization: Route users to the right screen with parameterized deep links and message templates.
+- Event Hooks: Export exposure and notification events to your analytics stack via HTTP.
+- Privacy-First: No push tokens required. Most decisions happen locally.
+
+## Use Cases
+
+- Onboarding Journeys: Welcome series, "finish setup" reminders that auto-cancel on completion.
+- Habit & Routine: Daily/weekly reminders, streak maintenance, quiet hours, cooldown windows.
+- Re-Engagement: 1/3/7-day inactive nudges evaluated on next app run.
+- In-App Triggered Notifications: Follow-ups after key actions, "next best action" prompts.
+- Scheduled Promotions: Weekend/event reminders editable via Remote Config with deep links.
+
+## Platform Support
+
+- iOS and Android native SDKs with on-device evaluation engine.
+- Works with any backend (OpenClix Cloud or your own endpoint).
+- Compatible with any analytics (PostHog, Segment, Amplitude, Mixpanel, or custom collector via event hooks).
+
+## Links
+
+- Website: https://openclix.ai
+- GitHub: https://github.com/clix-so/openclix
