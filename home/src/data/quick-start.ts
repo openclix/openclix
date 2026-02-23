@@ -7,20 +7,20 @@ export interface QuickStartStep {
 export const quickStartSteps: QuickStartStep[] = [
   {
     step: 1,
-    title: "Add the SDK",
+    title: "Copy the reference implementation",
     description:
-      "Install the OpenClix SDK for iOS or Android and initialize it in your app.",
+      "Start from the OSS codebase and bring the parts you need into your app with clear, forkable logic.",
   },
   {
     step: 2,
-    title: "Define flags + config",
+    title: "Connect remote config + event hooks",
     description:
-      "JSON values, variants, rollout rules — all managed remotely.",
+      "Wire your config source and app events so engagement rules can react without backend plumbing.",
   },
   {
     step: 3,
-    title: "Publish journeys",
+    title: "Trigger rules and ship local engagement flows",
     description:
-      "Local notification schedules + on-device rules. Updates propagate when the app fetches config (app start, foreground, and best-effort background refresh).",
+      "Run local notifications and in-app messaging logic on-device with debuggable reasons and safe edit points.",
   },
 ];

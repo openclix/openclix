@@ -8,23 +8,23 @@ export interface Integration {
 export const integrations: Integration[] = [
   {
     category: "platform",
-    title: "iOS + Android",
+    title: "Firebase Adapter Pattern",
     description:
-      "Native SDKs with an on-device evaluation engine.",
+      "Use Firebase Remote Config as an input source while keeping rule evaluation and scheduling inside your app.",
     icon: "Smartphone",
   },
   {
     category: "backend",
-    title: "Any Backend",
+    title: "PostHog Adapter Pattern",
     description:
-      "Fetch Remote Config from OpenClix Cloud or your own endpoint.",
+      "Map flags and events into OpenClix hooks without coupling your rule model to PostHog-specific APIs.",
     icon: "Server",
   },
   {
     category: "analytics",
-    title: "Any Analytics",
+    title: "Supabase Adapter Pattern",
     description:
-      "PostHog, Segment, Amplitude, Mixpanel—or your own collector (via event hooks).",
+      "Use your own tables and endpoints as a config source with the same local rule execution path.",
     icon: "LineChart",
   },
 ];

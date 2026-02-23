@@ -1,9 +1,8 @@
+import { GITHUB_URL, TRY_NOW_URL } from "@/data/links";
+
 const footerLinks = [
-  { label: "Docs", href: "#" },
-  { label: "GitHub", href: "https://github.com/clix-so/openclix" },
-  { label: "Changelog", href: "#" },
-  { label: "Privacy", href: "#" },
-  { label: "Contact", href: "#" },
+  { label: "See GitHub", href: GITHUB_URL },
+  { label: "Try Now", href: TRY_NOW_URL },
 ];
 
 export function Footer() {

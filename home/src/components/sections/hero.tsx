@@ -1,63 +1,72 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { GITHUB_URL, TRY_NOW_URL } from "@/data/links";
+
+const proofBullets = [
+  "Local notifications + in-app messaging hooks",
+  "Remote-config-driven behavior on-device",
+  "Readable rules and explicit reasons",
+];
 
 export function Hero() {
   return (
-    <section className="relative flex w-full flex-col items-center px-6 pt-24 pb-16 text-center">
-      {/* Glow effect */}
-      <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 h-[400px] w-[600px] rounded-full bg-primary/10 blur-[120px]" />
+    <section className="section-shell glow pt-8 md:pt-14">
+      <div className="flex flex-col items-center gap-5 text-center max-w-4xl mx-auto">
+        <span className="eyebrow">Open-source mobile engagement reference</span>
 
-      <div className="relative z-10 flex flex-col items-center gap-6 max-w-3xl">
-        {/* Mascot icon */}
-        <div className="mascot-icon cursor-pointer mb-2">
+        <div className="mascot-icon cursor-pointer mb-1">
           <Image
             src="/images/mascot.png"
             alt="OpenClix mascot"
-            width={240}
-            height={160}
+            width={220}
+            height={146}
             className="mascot-image"
             priority
           />
         </div>
 
-        <h1 className="font-heading text-5xl md:text-7xl font-bold tracking-tight">
+        <h1 className="font-heading text-5xl md:text-7xl font-bold tracking-tight leading-none">
           OpenClix
         </h1>
 
-        <p className="text-lg md:text-xl font-semibold text-primary">
-          Remote Config + On-Device Notification Journeys.
+        <p className="font-heading text-3xl md:text-[3.15rem] font-semibold tracking-tight leading-[1.02] text-balance max-w-4xl">
+          Ship local retention flows in minutes.
         </p>
 
-        <p className="text-muted-foreground text-base md:text-lg max-w-2xl leading-relaxed">
-          Ship onboarding, habit, and re-engagement campaigns that run on the
-          device—without FCM. No push tokens. No deliverability promises. Just
-          deterministic, on-device control.
+        <p className="lede text-base md:text-lg text-measure">
+          Copy an open-source, remote-config-driven foundation for mobile
+          engagement logic that runs on-device. No push delivery pipeline to
+          stand up first.
         </p>
 
-        <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
-          <Button size="lg" className="font-semibold">
-            Get Started
-          </Button>
-          <Button size="lg" variant="outline" className="font-semibold">
-            Docs
-          </Button>
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
           <Button size="lg" variant="outline" className="font-semibold" asChild>
-            <a
-              href="https://github.com/clix-so/openclix"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              GitHub
+            <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
+              See GitHub
             </a>
           </Button>
           <Button
             size="lg"
-            variant="secondary"
-            className="font-semibold"
+            className="font-semibold shadow-[0_0_0_1px_rgba(255,255,255,0.06)_inset]"
+            asChild
           >
-            Request Early Access
+            <a href={TRY_NOW_URL} target="_blank" rel="noopener noreferrer">
+              Try Now
+            </a>
           </Button>
         </div>
+
+        <ul className="grid w-full max-w-3xl grid-cols-1 md:grid-cols-3 gap-2.5 pt-2 text-left">
+          {proofBullets.map((bullet) => (
+            <li
+              key={bullet}
+              className="panel-muted flex items-center gap-2.5 px-3.5 py-2.5 text-sm"
+            >
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+              <span className="text-muted-foreground leading-relaxed">{bullet}</span>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );
