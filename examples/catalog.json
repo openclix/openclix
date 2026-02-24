@@ -1,0 +1,185 @@
+{
+  "version": 1,
+  "generatedBy": "manual",
+  "scenarios": [
+    {
+      "id": "_example-template",
+      "title": "Example Template (Structure Only)",
+      "status": "template",
+      "summary": "Template scenario showing shared config plus platform-specific snippet layout.",
+      "configPath": "examples/scenarios/_example-template/openclix.config.json",
+      "readmePath": "examples/scenarios/_example-template/README.md",
+      "platforms": [
+        "ios",
+        "android",
+        "flutter",
+        "react-native"
+      ],
+      "tags": [
+        "template",
+        "shared-config",
+        "cross-platform"
+      ],
+      "sharedConfig": true,
+      "snippetPaths": {
+        "ios": [
+          "examples/scenarios/_example-template/snippets/ios/schedule-on-entry.swift",
+          "examples/scenarios/_example-template/snippets/ios/cancel-on-event.swift"
+        ],
+        "android": [
+          "examples/scenarios/_example-template/snippets/android/ScheduleOnEntry.kt",
+          "examples/scenarios/_example-template/snippets/android/CancelOnEvent.kt"
+        ],
+        "flutter": [
+          "examples/scenarios/_example-template/snippets/flutter/schedule_on_entry.dart",
+          "examples/scenarios/_example-template/snippets/flutter/cancel_on_event.dart"
+        ],
+        "react-native": [
+          "examples/scenarios/_example-template/snippets/react-native/scheduleOnEntry.ts",
+          "examples/scenarios/_example-template/snippets/react-native/cancelOnEvent.ts"
+        ]
+      }
+    },
+    {
+      "id": "activation-first-value-rescue",
+      "title": "Activation: First Value Rescue",
+      "status": "ready",
+      "summary": "Escalating activation rescue sequence that chains on message delivery and cancels immediately on first-value completion.",
+      "configPath": "examples/scenarios/activation-first-value-rescue/openclix.config.json",
+      "readmePath": "examples/scenarios/activation-first-value-rescue/README.md",
+      "platforms": [
+        "ios",
+        "android",
+        "flutter",
+        "react-native"
+      ],
+      "tags": [
+        "activation",
+        "onboarding",
+        "recovery",
+        "shared-config"
+      ],
+      "sharedConfig": true,
+      "snippetPaths": {
+        "ios": [
+          "examples/scenarios/activation-first-value-rescue/snippets/ios/bootstrap-config.swift",
+          "examples/scenarios/activation-first-value-rescue/snippets/ios/trigger-entry-event.swift",
+          "examples/scenarios/activation-first-value-rescue/snippets/ios/trigger-cancel-event.swift",
+          "examples/scenarios/activation-first-value-rescue/snippets/ios/foreground-eval-debug.swift"
+        ],
+        "android": [
+          "examples/scenarios/activation-first-value-rescue/snippets/android/BootstrapConfig.kt",
+          "examples/scenarios/activation-first-value-rescue/snippets/android/TriggerEntryEvent.kt",
+          "examples/scenarios/activation-first-value-rescue/snippets/android/TriggerCancelEvent.kt",
+          "examples/scenarios/activation-first-value-rescue/snippets/android/ForegroundEvalDebug.kt"
+        ],
+        "flutter": [
+          "examples/scenarios/activation-first-value-rescue/snippets/flutter/bootstrap_config.dart",
+          "examples/scenarios/activation-first-value-rescue/snippets/flutter/trigger_entry_event.dart",
+          "examples/scenarios/activation-first-value-rescue/snippets/flutter/trigger_cancel_event.dart",
+          "examples/scenarios/activation-first-value-rescue/snippets/flutter/foreground_eval_debug.dart"
+        ],
+        "react-native": [
+          "examples/scenarios/activation-first-value-rescue/snippets/react-native/bootstrapConfig.ts",
+          "examples/scenarios/activation-first-value-rescue/snippets/react-native/triggerEntryEvent.ts",
+          "examples/scenarios/activation-first-value-rescue/snippets/react-native/triggerCancelEvent.ts",
+          "examples/scenarios/activation-first-value-rescue/snippets/react-native/foregroundEvalDebug.ts"
+        ]
+      }
+    },
+    {
+      "id": "streak-protection-escalation",
+      "title": "Retention: Streak Protection Escalation",
+      "status": "ready",
+      "summary": "Payload-filtered streak risk campaign with urgency escalation, spacing limits, and cancellation on streak recovery/reset.",
+      "configPath": "examples/scenarios/streak-protection-escalation/openclix.config.json",
+      "readmePath": "examples/scenarios/streak-protection-escalation/README.md",
+      "platforms": [
+        "ios",
+        "android",
+        "flutter",
+        "react-native"
+      ],
+      "tags": [
+        "retention",
+        "streak",
+        "urgency",
+        "shared-config"
+      ],
+      "sharedConfig": true,
+      "snippetPaths": {
+        "ios": [
+          "examples/scenarios/streak-protection-escalation/snippets/ios/bootstrap-config.swift",
+          "examples/scenarios/streak-protection-escalation/snippets/ios/trigger-entry-event.swift",
+          "examples/scenarios/streak-protection-escalation/snippets/ios/trigger-cancel-event.swift",
+          "examples/scenarios/streak-protection-escalation/snippets/ios/foreground-eval-debug.swift"
+        ],
+        "android": [
+          "examples/scenarios/streak-protection-escalation/snippets/android/BootstrapConfig.kt",
+          "examples/scenarios/streak-protection-escalation/snippets/android/TriggerEntryEvent.kt",
+          "examples/scenarios/streak-protection-escalation/snippets/android/TriggerCancelEvent.kt",
+          "examples/scenarios/streak-protection-escalation/snippets/android/ForegroundEvalDebug.kt"
+        ],
+        "flutter": [
+          "examples/scenarios/streak-protection-escalation/snippets/flutter/bootstrap_config.dart",
+          "examples/scenarios/streak-protection-escalation/snippets/flutter/trigger_entry_event.dart",
+          "examples/scenarios/streak-protection-escalation/snippets/flutter/trigger_cancel_event.dart",
+          "examples/scenarios/streak-protection-escalation/snippets/flutter/foreground_eval_debug.dart"
+        ],
+        "react-native": [
+          "examples/scenarios/streak-protection-escalation/snippets/react-native/bootstrapConfig.ts",
+          "examples/scenarios/streak-protection-escalation/snippets/react-native/triggerEntryEvent.ts",
+          "examples/scenarios/streak-protection-escalation/snippets/react-native/triggerCancelEvent.ts",
+          "examples/scenarios/streak-protection-escalation/snippets/react-native/foregroundEvalDebug.ts"
+        ]
+      }
+    },
+    {
+      "id": "interrupted-flow-recovery",
+      "title": "Recovery: Interrupted High-Intent Flow",
+      "status": "ready",
+      "summary": "Contextual recovery flow that branches on message open vs delivery and suppresses redundant follow-ups with message-state conditions.",
+      "configPath": "examples/scenarios/interrupted-flow-recovery/openclix.config.json",
+      "readmePath": "examples/scenarios/interrupted-flow-recovery/README.md",
+      "platforms": [
+        "ios",
+        "android",
+        "flutter",
+        "react-native"
+      ],
+      "tags": [
+        "recovery",
+        "high-intent",
+        "branching",
+        "shared-config"
+      ],
+      "sharedConfig": true,
+      "snippetPaths": {
+        "ios": [
+          "examples/scenarios/interrupted-flow-recovery/snippets/ios/bootstrap-config.swift",
+          "examples/scenarios/interrupted-flow-recovery/snippets/ios/trigger-entry-event.swift",
+          "examples/scenarios/interrupted-flow-recovery/snippets/ios/trigger-cancel-event.swift",
+          "examples/scenarios/interrupted-flow-recovery/snippets/ios/foreground-eval-debug.swift"
+        ],
+        "android": [
+          "examples/scenarios/interrupted-flow-recovery/snippets/android/BootstrapConfig.kt",
+          "examples/scenarios/interrupted-flow-recovery/snippets/android/TriggerEntryEvent.kt",
+          "examples/scenarios/interrupted-flow-recovery/snippets/android/TriggerCancelEvent.kt",
+          "examples/scenarios/interrupted-flow-recovery/snippets/android/ForegroundEvalDebug.kt"
+        ],
+        "flutter": [
+          "examples/scenarios/interrupted-flow-recovery/snippets/flutter/bootstrap_config.dart",
+          "examples/scenarios/interrupted-flow-recovery/snippets/flutter/trigger_entry_event.dart",
+          "examples/scenarios/interrupted-flow-recovery/snippets/flutter/trigger_cancel_event.dart",
+          "examples/scenarios/interrupted-flow-recovery/snippets/flutter/foreground_eval_debug.dart"
+        ],
+        "react-native": [
+          "examples/scenarios/interrupted-flow-recovery/snippets/react-native/bootstrapConfig.ts",
+          "examples/scenarios/interrupted-flow-recovery/snippets/react-native/triggerEntryEvent.ts",
+          "examples/scenarios/interrupted-flow-recovery/snippets/react-native/triggerCancelEvent.ts",
+          "examples/scenarios/interrupted-flow-recovery/snippets/react-native/foregroundEvalDebug.ts"
+        ]
+      }
+    }
+  ]
+}

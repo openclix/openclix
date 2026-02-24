@@ -56,6 +56,7 @@ OpenClix is designed so teams using their own agents to build apps can treat it 
 
 - Legible structure: clear boundaries and edit points make agent-generated changes easier to review
 - Explicit interfaces and schemas: behavior is easier to extend without hidden coupling
+- Repo-local contracts: canonical JSON schemas live in `schemas/` (separate from website docs content)
 - Auditable logic: retention and messaging rules live in plain code/config rather than opaque vendor systems
 - Safe iteration loops: teams can diff, test, and refine agent-assisted changes in a fork they control
 
@@ -79,6 +80,16 @@ OpenClix is planned to ship in phases:
 3. Phase 3: Additional adapters/integrations as needed
 
 This keeps the core rule engine and scheduling behavior stable while letting teams adopt remote config only when they need it.
+
+## Examples (Shared Config + Cross-Platform Snippets)
+
+The repo includes a scenario-first examples library under `examples/` with:
+
+- One canonical OpenClix config file per scenario
+- Platform-specific snippets for iOS, Android, Flutter, and React Native
+- Machine-readable example metadata for AI-agent discovery (`examples/catalog.json`)
+
+This directory is separate from Mintlify docs and is intended for lightweight integration references, not full sample apps.
 
 ## Use Cases
 

@@ -1,0 +1,222 @@
+{
+  "schemaVersion": "openclix/campaign-config/v1",
+  "configVersion": "1.0.0-activation-first-value-rescue",
+  "deliveryMode": "local_only",
+  "source": {
+    "provider": "file"
+  },
+  "defaults": {
+    "timezone": "local",
+    "quietHours": {
+      "startHour": 22,
+      "endHour": 8,
+      "behavior": "defer_to_next_window"
+    },
+    "foregroundEvaluation": {
+      "evaluateOnAppForeground": true,
+      "evaluateOnEventInForeground": true
+    },
+    "localNotificationLimits": {
+      "maxPending": 32,
+      "overflowStrategy": "defer"
+    },
+    "defaultDeliveryWindow": {
+      "startHour": 9,
+      "endHour": 21
+    },
+    "dedupeWindow": "12h"
+  },
+  "campaigns": [
+    {
+      "id": "activation-first-value-rescue",
+      "name": "Activation: First Value Rescue",
+      "purpose": "Recover users who sign up but do not complete the first meaningful action using a bounded escalating sequence with immediate cancellation on success.",
+      "enabled": true,
+      "priority": 70,
+      "tags": [
+        "activation",
+        "onboarding",
+        "recovery"
+      ],
+      "entry": {
+        "triggerEvents": [
+          {
+            "name": "user_signed_up"
+          }
+        ],
+        "appStateEligibility": {
+          "foreground": true,
+          "background": false
+        },
+        "cooldown": "1d",
+        "maxActiveEnrollmentPerUser": 1
+      },
+      "cancel": {
+        "onEvents": [
+          {
+            "name": "first_value_completed"
+          }
+        ],
+        "autoCancelPendingMessages": true,
+        "appStateEligibility": {
+          "foreground": true,
+          "background": true
+        }
+      },
+      "limits": {
+        "maxDeliveriesPer24h": 2,
+        "minSpacingBetweenMessages": "6h"
+      },
+      "messages": [
+        {
+          "id": "gentle-first-value-nudge",
+          "sequence": 1,
+          "enabled": true,
+          "kind": "local_notification",
+          "priority": 60,
+          "content": {
+            "title": "Start your first win",
+            "body": "Your {goalLabel} setup is ready. Finish one step to unlock momentum.",
+            "templateVariables": [
+              "goalLabel"
+            ],
+            "deepLink": "app://onboarding/first-value"
+          },
+          "trigger": {
+            "type": "campaign_entry",
+            "delay": "90m"
+          },
+          "schedule": {
+            "timezone": "local",
+            "deliveryWindow": {
+              "startHour": 10,
+              "endHour": 21
+            },
+            "appStateEligibility": {
+              "foreground": true,
+              "background": true
+            },
+            "rolloverBehavior": "defer_to_next_window",
+            "jitter": "20m"
+          },
+          "cancel": {
+            "onEvents": [
+              {
+                "name": "first_value_completed"
+              }
+            ],
+            "appStateEligibility": {
+              "foreground": true,
+              "background": true
+            },
+            "autoCancelOnCampaignCancel": true
+          },
+          "limits": {
+            "cooldown": "1d",
+            "dedupeKey": "activation_first_value_gentle"
+          },
+          "tracking": {
+            "emitDeliveredEvent": true,
+            "emitOpenedEvent": true,
+            "customEventPrefix": "activation"
+          }
+        },
+        {
+          "id": "next-day-value-reminder",
+          "sequence": 2,
+          "enabled": true,
+          "kind": "local_notification",
+          "priority": 65,
+          "content": {
+            "title": "Your first result is close",
+            "body": "Pick up where you left off and finish your first value moment.",
+            "deepLink": "app://onboarding/first-value"
+          },
+          "trigger": {
+            "type": "message_delivered",
+            "messageId": "gentle-first-value-nudge",
+            "delay": "20h"
+          },
+          "schedule": {
+            "timezone": "local",
+            "deliveryWindow": {
+              "startHour": 9,
+              "endHour": 21
+            },
+            "appStateEligibility": {
+              "foreground": true,
+              "background": true
+            },
+            "rolloverBehavior": "defer_to_next_window"
+          },
+          "cancel": {
+            "onEvents": [
+              {
+                "name": "first_value_completed"
+              }
+            ],
+            "appStateEligibility": {
+              "foreground": true,
+              "background": true
+            },
+            "autoCancelOnCampaignCancel": true
+          },
+          "limits": {
+            "cooldown": "2d",
+            "dedupeKey": "activation_first_value_followup"
+          },
+          "tracking": {
+            "emitDeliveredEvent": true,
+            "emitOpenedEvent": true,
+            "customEventPrefix": "activation"
+          }
+        },
+        {
+          "id": "final-helpful-checkin",
+          "sequence": 3,
+          "enabled": true,
+          "kind": "local_notification",
+          "priority": 55,
+          "content": {
+            "title": "Need a quick restart?",
+            "body": "We saved your progress. Jump back in when you have two minutes.",
+            "deepLink": "app://onboarding/first-value"
+          },
+          "trigger": {
+            "type": "message_delivered",
+            "messageId": "next-day-value-reminder",
+            "delay": "48h"
+          },
+          "schedule": {
+            "timezone": "local",
+            "deliveryWindow": {
+              "startHour": 11,
+              "endHour": 20
+            },
+            "appStateEligibility": {
+              "foreground": true,
+              "background": true
+            },
+            "rolloverBehavior": "defer_to_next_window"
+          },
+          "cancel": {
+            "onEvents": [
+              {
+                "name": "first_value_completed"
+              }
+            ],
+            "appStateEligibility": {
+              "foreground": true,
+              "background": true
+            },
+            "autoCancelOnCampaignCancel": true
+          },
+          "limits": {
+            "maxSchedulesPerUser": 1,
+            "dedupeKey": "activation_first_value_final"
+          }
+        }
+      ]
+    }
+  ]
+}

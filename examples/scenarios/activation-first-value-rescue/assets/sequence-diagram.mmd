@@ -1,0 +1,12 @@
+sequenceDiagram
+  participant App
+  participant OpenClix
+  participant Scheduler as Local Scheduler
+
+  App->>OpenClix: ingestEvent(user_signed_up)
+  OpenClix->>OpenClix: Enroll campaign + evaluate eligibility
+  OpenClix->>Scheduler: Schedule gentle-first-value-nudge (window+jitter)
+  Scheduler-->>OpenClix: delivered event (tracked)
+  OpenClix->>Scheduler: Chain next-day-value-reminder
+  App->>OpenClix: ingestEvent(first_value_completed)
+  OpenClix->>Scheduler: Cancel pending activation messages

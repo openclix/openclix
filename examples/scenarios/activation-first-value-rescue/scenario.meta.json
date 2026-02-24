@@ -1,0 +1,52 @@
+{
+  "id": "activation-first-value-rescue",
+  "title": "Activation: First Value Rescue",
+  "summary": "Escalating activation rescue sequence that chains on message delivery and cancels immediately on first-value completion.",
+  "status": "ready",
+  "sharedConfigPath": "examples/scenarios/activation-first-value-rescue/openclix.config.json",
+  "platforms": [
+    "ios",
+    "android",
+    "flutter",
+    "react-native"
+  ],
+  "tags": [
+    "activation",
+    "onboarding",
+    "recovery",
+    "shared-config"
+  ],
+  "primaryUseCase": "activation_first_value",
+  "eventNamesUsed": [
+    "user_signed_up",
+    "first_value_completed",
+    "onboarding_step_viewed"
+  ],
+  "configSchemaRef": "schemas/openclix-campaign-config.schema.json",
+  "snippets": {
+    "ios": [
+      "examples/scenarios/activation-first-value-rescue/snippets/ios/bootstrap-config.swift",
+      "examples/scenarios/activation-first-value-rescue/snippets/ios/trigger-entry-event.swift",
+      "examples/scenarios/activation-first-value-rescue/snippets/ios/trigger-cancel-event.swift",
+      "examples/scenarios/activation-first-value-rescue/snippets/ios/foreground-eval-debug.swift"
+    ],
+    "android": [
+      "examples/scenarios/activation-first-value-rescue/snippets/android/BootstrapConfig.kt",
+      "examples/scenarios/activation-first-value-rescue/snippets/android/TriggerEntryEvent.kt",
+      "examples/scenarios/activation-first-value-rescue/snippets/android/TriggerCancelEvent.kt",
+      "examples/scenarios/activation-first-value-rescue/snippets/android/ForegroundEvalDebug.kt"
+    ],
+    "flutter": [
+      "examples/scenarios/activation-first-value-rescue/snippets/flutter/bootstrap_config.dart",
+      "examples/scenarios/activation-first-value-rescue/snippets/flutter/trigger_entry_event.dart",
+      "examples/scenarios/activation-first-value-rescue/snippets/flutter/trigger_cancel_event.dart",
+      "examples/scenarios/activation-first-value-rescue/snippets/flutter/foreground_eval_debug.dart"
+    ],
+    "react-native": [
+      "examples/scenarios/activation-first-value-rescue/snippets/react-native/bootstrapConfig.ts",
+      "examples/scenarios/activation-first-value-rescue/snippets/react-native/triggerEntryEvent.ts",
+      "examples/scenarios/activation-first-value-rescue/snippets/react-native/triggerCancelEvent.ts",
+      "examples/scenarios/activation-first-value-rescue/snippets/react-native/foregroundEvalDebug.ts"
+    ]
+  }
+}

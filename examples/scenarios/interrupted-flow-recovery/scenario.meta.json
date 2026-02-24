@@ -1,0 +1,52 @@
+{
+  "id": "interrupted-flow-recovery",
+  "title": "Recovery: Interrupted High-Intent Flow",
+  "summary": "Contextual recovery flow that branches on message open vs delivery and suppresses redundant follow-ups with message-state conditions.",
+  "status": "ready",
+  "sharedConfigPath": "examples/scenarios/interrupted-flow-recovery/openclix.config.json",
+  "platforms": [
+    "ios",
+    "android",
+    "flutter",
+    "react-native"
+  ],
+  "tags": [
+    "recovery",
+    "high-intent",
+    "branching",
+    "shared-config"
+  ],
+  "primaryUseCase": "interrupted_flow_recovery",
+  "eventNamesUsed": [
+    "critical_flow_abandoned",
+    "critical_flow_restarted",
+    "critical_flow_completed"
+  ],
+  "configSchemaRef": "schemas/openclix-campaign-config.schema.json",
+  "snippets": {
+    "ios": [
+      "examples/scenarios/interrupted-flow-recovery/snippets/ios/bootstrap-config.swift",
+      "examples/scenarios/interrupted-flow-recovery/snippets/ios/trigger-entry-event.swift",
+      "examples/scenarios/interrupted-flow-recovery/snippets/ios/trigger-cancel-event.swift",
+      "examples/scenarios/interrupted-flow-recovery/snippets/ios/foreground-eval-debug.swift"
+    ],
+    "android": [
+      "examples/scenarios/interrupted-flow-recovery/snippets/android/BootstrapConfig.kt",
+      "examples/scenarios/interrupted-flow-recovery/snippets/android/TriggerEntryEvent.kt",
+      "examples/scenarios/interrupted-flow-recovery/snippets/android/TriggerCancelEvent.kt",
+      "examples/scenarios/interrupted-flow-recovery/snippets/android/ForegroundEvalDebug.kt"
+    ],
+    "flutter": [
+      "examples/scenarios/interrupted-flow-recovery/snippets/flutter/bootstrap_config.dart",
+      "examples/scenarios/interrupted-flow-recovery/snippets/flutter/trigger_entry_event.dart",
+      "examples/scenarios/interrupted-flow-recovery/snippets/flutter/trigger_cancel_event.dart",
+      "examples/scenarios/interrupted-flow-recovery/snippets/flutter/foreground_eval_debug.dart"
+    ],
+    "react-native": [
+      "examples/scenarios/interrupted-flow-recovery/snippets/react-native/bootstrapConfig.ts",
+      "examples/scenarios/interrupted-flow-recovery/snippets/react-native/triggerEntryEvent.ts",
+      "examples/scenarios/interrupted-flow-recovery/snippets/react-native/triggerCancelEvent.ts",
+      "examples/scenarios/interrupted-flow-recovery/snippets/react-native/foregroundEvalDebug.ts"
+    ]
+  }
+}

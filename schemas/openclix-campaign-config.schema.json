@@ -1,0 +1,961 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openclix.dev/schemas/openclix-campaign-config.schema.json",
+  "title": "OpenClix Campaign Config",
+  "description": "Provider-agnostic, on-device campaign config for OpenClix. Supports local notification and in-app messages only (no remote push).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "configVersion",
+    "deliveryMode",
+    "defaults",
+    "campaigns"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "openclix/campaign-config/v1",
+      "description": "Schema contract version for config parsing."
+    },
+    "configVersion": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Config payload version (semver or provider-specific revision/etag)."
+    },
+    "deliveryMode": {
+      "type": "string",
+      "const": "local_only",
+      "description": "OpenClix v1 uses on-device local notification + in-app messaging only. Remote push is intentionally excluded."
+    },
+    "source": {
+      "$ref": "#/$defs/configSource"
+    },
+    "defaults": {
+      "$ref": "#/$defs/defaults"
+    },
+    "campaigns": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/campaign"
+      },
+      "description": "Campaign bundles. Each campaign is a sequence of messages with shared purpose and cancellation rules."
+    }
+  },
+  "$defs": {
+    "configSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider"
+      ],
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": [
+            "file",
+            "firebase_remote_config",
+            "posthog",
+            "supabase",
+            "custom"
+          ]
+        },
+        "fetchedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "etag": {
+          "type": "string"
+        },
+        "rawRevision": {
+          "type": "string"
+        }
+      }
+    },
+    "defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "timezone",
+        "quietHours",
+        "foregroundEvaluation",
+        "localNotificationLimits",
+        "defaultDeliveryWindow"
+      ],
+      "properties": {
+        "timezone": {
+          "type": "string",
+          "const": "local",
+          "description": "OpenClix v1 schedules using device local timezone."
+        },
+        "quietHours": {
+          "$ref": "#/$defs/quietHours"
+        },
+        "foregroundEvaluation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "evaluateOnAppForeground",
+            "evaluateOnEventInForeground"
+          ],
+          "properties": {
+            "evaluateOnAppForeground": {
+              "type": "boolean",
+              "description": "Run scheduling/cancellation pass when app enters foreground."
+            },
+            "evaluateOnEventInForeground": {
+              "type": "boolean",
+              "description": "Run scheduling/cancellation pass when tracked events arrive during foreground session."
+            }
+          }
+        },
+        "localNotificationLimits": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "maxPending",
+            "overflowStrategy"
+          ],
+          "properties": {
+            "maxPending": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 64,
+              "description": "Practical upper bound for pending local notifications. iOS commonly caps at 64."
+            },
+            "overflowStrategy": {
+              "type": "string",
+              "enum": [
+                "drop_low_priority",
+                "replace_oldest_low_priority",
+                "defer"
+              ]
+            }
+          }
+        },
+        "defaultDeliveryWindow": {
+          "$ref": "#/$defs/deliveryWindow"
+        },
+        "dedupeWindow": {
+          "$ref": "#/$defs/duration"
+        }
+      }
+    },
+    "campaign": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "purpose",
+        "enabled",
+        "entry",
+        "cancel",
+        "messages"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1,
+          "description": "What outcome the campaign is trying to achieve (e.g. onboarding revive, streak protection)."
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Higher priority campaigns win when scheduler capacity is constrained."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "entry": {
+          "$ref": "#/$defs/campaignEntry"
+        },
+        "cancel": {
+          "$ref": "#/$defs/campaignCancel"
+        },
+        "limits": {
+          "$ref": "#/$defs/campaignLimits"
+        },
+        "messages": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 25,
+          "items": {
+            "$ref": "#/$defs/message"
+          },
+          "description": "Ordered message bundle for the campaign. Sequence uniqueness should be enforced by parser/runtime."
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/jsonValue"
+          }
+        }
+      }
+    },
+    "campaignEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "triggerEvents",
+        "appStateEligibility"
+      ],
+      "properties": {
+        "triggerEvents": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/eventMatcher"
+          },
+          "description": "Events that make a user eligible for campaign enrollment."
+        },
+        "eligibility": {
+          "$ref": "#/$defs/conditionGroup"
+        },
+        "appStateEligibility": {
+          "$ref": "#/$defs/appStateEligibility"
+        },
+        "cooldown": {
+          "$ref": "#/$defs/duration"
+        },
+        "maxActiveEnrollmentPerUser": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1
+        },
+        "maxEnrollmentsPerUser": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "campaignCancel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "autoCancelPendingMessages",
+        "appStateEligibility"
+      ],
+      "properties": {
+        "onEvents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/eventMatcher"
+          },
+          "description": "Campaign-level cancel triggers (e.g. onboarding_completed)."
+        },
+        "conditions": {
+          "$ref": "#/$defs/conditionGroup"
+        },
+        "autoCancelPendingMessages": {
+          "type": "boolean",
+          "description": "If true, pending message schedules belonging to this campaign are cancelled when campaign is cancelled/completed."
+        },
+        "appStateEligibility": {
+          "$ref": "#/$defs/appStateEligibility"
+        }
+      }
+    },
+    "campaignLimits": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "maxActiveMessages": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maxDeliveriesPer24h": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "minSpacingBetweenMessages": {
+          "$ref": "#/$defs/duration"
+        }
+      }
+    },
+    "message": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "sequence",
+        "enabled",
+        "kind",
+        "content",
+        "trigger",
+        "schedule",
+        "cancel"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "local_notification",
+            "in_app_message"
+          ],
+          "description": "OpenClix v1 excludes remote push."
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "content": {
+          "$ref": "#/$defs/messageContent"
+        },
+        "trigger": {
+          "$ref": "#/$defs/messageTrigger"
+        },
+        "schedule": {
+          "$ref": "#/$defs/messageSchedule"
+        },
+        "cancel": {
+          "$ref": "#/$defs/messageCancel"
+        },
+        "limits": {
+          "$ref": "#/$defs/messageLimits"
+        },
+        "tracking": {
+          "$ref": "#/$defs/messageTracking"
+        }
+      }
+    },
+    "messageContent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "body"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "Message title/caption. May include variable placeholders like {userName}."
+        },
+        "body": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "description": "Message body/copy. May include variable placeholders."
+        },
+        "templateVariables": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$"
+          }
+        },
+        "deepLink": {
+          "type": "string",
+          "format": "uri-reference"
+        },
+        "actions": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {
+            "$ref": "#/$defs/messageAction"
+          }
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/jsonValue"
+          }
+        }
+      }
+    },
+    "messageAction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "label",
+        "behavior"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "behavior": {
+          "type": "string",
+          "enum": [
+            "open_app",
+            "deep_link",
+            "dismiss"
+          ]
+        },
+        "deepLink": {
+          "type": "string",
+          "format": "uri-reference"
+        }
+      }
+    },
+    "messageTrigger": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "delay"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "campaign_entry",
+            "event",
+            "message_scheduled",
+            "message_delivered",
+            "message_opened",
+            "message_dismissed"
+          ]
+        },
+        "delay": {
+          "$ref": "#/$defs/duration"
+        },
+        "event": {
+          "$ref": "#/$defs/eventMatcher"
+        },
+        "messageId": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "event"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "event"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "enum": [
+                  "message_scheduled",
+                  "message_delivered",
+                  "message_opened",
+                  "message_dismissed"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "messageId"
+            ]
+          }
+        }
+      ]
+    },
+    "messageSchedule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "timezone",
+        "deliveryWindow",
+        "appStateEligibility",
+        "rolloverBehavior"
+      ],
+      "properties": {
+        "timezone": {
+          "type": "string",
+          "const": "local",
+          "description": "Schedules resolve against device local time only."
+        },
+        "deliveryWindow": {
+          "$ref": "#/$defs/deliveryWindow"
+        },
+        "appStateEligibility": {
+          "$ref": "#/$defs/appStateEligibility",
+          "description": "When the engine is allowed to schedule this message. Include foreground=true to allow scheduling while app is in foreground."
+        },
+        "rolloverBehavior": {
+          "type": "string",
+          "enum": [
+            "defer_to_next_window",
+            "drop_if_outside_window"
+          ],
+          "description": "What to do if computed send time lands outside delivery window."
+        },
+        "jitter": {
+          "$ref": "#/$defs/duration"
+        }
+      }
+    },
+    "messageCancel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "appStateEligibility",
+        "autoCancelOnCampaignCancel"
+      ],
+      "properties": {
+        "appStateEligibility": {
+          "$ref": "#/$defs/appStateEligibility",
+          "description": "When the engine is allowed to cancel this message. Include foreground=true to allow cancellation while app is in foreground."
+        },
+        "onEvents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/eventMatcher"
+          }
+        },
+        "conditions": {
+          "$ref": "#/$defs/conditionGroup"
+        },
+        "autoCancelOnCampaignCancel": {
+          "type": "boolean"
+        }
+      }
+    },
+    "messageLimits": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "maxSchedulesPerUser": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "cooldown": {
+          "$ref": "#/$defs/duration"
+        },
+        "dedupeKey": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable key used to replace or dedupe equivalent pending local notifications."
+        }
+      }
+    },
+    "messageTracking": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "emitDeliveredEvent": {
+          "type": "boolean"
+        },
+        "emitOpenedEvent": {
+          "type": "boolean"
+        },
+        "customEventPrefix": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        }
+      }
+    },
+    "eventMatcher": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "payloadFilters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/propertyCondition"
+          }
+        }
+      }
+    },
+    "conditionGroup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "match",
+        "conditions"
+      ],
+      "properties": {
+        "match": {
+          "type": "string",
+          "enum": [
+            "all",
+            "any"
+          ]
+        },
+        "conditions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/condition"
+          }
+        }
+      }
+    },
+    "condition": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/eventCountCondition"
+        },
+        {
+          "$ref": "#/$defs/eventRecencyCondition"
+        },
+        {
+          "$ref": "#/$defs/propertyCondition"
+        },
+        {
+          "$ref": "#/$defs/appStateCondition"
+        },
+        {
+          "$ref": "#/$defs/campaignStateCondition"
+        },
+        {
+          "$ref": "#/$defs/messageStateCondition"
+        }
+      ]
+    },
+    "eventCountCondition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "event",
+        "operator",
+        "value"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "event_count"
+        },
+        "event": {
+          "$ref": "#/$defs/eventMatcher"
+        },
+        "window": {
+          "$ref": "#/$defs/duration"
+        },
+        "operator": {
+          "$ref": "#/$defs/numericOperator"
+        },
+        "value": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "eventRecencyCondition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "event",
+        "operator",
+        "value"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "event_recency"
+        },
+        "event": {
+          "$ref": "#/$defs/eventMatcher"
+        },
+        "operator": {
+          "$ref": "#/$defs/numericOperator"
+        },
+        "value": {
+          "$ref": "#/$defs/duration",
+          "description": "Time since most recent matching event."
+        }
+      }
+    },
+    "propertyCondition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "path",
+        "operator",
+        "value"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "property"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Path in user profile or event payload (e.g. 'user.onboardingStep')."
+        },
+        "operator": {
+          "$ref": "#/$defs/comparisonOperator"
+        },
+        "value": {
+          "$ref": "#/$defs/jsonValue"
+        }
+      }
+    },
+    "appStateCondition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "state"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "app_state"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "foreground",
+            "background"
+          ]
+        }
+      }
+    },
+    "campaignStateCondition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "campaignId",
+        "state"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "campaign_state"
+        },
+        "campaignId": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "inactive",
+            "active",
+            "completed",
+            "cancelled"
+          ]
+        }
+      }
+    },
+    "messageStateCondition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "messageId",
+        "state"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "message_state"
+        },
+        "messageId": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "not_scheduled",
+            "scheduled",
+            "delivered",
+            "opened",
+            "dismissed",
+            "cancelled"
+          ]
+        }
+      }
+    },
+    "appStateEligibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "foreground",
+        "background"
+      ],
+      "properties": {
+        "foreground": {
+          "type": "boolean",
+          "description": "Whether this operation is eligible while app is in foreground."
+        },
+        "background": {
+          "type": "boolean",
+          "description": "Whether this operation is eligible while app is in background / background task context."
+        }
+      }
+    },
+    "deliveryWindow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "startHour",
+        "endHour"
+      ],
+      "properties": {
+        "startHour": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 23
+        },
+        "endHour": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 23,
+          "description": "Inclusive end hour. Runtime should treat endHour < startHour as overnight window."
+        },
+        "daysOfWeek": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "enum": [
+              "mon",
+              "tue",
+              "wed",
+              "thu",
+              "fri",
+              "sat",
+              "sun"
+            ]
+          }
+        }
+      }
+    },
+    "quietHours": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "startHour",
+        "endHour",
+        "behavior"
+      ],
+      "properties": {
+        "startHour": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 23
+        },
+        "endHour": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 23
+        },
+        "behavior": {
+          "type": "string",
+          "enum": [
+            "defer_to_next_window",
+            "drop"
+          ]
+        }
+      }
+    },
+    "duration": {
+      "type": "string",
+      "pattern": "^[0-9]+(s|m|h|d|w)$",
+      "description": "Shorthand duration string, e.g. 30m, 2h, 3d, 1w."
+    },
+    "numericOperator": {
+      "type": "string",
+      "enum": [
+        "eq",
+        "ne",
+        "gt",
+        "gte",
+        "lt",
+        "lte"
+      ]
+    },
+    "comparisonOperator": {
+      "type": "string",
+      "enum": [
+        "eq",
+        "ne",
+        "gt",
+        "gte",
+        "lt",
+        "lte",
+        "in",
+        "not_in",
+        "contains",
+        "not_contains"
+      ]
+    },
+    "jsonValue": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/jsonValue"
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/jsonValue"
+          }
+        }
+      ]
+    }
+  }
+}
