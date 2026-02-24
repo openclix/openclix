@@ -7,49 +7,50 @@ export interface Feature {
 export const features: Feature[] = [
   {
     icon: "Settings",
-    title: "Remote Config, Not Just Flags",
+    title: "Transparent Rule Engine",
     description:
-      "Typed values, JSON payloads, versioning, defaults, and safe fallbacks.",
+      "Inspect how eligibility, suppression, and scheduling decisions are made.",
   },
   {
     icon: "Target",
-    title: "Targeting & Segments (On-Device)",
+    title: "Explicit Interfaces & Schemas",
     description:
-      "Evaluate rules locally using device/user attributes you choose to provide.",
+      "Legible boundaries make the behavior easier to extend and safer for agents to edit.",
   },
   {
     icon: "BarChart3",
-    title: "Gradual Rollouts & Variants",
+    title: "Testable Modules",
     description:
-      "Percentage rollouts, A/B-style variants, and deterministic bucketing.",
+      "Separate logic and adapters so you can test core behavior without app-specific glue.",
   },
   {
     icon: "Bell",
-    title: "Local Notification Campaigns",
+    title: "Local-First Execution",
     description:
-      "Schedule notifications with templates, quiet hours, and per-campaign frequency caps.",
+      "Run retention messaging on-device with remote config controlling behavior.",
   },
   {
     icon: "Route",
-    title: "On-Device Journey Engine",
+    title: "Debug Eligibility Reasons",
     description:
-      "Stateful flows with delays, conditions, and auto-cancel when goals are met.",
+      "Track what matched, what was suppressed, and why a message did or did not fire.",
   },
   {
     icon: "Link",
-    title: "Deep Links & Personalization",
+    title: "Adapter Patterns",
     description:
-      "Route users to the right screen with parameterized deep links and message templates.",
+      "Connect config and analytics providers through adapters you can swap later.",
   },
   {
     icon: "Webhook",
-    title: "Event Hooks (Bring Your Own Analytics)",
+    title: "Clear Edit Points for AI Agents",
     description:
-      "Export exposure + notification events to your analytics stack via HTTP.",
+      "Readable structure, examples, and explicit touchpoints for AI-assisted iteration loops.",
   },
   {
     icon: "Shield",
-    title: "Privacy-First by Design",
-    description: "No push tokens required. Most decisions happen locally.",
+    title: "Forkable and Auditable",
+    description:
+      "Change what you need, review diffs in plain code, and keep product control in-house.",
   },
 ];

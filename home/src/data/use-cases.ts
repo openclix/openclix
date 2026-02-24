@@ -5,38 +5,38 @@ export interface UseCase {
 
 export const useCases: UseCase[] = [
   {
-    title: "Onboarding Journeys",
+    title: "Onboarding Nudges",
     items: [
-      'Welcome series with step-by-step nudges',
-      '"Finish setup" reminders that auto-cancel when completed',
+      "Guide first-session progress with lightweight nudges tied to milestones.",
+      "Encourage setup completion without building a push backend first.",
     ],
   },
   {
-    title: "Habit & Routine",
+    title: "Re-Engagement Reminders",
     items: [
-      "Daily/weekly reminders at user-chosen times",
-      "Streak maintenance, quiet hours, cooldown windows",
+      "Trigger nudges after inactivity windows using local rules and last-seen signals.",
+      "Tune copy, timing, and suppression logic via remote config.",
     ],
   },
   {
-    title: "Re-Engagement (Last-Seen Based)",
+    title: "Streak Maintenance",
     items: [
-      "1/3/7-day inactive nudges",
-      '"You haven\'t tried X yet" prompts (evaluated on next app run)',
+      "Keep routines alive with quiet hours, cooldowns, and simple eligibility checks.",
+      "Make reminder behavior deterministic and easy to audit.",
     ],
   },
   {
-    title: "In-App Triggered Notifications",
+    title: "Milestone Messages",
     items: [
-      "Immediate follow-ups after key actions",
-      '"Next best action" prompts after screen visits or events',
+      "Celebrate completions, streaks, and progress thresholds with local messaging.",
+      "Use config updates to test different message variants quickly.",
     ],
   },
   {
-    title: "Scheduled Promotions",
+    title: "Feature Discovery Prompts",
     items: [
-      "Weekend/event reminders you can edit anytime via Remote Config",
-      "Deep links to offers, content, or paywalls",
+      "Surface next-best actions after key events or screen visits.",
+      "Pair local notifications with in-app hooks and deep links.",
     ],
   },
 ];
