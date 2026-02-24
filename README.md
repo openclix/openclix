@@ -1,3 +1,10 @@
+
+<p align="center">
+<img alt="Event Flyer - dark" src="https://github.com/user-attachments/assets/90bd137c-d7d4-4806-befb-94b45e005718#gh-dark-mode-only">
+<img alt="Event Flyer - light" src="https://github.com/user-attachments/assets/be5ab0e3-1d3d-4e17-b13a-67d2622f1a38#gh-light-mode-only">
+</p>
+
+
 # OpenClix
 
 Open-source, agent-friendly foundation for config-driven, on-device mobile engagement logic.
