@@ -215,6 +215,11 @@ main {
   100% { transform: translateY(-2px) rotate(-1.2deg) scale(1.02); }
 }
 
+@keyframes terminal-caret-blink {
+  0%, 45% { opacity: 1; }
+  46%, 100% { opacity: 0; }
+}
+
 .mascot-icon {
   animation: float 5.5s ease-in-out infinite;
   transition: transform 160ms ease;
@@ -234,6 +239,18 @@ main {
   filter: drop-shadow(0 0 28px rgba(0, 196, 159, 0.38));
 }
 
+.terminal-caret {
+  display: inline-block;
+  width: 0.6ch;
+  height: 1.05em;
+  margin-left: 1px;
+  vertical-align: -0.14em;
+  border-radius: 1px;
+  background: color-mix(in oklab, var(--primary) 84%, white 16%);
+  box-shadow: 0 0 10px color-mix(in oklab, var(--primary) 40%, transparent);
+  animation: terminal-caret-blink 1.05s steps(1) infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .mascot-icon,
   .mascot-icon:hover {
@@ -243,6 +260,11 @@ main {
   .mascot-icon img,
   .mascot-icon:hover img {
     transition: none;
+  }
+
+  .terminal-caret {
+    animation: none;
+    opacity: 1;
   }
 }
 

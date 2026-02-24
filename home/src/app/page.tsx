@@ -1,4 +1,5 @@
 import { Hero } from "@/components/sections/hero";
+import { PromptTerminalSection } from "@/components/sections/prompt-terminal";
 import { WhyOpenClix } from "@/components/sections/why-openclix";
 import { ProofSection } from "@/components/sections/proof";
 import { UseCases } from "@/components/sections/use-cases";
@@ -65,6 +66,7 @@ export default function Home() {
       />
       <main className="w-full">
         <Hero />
+        <PromptTerminalSection />
         <WhyOpenClix />
         <ProofSection />
         <QuickStart />
