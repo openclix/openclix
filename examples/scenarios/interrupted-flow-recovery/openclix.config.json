@@ -1,0 +1,284 @@
+{
+  "schemaVersion": "openclix/campaign-config/v1",
+  "configVersion": "1.0.0-interrupted-flow-recovery",
+  "deliveryMode": "local_only",
+  "source": {
+    "provider": "file"
+  },
+  "defaults": {
+    "timezone": "local",
+    "quietHours": {
+      "startHour": 22,
+      "endHour": 8,
+      "behavior": "defer_to_next_window"
+    },
+    "foregroundEvaluation": {
+      "evaluateOnAppForeground": true,
+      "evaluateOnEventInForeground": true
+    },
+    "localNotificationLimits": {
+      "maxPending": 32,
+      "overflowStrategy": "defer"
+    },
+    "defaultDeliveryWindow": {
+      "startHour": 9,
+      "endHour": 21
+    },
+    "dedupeWindow": "24h"
+  },
+  "campaigns": [
+    {
+      "id": "interrupted-flow-recovery",
+      "name": "Recovery: Interrupted High-Intent Flow",
+      "purpose": "Recover users who abandon a high-intent flow with contextual follow-ups that branch on engagement and cancel on restart or completion.",
+      "enabled": true,
+      "priority": 75,
+      "tags": [
+        "recovery",
+        "high-intent",
+        "resume-flow"
+      ],
+      "entry": {
+        "triggerEvents": [
+          {
+            "name": "critical_flow_abandoned",
+            "payloadFilters": [
+              {
+                "kind": "property",
+                "path": "payload.intentScore",
+                "operator": "gte",
+                "value": 50
+              }
+            ]
+          }
+        ],
+        "eligibility": {
+          "match": "all",
+          "conditions": [
+            {
+              "kind": "event_count",
+              "event": {
+                "name": "critical_flow_completed"
+              },
+              "window": "2h",
+              "operator": "eq",
+              "value": 0
+            }
+          ]
+        },
+        "appStateEligibility": {
+          "foreground": true,
+          "background": false
+        },
+        "cooldown": "3d",
+        "maxActiveEnrollmentPerUser": 1
+      },
+      "cancel": {
+        "onEvents": [
+          {
+            "name": "critical_flow_completed"
+          },
+          {
+            "name": "critical_flow_restarted"
+          }
+        ],
+        "autoCancelPendingMessages": true,
+        "appStateEligibility": {
+          "foreground": true,
+          "background": true
+        }
+      },
+      "limits": {
+        "maxActiveMessages": 2,
+        "minSpacingBetweenMessages": "12h"
+      },
+      "messages": [
+        {
+          "id": "resume-flow-reminder",
+          "sequence": 1,
+          "enabled": true,
+          "kind": "local_notification",
+          "priority": 74,
+          "content": {
+            "title": "Finish your {flowLabel}",
+            "body": "Your progress is saved. Resume {flowLabel} where you left off.",
+            "templateVariables": [
+              "flowLabel"
+            ],
+            "deepLink": "app://flow/resume",
+            "actions": [
+              {
+                "id": "resume",
+                "label": "Resume",
+                "behavior": "deep_link",
+                "deepLink": "app://flow/resume"
+              }
+            ]
+          },
+          "trigger": {
+            "type": "campaign_entry",
+            "delay": "45m"
+          },
+          "schedule": {
+            "timezone": "local",
+            "deliveryWindow": {
+              "startHour": 9,
+              "endHour": 21
+            },
+            "appStateEligibility": {
+              "foreground": true,
+              "background": true
+            },
+            "rolloverBehavior": "defer_to_next_window",
+            "jitter": "10m"
+          },
+          "cancel": {
+            "onEvents": [
+              { "name": "critical_flow_completed" },
+              { "name": "critical_flow_restarted" }
+            ],
+            "appStateEligibility": {
+              "foreground": true,
+              "background": true
+            },
+            "autoCancelOnCampaignCancel": true
+          },
+          "limits": {
+            "cooldown": "2d",
+            "dedupeKey": "interrupted_flow_resume_prompt"
+          },
+          "tracking": {
+            "emitDeliveredEvent": true,
+            "emitOpenedEvent": true,
+            "customEventPrefix": "flow"
+          }
+        },
+        {
+          "id": "helpful-context-followup",
+          "sequence": 2,
+          "enabled": true,
+          "kind": "local_notification",
+          "priority": 68,
+          "content": {
+            "title": "Need a faster path back?",
+            "body": "Re-open {flowLabel} and we will drop you into the next pending step.",
+            "templateVariables": [
+              "flowLabel"
+            ],
+            "deepLink": "app://flow/resume",
+            "actions": [
+              {
+                "id": "open_app",
+                "label": "Open App",
+                "behavior": "open_app"
+              }
+            ]
+          },
+          "trigger": {
+            "type": "message_opened",
+            "messageId": "resume-flow-reminder",
+            "delay": "24h"
+          },
+          "schedule": {
+            "timezone": "local",
+            "deliveryWindow": {
+              "startHour": 10,
+              "endHour": 20
+            },
+            "appStateEligibility": {
+              "foreground": true,
+              "background": true
+            },
+            "rolloverBehavior": "defer_to_next_window"
+          },
+          "cancel": {
+            "onEvents": [
+              { "name": "critical_flow_completed" },
+              { "name": "critical_flow_restarted" }
+            ],
+            "appStateEligibility": {
+              "foreground": true,
+              "background": true
+            },
+            "autoCancelOnCampaignCancel": true
+          },
+          "limits": {
+            "dedupeKey": "interrupted_flow_opened_followup"
+          },
+          "tracking": {
+            "emitDeliveredEvent": true,
+            "emitOpenedEvent": true,
+            "customEventPrefix": "flow"
+          }
+        },
+        {
+          "id": "quiet-closeout-reminder",
+          "sequence": 3,
+          "enabled": true,
+          "kind": "local_notification",
+          "priority": 58,
+          "content": {
+            "title": "Pick this back up anytime",
+            "body": "Your {flowLabel} progress is still waiting whenever you are ready.",
+            "templateVariables": [
+              "flowLabel"
+            ],
+            "deepLink": "app://flow/resume"
+          },
+          "trigger": {
+            "type": "message_delivered",
+            "messageId": "resume-flow-reminder",
+            "delay": "48h"
+          },
+          "schedule": {
+            "timezone": "local",
+            "deliveryWindow": {
+              "startHour": 10,
+              "endHour": 20
+            },
+            "appStateEligibility": {
+              "foreground": true,
+              "background": true
+            },
+            "rolloverBehavior": "defer_to_next_window"
+          },
+          "cancel": {
+            "onEvents": [
+              { "name": "critical_flow_completed" },
+              { "name": "critical_flow_restarted" }
+            ],
+            "conditions": {
+              "match": "any",
+              "conditions": [
+                {
+                  "kind": "message_state",
+                  "messageId": "helpful-context-followup",
+                  "state": "scheduled"
+                },
+                {
+                  "kind": "message_state",
+                  "messageId": "helpful-context-followup",
+                  "state": "delivered"
+                },
+                {
+                  "kind": "message_state",
+                  "messageId": "helpful-context-followup",
+                  "state": "opened"
+                }
+              ]
+            },
+            "appStateEligibility": {
+              "foreground": true,
+              "background": true
+            },
+            "autoCancelOnCampaignCancel": true
+          },
+          "limits": {
+            "maxSchedulesPerUser": 1,
+            "dedupeKey": "interrupted_flow_quiet_closeout"
+          }
+        }
+      ]
+    }
+  ]
+}

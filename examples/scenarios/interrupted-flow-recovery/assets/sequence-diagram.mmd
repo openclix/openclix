@@ -1,0 +1,13 @@
+sequenceDiagram
+  participant App
+  participant OpenClix
+  participant Scheduler as Local Scheduler
+
+  App->>OpenClix: ingestEvent(critical_flow_abandoned payload)
+  OpenClix->>OpenClix: Entry filter + eligibility check
+  OpenClix->>Scheduler: Schedule resume-flow-reminder
+  Scheduler-->>OpenClix: message_opened OR message_delivered
+  OpenClix->>OpenClix: Branch follow-up path (opened vs delivered)
+  OpenClix->>Scheduler: Schedule helpful-context-followup or quiet-closeout-reminder
+  App->>OpenClix: ingestEvent(critical_flow_completed)
+  OpenClix->>Scheduler: Cancel pending recovery messages

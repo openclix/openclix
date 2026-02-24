@@ -1,0 +1,103 @@
+{
+  "schemaVersion": "openclix/campaign-config/v1",
+  "configVersion": "0.1.0-template",
+  "deliveryMode": "local_only",
+  "source": {
+    "provider": "file"
+  },
+  "defaults": {
+    "timezone": "local",
+    "quietHours": {
+      "startHour": 22,
+      "endHour": 8,
+      "behavior": "defer_to_next_window"
+    },
+    "foregroundEvaluation": {
+      "evaluateOnAppForeground": true,
+      "evaluateOnEventInForeground": true
+    },
+    "localNotificationLimits": {
+      "maxPending": 32,
+      "overflowStrategy": "defer"
+    },
+    "defaultDeliveryWindow": {
+      "startHour": 9,
+      "endHour": 21
+    }
+  },
+  "campaigns": [
+    {
+      "id": "example-onboarding",
+      "name": "Example Onboarding",
+      "purpose": "Template-only campaign showing a single shared config reused across platform snippets.",
+      "enabled": true,
+      "tags": [
+        "template",
+        "onboarding"
+      ],
+      "entry": {
+        "triggerEvents": [
+          {
+            "name": "user_signed_up"
+          }
+        ],
+        "appStateEligibility": {
+          "foreground": true,
+          "background": false
+        }
+      },
+      "cancel": {
+        "onEvents": [
+          {
+            "name": "first_action_completed"
+          }
+        ],
+        "autoCancelPendingMessages": true,
+        "appStateEligibility": {
+          "foreground": true,
+          "background": true
+        }
+      },
+      "messages": [
+        {
+          "id": "first-reminder",
+          "sequence": 1,
+          "enabled": true,
+          "kind": "local_notification",
+          "content": {
+            "title": "Finish your first step",
+            "body": "You are one action away from completing setup."
+          },
+          "trigger": {
+            "type": "campaign_entry",
+            "delay": "2h"
+          },
+          "schedule": {
+            "timezone": "local",
+            "deliveryWindow": {
+              "startHour": 9,
+              "endHour": 21
+            },
+            "appStateEligibility": {
+              "foreground": true,
+              "background": true
+            },
+            "rolloverBehavior": "defer_to_next_window"
+          },
+          "cancel": {
+            "onEvents": [
+              {
+                "name": "first_action_completed"
+              }
+            ],
+            "appStateEligibility": {
+              "foreground": true,
+              "background": true
+            },
+            "autoCancelOnCampaignCancel": true
+          }
+        }
+      ]
+    }
+  ]
+}

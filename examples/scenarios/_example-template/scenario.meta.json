@@ -1,0 +1,42 @@
+{
+  "id": "_example-template",
+  "title": "Example Template (Structure Only)",
+  "summary": "Template scenario that demonstrates shared OpenClix config reuse across iOS, Android, Flutter, and React Native snippets.",
+  "status": "template",
+  "sharedConfigPath": "examples/scenarios/_example-template/openclix.config.json",
+  "platforms": [
+    "ios",
+    "android",
+    "flutter",
+    "react-native"
+  ],
+  "tags": [
+    "template",
+    "shared-config",
+    "cross-platform"
+  ],
+  "primaryUseCase": "example_structure",
+  "eventNamesUsed": [
+    "user_signed_up",
+    "first_action_completed"
+  ],
+  "configSchemaRef": "schemas/openclix-campaign-config.schema.json",
+  "snippets": {
+    "ios": [
+      "examples/scenarios/_example-template/snippets/ios/schedule-on-entry.swift",
+      "examples/scenarios/_example-template/snippets/ios/cancel-on-event.swift"
+    ],
+    "android": [
+      "examples/scenarios/_example-template/snippets/android/ScheduleOnEntry.kt",
+      "examples/scenarios/_example-template/snippets/android/CancelOnEvent.kt"
+    ],
+    "flutter": [
+      "examples/scenarios/_example-template/snippets/flutter/schedule_on_entry.dart",
+      "examples/scenarios/_example-template/snippets/flutter/cancel_on_event.dart"
+    ],
+    "react-native": [
+      "examples/scenarios/_example-template/snippets/react-native/scheduleOnEntry.ts",
+      "examples/scenarios/_example-template/snippets/react-native/cancelOnEvent.ts"
+    ]
+  }
+}

@@ -1,0 +1,242 @@
+{
+  "schemaVersion": "openclix/campaign-config/v1",
+  "configVersion": "1.0.0-streak-protection-escalation",
+  "deliveryMode": "local_only",
+  "source": {
+    "provider": "file"
+  },
+  "defaults": {
+    "timezone": "local",
+    "quietHours": {
+      "startHour": 22,
+      "endHour": 8,
+      "behavior": "defer_to_next_window"
+    },
+    "foregroundEvaluation": {
+      "evaluateOnAppForeground": true,
+      "evaluateOnEventInForeground": true
+    },
+    "localNotificationLimits": {
+      "maxPending": 32,
+      "overflowStrategy": "defer"
+    },
+    "defaultDeliveryWindow": {
+      "startHour": 9,
+      "endHour": 21
+    },
+    "dedupeWindow": "6h"
+  },
+  "campaigns": [
+    {
+      "id": "streak-protection-escalation",
+      "name": "Retention: Streak Protection Escalation",
+      "purpose": "Protect at-risk recurring behavior streaks with urgency-aware reminders that stop immediately when the streak is extended or reset.",
+      "enabled": true,
+      "priority": 85,
+      "tags": [
+        "retention",
+        "streak",
+        "urgency"
+      ],
+      "entry": {
+        "triggerEvents": [
+          {
+            "name": "streak_risk_detected",
+            "payloadFilters": [
+              {
+                "kind": "property",
+                "path": "payload.streakCount",
+                "operator": "gte",
+                "value": 2
+              },
+              {
+                "kind": "property",
+                "path": "payload.hoursRemaining",
+                "operator": "lte",
+                "value": 24
+              }
+            ]
+          }
+        ],
+        "appStateEligibility": {
+          "foreground": true,
+          "background": false
+        },
+        "cooldown": "1d",
+        "maxActiveEnrollmentPerUser": 1,
+        "maxEnrollmentsPerUser": 30
+      },
+      "cancel": {
+        "onEvents": [
+          {
+            "name": "streak_extended"
+          },
+          {
+            "name": "streak_reset"
+          }
+        ],
+        "autoCancelPendingMessages": true,
+        "appStateEligibility": {
+          "foreground": true,
+          "background": true
+        }
+      },
+      "limits": {
+        "maxDeliveriesPer24h": 3,
+        "minSpacingBetweenMessages": "4h"
+      },
+      "messages": [
+        {
+          "id": "streak-soft-warning",
+          "sequence": 1,
+          "enabled": true,
+          "kind": "local_notification",
+          "priority": 72,
+          "content": {
+            "title": "Keep your streak alive",
+            "body": "Do one {coreActionLabel} session today to protect your {streakCount}-day streak.",
+            "templateVariables": [
+              "coreActionLabel",
+              "streakCount"
+            ],
+            "deepLink": "app://streak/continue"
+          },
+          "trigger": {
+            "type": "campaign_entry",
+            "delay": "30m"
+          },
+          "schedule": {
+            "timezone": "local",
+            "deliveryWindow": {
+              "startHour": 12,
+              "endHour": 21
+            },
+            "appStateEligibility": {
+              "foreground": true,
+              "background": true
+            },
+            "rolloverBehavior": "defer_to_next_window"
+          },
+          "cancel": {
+            "onEvents": [
+              { "name": "streak_extended" },
+              { "name": "streak_reset" }
+            ],
+            "appStateEligibility": {
+              "foreground": true,
+              "background": true
+            },
+            "autoCancelOnCampaignCancel": true
+          },
+          "limits": {
+            "cooldown": "12h",
+            "dedupeKey": "streak_protection_soft"
+          },
+          "tracking": {
+            "emitDeliveredEvent": true,
+            "emitOpenedEvent": true,
+            "customEventPrefix": "streak"
+          }
+        },
+        {
+          "id": "streak-urgency-nudge",
+          "sequence": 2,
+          "enabled": true,
+          "kind": "local_notification",
+          "priority": 82,
+          "content": {
+            "title": "Your streak ends tonight",
+            "body": "A quick {coreActionLabel} check-in now keeps the streak intact.",
+            "templateVariables": [
+              "coreActionLabel"
+            ],
+            "deepLink": "app://streak/continue"
+          },
+          "trigger": {
+            "type": "message_delivered",
+            "messageId": "streak-soft-warning",
+            "delay": "6h"
+          },
+          "schedule": {
+            "timezone": "local",
+            "deliveryWindow": {
+              "startHour": 12,
+              "endHour": 21
+            },
+            "appStateEligibility": {
+              "foreground": true,
+              "background": true
+            },
+            "rolloverBehavior": "defer_to_next_window"
+          },
+          "cancel": {
+            "onEvents": [
+              { "name": "streak_extended" },
+              { "name": "streak_reset" }
+            ],
+            "appStateEligibility": {
+              "foreground": true,
+              "background": true
+            },
+            "autoCancelOnCampaignCancel": true
+          },
+          "limits": {
+            "dedupeKey": "streak_protection_urgency"
+          },
+          "tracking": {
+            "emitDeliveredEvent": true,
+            "emitOpenedEvent": true,
+            "customEventPrefix": "streak"
+          }
+        },
+        {
+          "id": "streak-last-chance",
+          "sequence": 3,
+          "enabled": true,
+          "kind": "local_notification",
+          "priority": 90,
+          "content": {
+            "title": "Last chance for today",
+            "body": "Complete one {coreActionLabel} action before tonight to preserve the streak.",
+            "templateVariables": [
+              "coreActionLabel"
+            ],
+            "deepLink": "app://streak/continue"
+          },
+          "trigger": {
+            "type": "message_delivered",
+            "messageId": "streak-urgency-nudge",
+            "delay": "8h"
+          },
+          "schedule": {
+            "timezone": "local",
+            "deliveryWindow": {
+              "startHour": 17,
+              "endHour": 21
+            },
+            "appStateEligibility": {
+              "foreground": true,
+              "background": true
+            },
+            "rolloverBehavior": "drop_if_outside_window"
+          },
+          "cancel": {
+            "onEvents": [
+              { "name": "streak_extended" },
+              { "name": "streak_reset" }
+            ],
+            "appStateEligibility": {
+              "foreground": true,
+              "background": true
+            },
+            "autoCancelOnCampaignCancel": true
+          },
+          "limits": {
+            "maxSchedulesPerUser": 1,
+            "dedupeKey": "streak_protection_last_chance"
+          }
+        }
+      ]
+    }
+  ]
+}

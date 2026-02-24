@@ -1,0 +1,37 @@
+{
+  "id": "<scenario-slug>",
+  "title": "<Scenario Title>",
+  "summary": "<One-line description>",
+  "status": "draft",
+  "sharedConfigPath": "examples/scenarios/<scenario-slug>/openclix.config.json",
+  "platforms": [
+    "ios",
+    "android",
+    "flutter",
+    "react-native"
+  ],
+  "tags": [
+    "<tag-1>",
+    "<tag-2>"
+  ],
+  "primaryUseCase": "<primary-use-case>",
+  "eventNamesUsed": [
+    "<entry_event>",
+    "<cancel_event>"
+  ],
+  "configSchemaRef": "schemas/openclix-campaign-config.schema.json",
+  "snippets": {
+    "ios": [
+      "examples/scenarios/<scenario-slug>/snippets/ios/<file>.swift"
+    ],
+    "android": [
+      "examples/scenarios/<scenario-slug>/snippets/android/<file>.kt"
+    ],
+    "flutter": [
+      "examples/scenarios/<scenario-slug>/snippets/flutter/<file>.dart"
+    ],
+    "react-native": [
+      "examples/scenarios/<scenario-slug>/snippets/react-native/<file>.ts"
+    ]
+  }
+}

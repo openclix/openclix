@@ -1,0 +1,14 @@
+sequenceDiagram
+  participant App
+  participant OpenClix
+  participant Scheduler as Local Scheduler
+
+  App->>OpenClix: ingestEvent(streak_risk_detected payload)
+  OpenClix->>OpenClix: Apply payloadFilters (streakCount, hoursRemaining)
+  OpenClix->>Scheduler: Schedule streak-soft-warning
+  Scheduler-->>OpenClix: delivered event (tracked)
+  OpenClix->>Scheduler: Schedule streak-urgency-nudge
+  Scheduler-->>OpenClix: delivered event (tracked)
+  OpenClix->>OpenClix: Evaluate last-chance window/drop policy
+  App->>OpenClix: ingestEvent(streak_extended)
+  OpenClix->>Scheduler: Cancel pending streak reminders

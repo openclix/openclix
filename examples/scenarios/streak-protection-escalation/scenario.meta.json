@@ -1,0 +1,52 @@
+{
+  "id": "streak-protection-escalation",
+  "title": "Retention: Streak Protection Escalation",
+  "summary": "Payload-filtered streak risk campaign with urgency escalation, spacing limits, and cancellation on streak recovery/reset.",
+  "status": "ready",
+  "sharedConfigPath": "examples/scenarios/streak-protection-escalation/openclix.config.json",
+  "platforms": [
+    "ios",
+    "android",
+    "flutter",
+    "react-native"
+  ],
+  "tags": [
+    "retention",
+    "streak",
+    "urgency",
+    "shared-config"
+  ],
+  "primaryUseCase": "streak_protection",
+  "eventNamesUsed": [
+    "streak_risk_detected",
+    "streak_extended",
+    "streak_reset"
+  ],
+  "configSchemaRef": "schemas/openclix-campaign-config.schema.json",
+  "snippets": {
+    "ios": [
+      "examples/scenarios/streak-protection-escalation/snippets/ios/bootstrap-config.swift",
+      "examples/scenarios/streak-protection-escalation/snippets/ios/trigger-entry-event.swift",
+      "examples/scenarios/streak-protection-escalation/snippets/ios/trigger-cancel-event.swift",
+      "examples/scenarios/streak-protection-escalation/snippets/ios/foreground-eval-debug.swift"
+    ],
+    "android": [
+      "examples/scenarios/streak-protection-escalation/snippets/android/BootstrapConfig.kt",
+      "examples/scenarios/streak-protection-escalation/snippets/android/TriggerEntryEvent.kt",
+      "examples/scenarios/streak-protection-escalation/snippets/android/TriggerCancelEvent.kt",
+      "examples/scenarios/streak-protection-escalation/snippets/android/ForegroundEvalDebug.kt"
+    ],
+    "flutter": [
+      "examples/scenarios/streak-protection-escalation/snippets/flutter/bootstrap_config.dart",
+      "examples/scenarios/streak-protection-escalation/snippets/flutter/trigger_entry_event.dart",
+      "examples/scenarios/streak-protection-escalation/snippets/flutter/trigger_cancel_event.dart",
+      "examples/scenarios/streak-protection-escalation/snippets/flutter/foreground_eval_debug.dart"
+    ],
+    "react-native": [
+      "examples/scenarios/streak-protection-escalation/snippets/react-native/bootstrapConfig.ts",
+      "examples/scenarios/streak-protection-escalation/snippets/react-native/triggerEntryEvent.ts",
+      "examples/scenarios/streak-protection-escalation/snippets/react-native/triggerCancelEvent.ts",
+      "examples/scenarios/streak-protection-escalation/snippets/react-native/foregroundEvalDebug.ts"
+    ]
+  }
+}

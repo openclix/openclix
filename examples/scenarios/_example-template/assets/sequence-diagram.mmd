@@ -1,0 +1,11 @@
+sequenceDiagram
+  participant App
+  participant OpenClix
+  participant Scheduler as Local Scheduler
+
+  App->>OpenClix: ingestEvent(user_signed_up)
+  OpenClix->>OpenClix: Evaluate campaign entry eligibility
+  OpenClix->>Scheduler: Schedule first-reminder (respect window/quiet hours)
+  App->>OpenClix: ingestEvent(first_action_completed)
+  OpenClix->>OpenClix: Evaluate cancel rules
+  OpenClix->>Scheduler: Cancel pending messages
