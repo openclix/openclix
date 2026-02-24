@@ -30,7 +30,7 @@ export function Hero() {
         </h1>
 
         <p className="font-heading text-3xl md:text-[3.15rem] font-semibold tracking-tight leading-[1.02] text-balance max-w-4xl">
-          Ship local retention flows in minutes.
+          Open-source retention tooling your team and users will love.
         </p>
 
         <p className="lede text-base md:text-lg text-measure">
