@@ -164,4 +164,4 @@ Contribution guidelines are not published yet. For now, use issues and pull requ
 
 ## License
 
-License file not yet added to the repository.
+This project is licensed under the MIT License. See `LICENSE` for details.
