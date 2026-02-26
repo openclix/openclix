@@ -4,7 +4,7 @@ import { GITHUB_URL, TRY_NOW_URL } from "@/data/links";
 
 const proofBullets = [
   "Local notifications + in-app messaging hooks",
-  "Remote-config-driven behavior on-device",
+  "Vendored source in your repo",
   "Readable rules and explicit reasons",
 ];
 
@@ -34,9 +34,9 @@ export function Hero() {
         </p>
 
         <p className="lede text-base md:text-lg text-measure">
-          Copy an open-source, remote-config-driven foundation for mobile
-          engagement logic that runs on-device. No push delivery pipeline to
-          stand up first.
+          Copy source-distributed, config-driven mobile engagement logic into
+          your repo. No runtime package dependency and no push delivery
+          pipeline to stand up first.
         </p>
 
         <div className="flex flex-wrap items-center justify-center gap-3 pt-1">

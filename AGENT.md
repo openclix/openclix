@@ -16,6 +16,7 @@ Keep changes tightly scoped to the user's requested area.
 - Integration workflow rules: `skills/openclix-init/SKILL.md`
 - Template source: `skills/openclix-init/templates/**`
 - Schema reference: `skills/openclix-init/references/openclix.schema.json`
+- For template behavior/contract changes, treat `templates/react-native/**` and `references/openclix.schema.json` as the canonical baseline.
 - Template verification gate: `scripts/verify_templates.sh`
 - Deployment pipeline: `.github/workflows/deploy-home.yml`
 
@@ -60,6 +61,7 @@ When editing `skills/openclix-init/templates/**`:
 - Preserve trigger/settings tokens: `scheduled`, `recurring`, `cancel_event`, `do_not_disturb`, `frequency_cap`.
 - In React Native templates, keep optional dependency references isolated to `infrastructure/` (not `core/` or `engine/`).
 - Maintain cross-platform parity; if uncertain, align with `templates/react-native/` as canonical behavior reference.
+- Roll out template contract updates in sequence: React Native first, verify RN, then propagate equivalent updates to Android/iOS/Flutter.
 
 ## Dependency and Change Policy
 - Prefer existing dependencies and platform APIs.

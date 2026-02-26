@@ -48,6 +48,12 @@ export const features: Feature[] = [
       "Readable structure, examples, and explicit touchpoints for AI-assisted iteration loops.",
   },
   {
+    icon: "Copy",
+    title: "Source-First Integration",
+    description:
+      "Client runtime is copied into your repo as checked-in source, not as a runtime package dependency.",
+  },
+  {
     icon: "Shield",
     title: "Forkable and Auditable",
     description:

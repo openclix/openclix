@@ -15,6 +15,11 @@ export const faqItems: FAQItem[] = [
       "No backend or APNS/FCM send pipeline is required for the local-first path. OpenClix focuses on on-device execution with remote-config-driven behavior.",
   },
   {
+    question: "Do I install OpenClix as a package dependency?",
+    answer:
+      "No. OpenClix is source-distributed: the client code is copied into your repository and checked in, so you avoid extra runtime dependency chain risk and keep full ownership of the code.",
+  },
+  {
     question: "Do I need Clix-hosted services or a control plane?",
     answer:
       "No. OpenClix is intended to run in your app with your own integrations. You can use adapter patterns for config and events without relying on a hosted Clix control surface.",

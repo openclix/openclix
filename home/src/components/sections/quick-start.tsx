@@ -57,9 +57,9 @@ export function QuickStart() {
 
       <div className="mt-6 panel-muted w-full px-4 py-3">
         <p className="text-sm text-muted-foreground leading-relaxed">
-          Copy the reference implementation, wire it into your existing remote
-          config and event hooks, then iterate on rules with clear runtime
-          behavior.
+          Bring the client source into your repo, connect config JSON and event
+          hooks, then iterate on rules with clear runtime behavior and no extra
+          runtime package dependency.
         </p>
       </div>
     </section>

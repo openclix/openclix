@@ -1,0 +1,277 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openclix.ai/schemas/openclix-campaign-app-profile.schema.json",
+  "title": "OpenClix Campaign App Profile",
+  "description": "Planning artifact schema for OpenClix campaign design sessions.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "app_name",
+    "platform",
+    "domain",
+    "summary",
+    "goals",
+    "core_user_activity",
+    "event_taxonomy",
+    "personalization_variables",
+    "existing_campaign_ids",
+    "constraints",
+    "campaign_design_brief"
+  ],
+  "properties": {
+    "app_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "platform": {
+      "type": "string",
+      "enum": [
+        "ios",
+        "android",
+        "flutter",
+        "react-native",
+        "multi-platform",
+        "unknown"
+      ]
+    },
+    "domain": {
+      "type": "string",
+      "minLength": 1
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "goals": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "core_user_activity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action",
+        "success_signal"
+      ],
+      "properties": {
+        "action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "success_signal": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "event_taxonomy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "events"
+      ],
+      "properties": {
+        "events": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "description",
+              "properties"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(_[a-z0-9]+)*$"
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "properties": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "key",
+                    "type",
+                    "description"
+                  ],
+                  "properties": {
+                    "key": {
+                      "type": "string",
+                      "pattern": "^[a-zA-Z0-9_.-]+$"
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "string",
+                        "number",
+                        "boolean",
+                        "date",
+                        "object",
+                        "array"
+                      ]
+                    },
+                    "description": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "personalization_variables": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "key",
+          "source",
+          "example"
+        ],
+        "properties": {
+          "key": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_.-]+$"
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1
+          },
+          "example": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "existing_campaign_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "do_not_disturb",
+        "frequency_cap",
+        "timezone_policy"
+      ],
+      "properties": {
+        "do_not_disturb": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "start_hour",
+            "end_hour"
+          ],
+          "properties": {
+            "start_hour": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 23
+            },
+            "end_hour": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 23
+            }
+          }
+        },
+        "frequency_cap": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "max_count",
+            "window_seconds"
+          ],
+          "properties": {
+            "max_count": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "window_seconds": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "timezone_policy": {
+          "type": "string",
+          "enum": [
+            "device_local",
+            "utc",
+            "mixed"
+          ]
+        }
+      }
+    },
+    "campaign_design_brief": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "purpose",
+          "target_event",
+          "trigger_type"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "purpose": {
+            "type": "string",
+            "minLength": 1
+          },
+          "target_event": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(_[a-z0-9]+)*$"
+          },
+          "trigger_type": {
+            "type": "string",
+            "enum": [
+              "event",
+              "scheduled",
+              "recurring"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

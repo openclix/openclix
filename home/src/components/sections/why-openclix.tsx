@@ -14,7 +14,9 @@ export function WhyOpenClix() {
           </p>
           <p className="text-sm md:text-base text-muted-foreground leading-relaxed text-measure">
             OpenClix removes the blocker so teams can test behavior change
-            first, then decide how much infrastructure they actually need.
+            first. Instead of adding another package into an already complex
+            dependency graph, teams can vendor checked-in source and keep full
+            ownership in-repo.
           </p>
         </div>
 
@@ -49,10 +51,10 @@ export function WhyOpenClix() {
               </div>
               <ol className="mt-4 space-y-2.5">
                 {[
-                  "Copy code",
-                  "Connect remote config",
+                  "Vendor source",
+                  "Connect config JSON",
                   "Define triggers",
-                  "Ship",
+                  "Ship + iterate",
                 ].map((step, i) => (
                   <li key={step} className="panel-muted px-3 py-2">
                     <div className="flex items-center gap-3">

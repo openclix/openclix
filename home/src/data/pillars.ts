@@ -18,6 +18,7 @@ export const pillars: Pillar[] = [
       "no backend required",
       "no hosted control plane required",
       "no auth/API key for local-first use",
+      "vendored source, not package runtime dependency",
       "no proprietary SDK lock-in",
     ],
   },

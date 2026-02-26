@@ -6,6 +6,7 @@ import {
   Route,
   Link,
   Webhook,
+  Copy,
   Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ const iconMap: Record<string, React.ElementType> = {
   Route,
   Link,
   Webhook,
+  Copy,
   Shield,
 };
 

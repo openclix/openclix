@@ -24,7 +24,7 @@ const jsonLd = {
       applicationCategory: "DeveloperApplication",
       operatingSystem: "iOS, Android",
       description:
-        "Open-source, agent-friendly reference codebase for dynamic mobile engagement controlled by remote config and executed on-device.",
+        "Open-source, agent-friendly, source-distributed reference codebase for dynamic mobile engagement controlled by config JSON and executed on-device.",
       offers: {
         "@type": "Offer",
         price: "0",

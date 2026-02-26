@@ -11,7 +11,88 @@ Open-source, agent-friendly foundation for config-driven, on-device mobile engag
 
 Most teams do not reach retention experiments because they get blocked by push infrastructure setup, SDK integration, and delivery pipeline overhead before they can test user behavior changes.
 
-OpenClix is a practical, local-first foundation for mobile engagement logic that runs on-device. It is designed to be readable, auditable, forkable, and easy for humans and AI agents to extend through explicit interfaces and clear edit points. If you are building apps with your own agent workflows, OpenClix is intended to be a strong reference source for how to structure engagement logic so agents can safely read, modify, and evolve it. Configuration starts from local files first, with remote config adapters planned as an optional later phase.
+OpenClix is a practical, local-first foundation for mobile engagement logic that runs on-device. It is designed to be readable, auditable, forkable, and easy for humans and AI agents to extend through explicit interfaces and clear edit points. If you are building apps with your own agent workflows, OpenClix is intended to be a strong reference source for how to structure engagement logic so agents can safely read, modify, and evolve it. Configuration can be shipped as an in-app resource JSON or loaded from an HTTPS endpoint. The client runtime is delivered as source that you bring into your repository, not as a package dependency.
+
+## Install and Use OpenClix (Skills CLI)
+
+OpenClix is currently delivered as agent skills + reference templates.
+Install OpenClix skills with:
+
+### 1) Install Skills
+
+```bash
+npx skills add clix-so/openclix
+```
+
+### 2) Integrate OpenClix Into Your App (`openclix-init`)
+
+Ask your agent to run the integration skill on your mobile app codebase:
+
+```text
+Use openclix-init to integrate OpenClix into this project.
+Detect the real platform, copy templates into the dedicated OpenClix namespace,
+wire initialization/event/lifecycle touchpoints, and run build verification.
+Do not add dependencies without approval.
+```
+
+What this skill does:
+
+- Detects platform (Expo/RN/Flutter/iOS/Android) from real project files
+- Copies OpenClix local-source templates (shadcn-style)
+- Wires minimal integration points only
+- Reuses existing dependencies and chooses concrete adapters at integration time
+- Verifies with platform-appropriate build/analyze commands
+
+### Why Source-First Delivery Is a Strength
+
+OpenClix intentionally uses a vendoring model for client code:
+
+- Distributed as source: integration copies generated client files into your repo.
+- Not a runtime dependency: your app does not depend on a separate OpenClix package at runtime.
+- Lower dependency risk: avoids adding another transitive dependency chain that can cause version conflicts or fragile build graphs.
+- Easier ownership: once integrated, the code is yours to inspect, modify, and evolve with your product constraints.
+
+This is a deliberate alternative to SDK-package integration: install the skill, vendor the source, and keep full control in-repo.
+
+### 3) Design Campaign Config (`openclix-campaign-design`)
+
+After integration, design and validate campaign JSON:
+
+```text
+Use openclix-campaign-design.
+Create or update .clix-campaigns/app-profile.json from my app goals + event taxonomy,
+then generate schema-valid OpenClix config in .clix-campaigns/openclix-config.json.
+Use event/scheduled/recurring triggers with do_not_disturb and frequency_cap.
+```
+
+What this skill does:
+
+- Builds a structured campaign planning profile
+- Designs lifecycle campaigns (onboarding/habit/re-engagement/milestone/feature discovery)
+- Produces schema-valid OpenClix config (`openclix/config/v1`)
+- Applies guardrails for trigger modeling, cancellation, and message copy
+
+### 4) Runtime Model
+
+OpenClix follows a local-first execution path:
+
+```text
+config source (in-app resource JSON or HTTPS JSON) -> app event -> rule evaluation -> schedule/show message -> debug reason
+```
+
+This lets teams ship onboarding and re-engagement flows without requiring push tokens, FCM/APNS send infrastructure, or a hosted control plane for the local-first path.
+
+### 5) Config Delivery Options
+
+OpenClix config JSON can be delivered in either way:
+
+- App resource: bundle JSON with the app package.
+- HTTPS endpoint: fetch JSON over HTTP(S).
+
+For HTTPS delivery, both patterns are valid:
+
+- Static asset JSON (for example, CDN/object-storage hosted file).
+- Dynamically generated JSON (for example, API/server response built at request time).
 
 ## Project Status
 
@@ -19,7 +100,7 @@ OpenClix is a practical, local-first foundation for mobile engagement logic that
 | --- | --- | --- |
 | Core project spec / direction | Defined | Scope, use cases, and architecture direction are documented. |
 | Reference SDK / engine implementation | In progress | The main OSS implementation is the focus of the next phase. |
-| Local config-first runtime model | Planned (Phase 1) | Start with local config files in-app before adding remote config adapters. |
+| Config JSON runtime model | Planned (Phase 1) | Start with config JSON from app resources or HTTPS before adding provider-specific adapters. |
 | Remote config adapters | Optional next phase | Remote config is intended as an extension, not a requirement. |
 | Hosted control plane | Not required | Local-first path does not require a Clix-hosted control plane. |
 
@@ -30,7 +111,7 @@ Builders often hit the same early retention blocker: remote push stacks come wit
 OpenClix is meant to remove that blocker so teams can start with a low-friction path:
 
 1. Copy the reference implementation
-2. Connect local config (then optional remote config later) and event hooks
+2. Connect a config source (in-app JSON or HTTPS JSON) and event hooks
 3. Define triggers and rules
 4. Ship local engagement flows
 
@@ -40,12 +121,14 @@ OpenClix is:
 
 - An open-source reference project for mobile engagement logic
 - A local-first foundation for notifications and in-app messaging hooks
+- A source-distributed integration model (vendored, checked-in client code)
 - Adapter-friendly architecture for config and analytics providers
 - An agent-friendly codebase shape with explicit edit points and legible structure
 
 OpenClix is not:
 
 - A full hosted engagement platform
+- A mandatory package-level runtime dependency
 - A requirement to stand up APNS/FCM delivery infrastructure first for local-first flows
 - A requirement to use remote config from day one
 - A requirement to use a Clix-hosted control plane or proprietary backend
@@ -64,7 +147,7 @@ OpenClix is designed so teams using their own agents to build apps can treat it 
 Target capabilities (reference vision / planned direction):
 
 - Local notifications and in-app messaging hooks
-- Config-driven behavior running on-device (local config first)
+- Config-driven behavior running on-device (in-app JSON or HTTPS JSON)
 - Readable rule engine with explicit eligibility and suppression reasons
 - Optional adapter patterns for remote config and analytics providers
 - Forkable and auditable architecture
@@ -74,11 +157,11 @@ Target capabilities (reference vision / planned direction):
 
 OpenClix is planned to ship in phases:
 
-1. Phase 1: Local config file in the app (defaults, rules, templates, suppression settings)
-2. Phase 2: Optional remote config wiring to update the same rule model without changing core execution
+1. Phase 1: Config JSON in app resources or from HTTPS (defaults, rules, templates, suppression settings)
+2. Phase 2: Optional adapter wiring to integrate broader remote config providers without changing core execution
 3. Phase 3: Additional adapters/integrations as needed
 
-This keeps the core rule engine and scheduling behavior stable while letting teams adopt remote config only when they need it.
+This keeps the core rule engine and scheduling behavior stable while letting teams adopt provider-specific remote config integrations only when they need them.
 
 ## Use Cases
 
@@ -91,7 +174,7 @@ This keeps the core rule engine and scheduling behavior stable while letting tea
 ## Conceptual Flow
 
 ```text
-local config file (optional remote config later) -> app event -> rule evaluation -> schedule/show message -> debug reason
+config JSON (in-app resource or HTTPS endpoint) -> app event -> rule evaluation -> schedule/show message -> debug reason
 ```
 
 Observability goals:
@@ -106,7 +189,7 @@ This repository is intended to become the main open-source OpenClix project. The
 
 The near-term implementation focus is:
 
-- Local config-first rule model and scheduling runtime
+- Config JSON-driven rule model and scheduling runtime (in-app or HTTPS)
 - On-device eligibility/suppression evaluation
 - Debuggable execution traces and reason outputs
 - Stable interfaces that can later be wired to remote config providers
@@ -132,13 +215,17 @@ These are planned adapter-pattern directions (not required for the first impleme
 
 OpenClix is positioned as an open-source reference codebase for on-device engagement logic (local notifications and in-app messaging hooks), not a hosted full engagement platform.
 
+### Do I install OpenClix as an SDK package dependency?
+
+No. The primary model is source-first integration through skills: OpenClix client code is generated/copied into your repository, checked in, and owned by your team.
+
 ### Do I need a backend or push infrastructure?
 
 No for the local-first path. OpenClix focuses on on-device execution, so you can start without an APNS/FCM send pipeline.
 
 ### Do I need remote config from the beginning?
 
-No. The intended rollout is local config first, with optional remote config wiring in a later phase.
+No. You can start with config JSON bundled as an app resource, or serve the same JSON over HTTPS (static asset or dynamically generated response).
 
 ### Do I need Clix-hosted services or a control plane?
 

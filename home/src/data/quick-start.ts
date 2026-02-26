@@ -7,15 +7,15 @@ export interface QuickStartStep {
 export const quickStartSteps: QuickStartStep[] = [
   {
     step: 1,
-    title: "Copy the reference implementation",
+    title: "Vendor source into your repo",
     description:
-      "Start from the OSS codebase and bring the parts you need into your app with clear, forkable logic.",
+      "Bring OpenClix client code in-repo as checked-in source so you can inspect and own every integration detail.",
   },
   {
     step: 2,
-    title: "Connect remote config + event hooks",
+    title: "Connect config JSON + event hooks",
     description:
-      "Wire your config source and app events so engagement rules can react without backend plumbing.",
+      "Wire app-resource or HTTPS JSON config with app events so rules react without backend plumbing.",
   },
   {
     step: 3,

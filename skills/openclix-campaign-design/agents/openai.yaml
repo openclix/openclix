@@ -1,0 +1,4 @@
+interface:
+  display_name: "OpenClix Campaign Design"
+  short_description: "Design schema-valid OpenClix campaign configs"
+  default_prompt: "Design OpenClix campaigns from my app goals and event taxonomy, then produce schema-valid config JSON."
