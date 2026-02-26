@@ -38,6 +38,11 @@ jobs:
       - name: Build with Next.js
         run: bun run build
 
+      - name: Include schema assets
+        run: |
+          mkdir -p out/schemas
+          cp ../skills/openclix-init/references/openclix.schema.json out/schemas/openclix.schema.json
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
