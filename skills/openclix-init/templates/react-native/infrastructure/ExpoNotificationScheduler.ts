@@ -1,12 +1,46 @@
-import * as Notifications from 'expo-notifications';
 import type { MessageScheduler, QueuedMessage } from '../domain/ClixTypes';
 import { toIsoStringOrCurrentTime } from './StorageUtils';
 
+interface ExpoSchedulableTriggerTypes {
+  DATE: unknown;
+}
+
+export interface ExpoNotificationsAdapter {
+  SchedulableTriggerInputTypes?: ExpoSchedulableTriggerTypes;
+  scheduleNotificationAsync(request: {
+    identifier: string;
+    content: {
+      title: string;
+      body: string;
+      data: Record<string, unknown>;
+    };
+    trigger: {
+      type: unknown;
+      date: Date;
+    };
+  }): Promise<void>;
+  cancelScheduledNotificationAsync(identifier: string): Promise<void>;
+  getAllScheduledNotificationsAsync(): Promise<
+    Array<{
+      content: {
+        title?: string | null;
+        body?: string | null;
+        data?: Record<string, unknown>;
+      };
+      trigger?: unknown;
+    }>
+  >;
+}
+
 export class ExpoNotificationScheduler implements MessageScheduler {
+  constructor(private readonly notificationsAdapter: ExpoNotificationsAdapter) {}
+
   async schedule(record: QueuedMessage): Promise<void> {
     const triggerDate = new Date(record.execute_at);
+    const triggerType =
+      this.notificationsAdapter.SchedulableTriggerInputTypes?.DATE ?? 'date';
 
-    await Notifications.scheduleNotificationAsync({
+    await this.notificationsAdapter.scheduleNotificationAsync({
       identifier: record.id,
       content: {
         title: record.content.title,
@@ -17,34 +51,37 @@ export class ExpoNotificationScheduler implements MessageScheduler {
         },
       },
       trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.DATE,
+        type: triggerType,
         date: triggerDate,
       },
     });
   }
 
   async cancel(id: string): Promise<void> {
-    await Notifications.cancelScheduledNotificationAsync(id);
+    await this.notificationsAdapter.cancelScheduledNotificationAsync(id);
   }
 
   async listPending(): Promise<QueuedMessage[]> {
-    const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+    const scheduled =
+      await this.notificationsAdapter.getAllScheduledNotificationsAsync();
 
     return scheduled
-      .filter((n) => n.content.data?.queuedMessageId)
-      .map((n) => ({
-        id: String(n.content.data!.queuedMessageId),
-        campaign_id: String(n.content.data!.campaignId || ''),
+      .filter((notification) => notification.content.data?.queuedMessageId)
+      .map((notification) => ({
+        id: String(notification.content.data!.queuedMessageId),
+        campaign_id: String(notification.content.data!.campaignId || ''),
         channel_type: 'app_push' as const,
         status: 'scheduled' as const,
         execute_at: toIsoStringOrCurrentTime(
-          n.trigger && 'date' in n.trigger
-            ? (n.trigger as { date?: unknown }).date
+          notification.trigger &&
+            typeof notification.trigger === 'object' &&
+            'date' in notification.trigger
+            ? (notification.trigger as { date?: unknown }).date
             : undefined,
         ),
         content: {
-          title: n.content.title || '',
-          body: n.content.body || '',
+          title: notification.content.title || '',
+          body: notification.content.body || '',
         },
         created_at: new Date().toISOString(),
       }));

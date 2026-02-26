@@ -1,4 +1,3 @@
-import { AppState as ReactNativeAppState } from 'react-native';
 import type {
   ClixConfig,
   Config,
@@ -18,11 +17,11 @@ import type { TriggerServiceDependencies } from '../engine/TriggerService';
 import { loadConfig } from '../infrastructure/ConfigLoader';
 import { validateConfig } from '../infrastructure/ConfigValidator';
 import { generateUUID } from '../domain/CampaignUtils';
-import { CampaignStateRepository } from '../infrastructure/CampaignStateRepository';
+import { ReactNativeLifecycleStateReader } from '../infrastructure/ReactNativeLifecycleStateReader';
 
 export interface ClixDependencies {
   messageScheduler: MessageScheduler;
-  campaignStateRepository?: CampaignStateRepositoryPort;
+  campaignStateRepository: CampaignStateRepositoryPort;
   clock?: Clock;
   lifecycleStateReader?: LifecycleStateReader;
   logger?: Logger;
@@ -38,19 +37,8 @@ export class ReactNativeClock implements Clock {
   }
 }
 
-export class ReactNativeLifecycleStateReader implements LifecycleStateReader {
+class BasicLifecycleStateReader implements LifecycleStateReader {
   private currentAppState: 'foreground' | 'background' = 'foreground';
-  private appStateSubscription: { remove(): void } | null = null;
-
-  constructor() {
-    const mapAppState = (state: string): 'foreground' | 'background' =>
-      state === 'active' ? 'foreground' : 'background';
-
-    this.currentAppState = mapAppState(ReactNativeAppState.currentState);
-    this.appStateSubscription = ReactNativeAppState.addEventListener('change', (nextState) => {
-      this.currentAppState = mapAppState(nextState);
-    });
-  }
 
   getAppState(): 'foreground' | 'background' {
     return this.currentAppState;
@@ -58,11 +46,6 @@ export class ReactNativeLifecycleStateReader implements LifecycleStateReader {
 
   setAppState(state: 'foreground' | 'background'): void {
     this.currentAppState = state;
-  }
-
-  dispose(): void {
-    this.appStateSubscription?.remove();
-    this.appStateSubscription = null;
   }
 }
 
@@ -131,14 +114,16 @@ export class Clix {
 
     Clix.config = config;
     Clix.dependencies = dependencies;
-    Clix.messageScheduler = dependencies.messageScheduler;
-    Clix.campaignStateRepository =
-      dependencies.campaignStateRepository ?? new CampaignStateRepository();
     Clix.clock = dependencies.clock ?? new ReactNativeClock();
     Clix.lifecycleStateReader =
-      dependencies.lifecycleStateReader ?? new ReactNativeLifecycleStateReader();
+      dependencies.lifecycleStateReader ??
+      (typeof globalThis === 'object' && 'navigator' in globalThis
+        ? new ReactNativeLifecycleStateReader()
+        : new BasicLifecycleStateReader());
     Clix.logger = dependencies.logger ?? new ReactNativeLogger(config.logLevel ?? 'warn');
     Clix.logger.setLogLevel?.(config.logLevel ?? 'warn');
+    Clix.campaignStateRepository = dependencies.campaignStateRepository;
+    Clix.messageScheduler = dependencies.messageScheduler;
     Clix.triggerService = new TriggerService(Clix.createTriggerServiceDependencies());
 
     const logger = Clix.logger;

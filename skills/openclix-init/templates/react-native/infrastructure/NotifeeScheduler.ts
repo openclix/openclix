@@ -1,61 +1,103 @@
-import notifee, {
-  TriggerType,
-  AndroidImportance,
-  type TimestampTrigger,
-} from '@notifee/react-native';
 import type { MessageScheduler, QueuedMessage } from '../domain/ClixTypes';
 import { toIsoStringOrCurrentTime } from './StorageUtils';
 
+interface NotifeeTriggerTypes {
+  TIMESTAMP: unknown;
+}
+
+interface NotifeeAndroidImportance {
+  HIGH: unknown;
+}
+
+interface NotifeeTriggerNotification {
+  notification: {
+    title?: string | null;
+    body?: string | null;
+    data?: Record<string, unknown>;
+  };
+  trigger?: {
+    timestamp?: unknown;
+  };
+}
+
+export interface NotifeeAdapter {
+  TriggerType?: NotifeeTriggerTypes;
+  AndroidImportance?: NotifeeAndroidImportance;
+  createChannel(channel: {
+    id: string;
+    name: string;
+    importance: unknown;
+  }): Promise<void>;
+  createTriggerNotification(
+    notification: {
+      id: string;
+      title: string;
+      body: string;
+      android: {
+        channelId: string;
+        importance: unknown;
+      };
+      data: Record<string, unknown>;
+    },
+    trigger: {
+      type: unknown;
+      timestamp: number;
+    },
+  ): Promise<void>;
+  cancelNotification(id: string): Promise<void>;
+  getTriggerNotifications(): Promise<NotifeeTriggerNotification[]>;
+}
+
 export class NotifeeScheduler implements MessageScheduler {
-  private channelId: string = 'openclix-default';
-  private channelCreated: boolean = false;
+  private channelId = 'openclix-default';
+  private channelCreated = false;
+
+  constructor(private readonly notifeeAdapter: NotifeeAdapter) {}
 
   async schedule(record: QueuedMessage): Promise<void> {
     await this.ensureChannel();
 
-    const trigger: TimestampTrigger = {
-      type: TriggerType.TIMESTAMP,
-      timestamp: new Date(record.execute_at).getTime(),
-    };
+    const triggerType = this.notifeeAdapter.TriggerType?.TIMESTAMP ?? 'timestamp';
 
-    await notifee.createTriggerNotification(
+    await this.notifeeAdapter.createTriggerNotification(
       {
         id: record.id,
         title: record.content.title,
         body: record.content.body,
         android: {
           channelId: this.channelId,
-          importance: AndroidImportance.HIGH,
+          importance: this.notifeeAdapter.AndroidImportance?.HIGH ?? 'high',
         },
         data: {
           campaignId: record.campaign_id,
           queuedMessageId: record.id,
         },
       },
-      trigger,
+      {
+        type: triggerType,
+        timestamp: new Date(record.execute_at).getTime(),
+      },
     );
   }
 
   async cancel(id: string): Promise<void> {
-    await notifee.cancelNotification(id);
+    await this.notifeeAdapter.cancelNotification(id);
   }
 
   async listPending(): Promise<QueuedMessage[]> {
-    const triggers = await notifee.getTriggerNotifications();
+    const triggerNotifications = await this.notifeeAdapter.getTriggerNotifications();
 
-    return triggers
-      .filter((t) => t.notification.data?.queuedMessageId)
-      .map((t) => ({
-        id: String(t.notification.data!.queuedMessageId),
-        campaign_id: String(t.notification.data!.campaignId || ''),
+    return triggerNotifications
+      .filter((triggerNotification) => triggerNotification.notification.data?.queuedMessageId)
+      .map((triggerNotification) => ({
+        id: String(triggerNotification.notification.data!.queuedMessageId),
+        campaign_id: String(triggerNotification.notification.data!.campaignId || ''),
         channel_type: 'app_push' as const,
         status: 'scheduled' as const,
-        execute_at: toIsoStringOrCurrentTime(
-          (t.trigger as Partial<TimestampTrigger> | undefined)?.timestamp,
-        ),
+        execute_at: toIsoStringOrCurrentTime(triggerNotification.trigger?.timestamp),
         content: {
-          title: t.notification.title || '',
-          body: t.notification.body || '',
+          title: triggerNotification.notification.title || '',
+          body: triggerNotification.notification.body || '',
         },
         created_at: new Date().toISOString(),
       }));
@@ -64,10 +106,10 @@ export class NotifeeScheduler implements MessageScheduler {
   private async ensureChannel(): Promise<void> {
     if (this.channelCreated) return;
 
-    await notifee.createChannel({
+    await this.notifeeAdapter.createChannel({
       id: this.channelId,
       name: 'OpenClix Notifications',
-      importance: AndroidImportance.HIGH,
+      importance: this.notifeeAdapter.AndroidImportance?.HIGH ?? 'high',
     });
 
     this.channelCreated = true;

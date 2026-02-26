@@ -35,28 +35,6 @@ bool isNonEmptyString(Object? value) {
   return value is String && value.isNotEmpty;
 }
 
-class InMemoryCampaignStateRepository implements CampaignStateRepositoryPort {
-  CampaignStateSnapshot? snapshot;
-
-  @override
-  Future<CampaignStateSnapshot> loadSnapshot(String now) async {
-    return normalizeCampaignStateSnapshot(snapshot, now);
-  }
-
-  @override
-  Future<void> saveSnapshot(CampaignStateSnapshot snapshot) async {
-    this.snapshot = normalizeCampaignStateSnapshot(
-      snapshot,
-      snapshot.updatedAt,
-    );
-  }
-
-  @override
-  Future<void> clearCampaignState() async {
-    snapshot = null;
-  }
-}
-
 class FileCampaignStateRepository implements CampaignStateRepositoryPort {
   final String storagePath;
   late final File campaignStateFile;

@@ -3,7 +3,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
-TEMPLATES_DIR="${ROOT_DIR}/templates"
+SKILL_DIR="${ROOT_DIR}/skills/openclix-init"
+TEMPLATES_DIR="${SKILL_DIR}/templates"
 
 TARGET_PLATFORM="${1:-all}"
 FAILURE_COUNT=0
@@ -25,6 +26,19 @@ print_fail() {
 
 has_command() {
   command -v "$1" >/dev/null 2>&1
+}
+
+ensure_kotlinc_command() {
+  if has_command kotlinc; then
+    return 0
+  fi
+
+  local sdkman_kotlin_bin="${HOME}/.sdkman/candidates/kotlin/current/bin"
+  if [[ -x "${sdkman_kotlin_bin}/kotlinc" ]]; then
+    export PATH="${sdkman_kotlin_bin}:${PATH}"
+  fi
+
+  has_command kotlinc
 }
 
 run_common_checks() {
@@ -55,6 +69,11 @@ run_common_checks() {
     fi
   done
 
+  if rg -n "InMemoryCampaignStateRepository|InMemoryMessageScheduler|InMemoryLocalMessageScheduler" "${platform_dir}" >/dev/null; then
+    print_fail "${platform_name}: in-memory fallback implementation detected in template"
+    rg -n "InMemoryCampaignStateRepository|InMemoryMessageScheduler|InMemoryLocalMessageScheduler" "${platform_dir}" || true
+  fi
+
 }
 
 find_android_jar() {
@@ -84,10 +103,11 @@ verify_android_template() {
   local output_dir=''
   local compile_log=''
   local -a kotlin_sources=()
+  local compile_classpath=''
 
   run_common_checks 'android' "${template_dir}"
 
-  if ! has_command kotlinc; then
+  if ! ensure_kotlinc_command; then
     print_warn 'android: kotlinc not found, skipped Kotlin compile check'
     return 0
   fi
@@ -102,7 +122,9 @@ verify_android_template() {
     return 0
   fi
 
-  mapfile -t kotlin_sources < <(find "${template_dir}" -name '*.kt' | sort)
+  while IFS= read -r kotlin_source; do
+    kotlin_sources+=("${kotlin_source}")
+  done < <(find "${template_dir}" -name '*.kt' | sort)
   if [[ ${#kotlin_sources[@]} -eq 0 ]]; then
     print_fail 'android: no Kotlin source files found'
     return 0
@@ -110,7 +132,8 @@ verify_android_template() {
 
   output_dir="$(mktemp -d)"
   compile_log="$(mktemp)"
-  if kotlinc "${kotlin_sources[@]}" -classpath "${android_jar}:${coroutines_jar}" -d "${output_dir}/openclix-android-template.jar" >"${compile_log}" 2>&1; then
+  compile_classpath="${android_jar}:${coroutines_jar}"
+  if kotlinc "${kotlin_sources[@]}" -classpath "${compile_classpath}" -d "${output_dir}/openclix-android-template.jar" >"${compile_log}" 2>&1; then
     print_info 'android: Kotlin compile check passed'
   else
     print_fail 'android: Kotlin compile check failed'
@@ -133,7 +156,9 @@ verify_ios_template() {
     return 0
   fi
 
-  mapfile -t swift_sources < <(find "${template_dir}" -name '*.swift' | sort)
+  while IFS= read -r swift_source; do
+    swift_sources+=("${swift_source}")
+  done < <(find "${template_dir}" -name '*.swift' | sort)
   if [[ ${#swift_sources[@]} -eq 0 ]]; then
     print_fail 'ios: no Swift source files found'
     return 0
@@ -186,7 +211,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_local_notifications: ^19.0.0
 EOF
 
   cat >"${main_path}" <<'EOF'
@@ -214,8 +238,32 @@ EOF
   rm -f "${pubget_log}" "${analyze_log}"
 }
 
+verify_react_native_template() {
+  local template_dir="${TEMPLATES_DIR}/react-native"
+  local optional_dependency_pattern='@react-native-async-storage/async-storage|react-native-mmkv|@notifee/react-native|expo-notifications'
+
+  run_common_checks 'react-native' "${template_dir}"
+
+  if rg -n "require\\(['\"](${optional_dependency_pattern})['\"]\\)" "${template_dir}" >/dev/null; then
+    print_fail 'react-native: runtime optional dependency detection found'
+    rg -n "require\\(['\"](${optional_dependency_pattern})['\"]\\)" "${template_dir}" || true
+  else
+    print_info 'react-native: runtime optional dependency detection is not used'
+  fi
+
+  if rg -n "${optional_dependency_pattern}" "${template_dir}/core" "${template_dir}/engine" >/dev/null; then
+    print_fail 'react-native: core/engine should not reference optional dependency module names'
+    rg -n "${optional_dependency_pattern}" "${template_dir}/core" "${template_dir}/engine" || true
+  else
+    print_info 'react-native: core/engine optional dependency references are isolated in infrastructure'
+  fi
+}
+
 run_target() {
   case "${TARGET_PLATFORM}" in
+    react-native)
+      verify_react_native_template
+      ;;
     android)
       verify_android_template
       ;;
@@ -226,12 +274,13 @@ run_target() {
       verify_flutter_template
       ;;
     all)
+      verify_react_native_template
       verify_android_template
       verify_ios_template
       verify_flutter_template
       ;;
     *)
-      print_fail "Unsupported target '${TARGET_PLATFORM}'. Use one of: android, ios, flutter, all."
+      print_fail "Unsupported target '${TARGET_PLATFORM}'. Use one of: react-native, android, ios, flutter, all."
       ;;
   esac
 }

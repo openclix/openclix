@@ -1,6 +1,7 @@
 package ai.openclix.notification
 
 import android.app.AlarmManager
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -8,7 +9,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import androidx.core.app.NotificationCompat
 import ai.openclix.engine.parseIso8601
 import ai.openclix.models.ClixLocalMessageScheduler
 import ai.openclix.models.QueuedMessage
@@ -56,16 +56,21 @@ class OpenClixAlarmReceiver : BroadcastReceiver() {
             null
         }
 
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+        val notificationBuilder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Notification.Builder(context, CHANNEL_ID)
+        } else {
+            Notification.Builder(context)
+        }
+
+        @Suppress("DEPRECATION")
+        notificationBuilder
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle(title)
             .setContentText(body)
             .setAutoCancel(true)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .apply {
-                contentIntent?.let { setContentIntent(it) }
-            }
-            .build()
+            .setPriority(Notification.PRIORITY_DEFAULT)
+        contentIntent?.let { notificationBuilder.setContentIntent(it) }
+        val notification = notificationBuilder.build()
 
         notificationManager.notify(id.hashCode(), notification)
 

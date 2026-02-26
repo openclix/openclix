@@ -3,18 +3,17 @@ import '../models/clix_types.dart';
 import '../services/config_loader.dart';
 import '../services/config_validator.dart';
 import '../services/utils.dart';
-import '../store/campaign_state_repository.dart';
 
 class ClixDependencies {
   final ClixLocalMessageScheduler messageScheduler;
-  final CampaignStateRepositoryPort? campaignStateRepository;
+  final CampaignStateRepositoryPort campaignStateRepository;
   final ClixClock? clock;
   final ClixLifecycleStateReader? lifecycleStateReader;
   final ClixLogger? logger;
 
-  ClixDependencies({
+  const ClixDependencies({
     required this.messageScheduler,
-    this.campaignStateRepository,
+    required this.campaignStateRepository,
     this.clock,
     this.lifecycleStateReader,
     this.logger,
@@ -126,9 +125,7 @@ class Clix {
     Clix.config = config;
     Clix.dependencies = dependencies;
     messageScheduler = dependencies.messageScheduler;
-    campaignStateRepository =
-        dependencies.campaignStateRepository ??
-        InMemoryCampaignStateRepository();
+    campaignStateRepository = dependencies.campaignStateRepository;
     clock = dependencies.clock ?? DefaultClock();
     lifecycleStateReader =
         dependencies.lifecycleStateReader ?? DefaultLifecycleStateReader();

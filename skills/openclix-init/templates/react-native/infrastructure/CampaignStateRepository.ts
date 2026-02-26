@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import type {
   CampaignStateRepositoryPort,
   CampaignStateSnapshot,
@@ -25,6 +24,15 @@ export function createDefaultCampaignStateSnapshot(now: string): CampaignStateSn
 
 interface CampaignStateMetaRow {
   updated_at: string;
+}
+
+export interface StorageEngine {
+  getItem(key: string): Promise<string | null>;
+  setItem(key: string, value: string): Promise<void>;
+  removeItem(key: string): Promise<void>;
+  multiGet(keys: string[]): Promise<Array<[string, string | null]>>;
+  multiSet(keyValuePairs: Array<[string, string]>): Promise<void>;
+  multiRemove(keys: string[]): Promise<void>;
 }
 
 const META_UPDATED_AT_KEY = `${CAMPAIGN_STATE_KEYS.meta}/row`;
@@ -108,7 +116,9 @@ export function normalizeCampaignStateSnapshot(
   };
 }
 
-export class CampaignStateRepository implements CampaignStateRepositoryPort {
+export class StorageCampaignStateRepository implements CampaignStateRepositoryPort {
+  constructor(private readonly storageEngine: StorageEngine) {}
+
   async loadSnapshot(now: string): Promise<CampaignStateSnapshot> {
     const [campaignStates, queuedMessages, triggerHistory, updatedAt] = await Promise.all([
       this.loadRecords(CAMPAIGN_STATE_KEYS.campaign_states, normalizeCampaignStateRow),
@@ -168,9 +178,10 @@ export class CampaignStateRepository implements CampaignStateRepositoryPort {
     const recordIds = await this.loadRecordIds(namespaceKey);
     if (recordIds.length === 0) return [];
 
-    const records = await AsyncStorage.multiGet(
+    const records = await this.storageEngine.multiGet(
       recordIds.map((recordId) => this.buildRecordKey(namespaceKey, recordId)),
     );
+
     const normalizedRecords: RecordType[] = [];
     for (const [, rawValue] of records) {
       if (!rawValue) continue;
@@ -206,8 +217,9 @@ export class CampaignStateRepository implements CampaignStateRepositoryPort {
     const staleRecordIds = previousRecordIds.filter(
       (recordId) => !nextRecordIdSet.has(recordId),
     );
+
     if (staleRecordIds.length > 0) {
-      await AsyncStorage.multiRemove(
+      await this.storageEngine.multiRemove(
         staleRecordIds.map((recordId) => this.buildRecordKey(namespaceKey, recordId)),
       );
     }
@@ -216,23 +228,20 @@ export class CampaignStateRepository implements CampaignStateRepositoryPort {
       this.buildRecordKey(namespaceKey, recordId),
       payloadById.get(recordId) ?? 'null',
     ]);
-    keyValuePairs.push([
-      this.buildRecordIdsKey(namespaceKey),
-      JSON.stringify(nextRecordIds),
-    ]);
+    keyValuePairs.push([this.buildRecordIdsKey(namespaceKey), JSON.stringify(nextRecordIds)]);
 
-    await AsyncStorage.multiSet(keyValuePairs);
+    await this.storageEngine.multiSet(keyValuePairs);
   }
 
   private async clearRecords(namespaceKey: string): Promise<void> {
     const recordIds = await this.loadRecordIds(namespaceKey);
     const keys = recordIds.map((recordId) => this.buildRecordKey(namespaceKey, recordId));
     keys.push(this.buildRecordIdsKey(namespaceKey));
-    await AsyncStorage.multiRemove(keys);
+    await this.storageEngine.multiRemove(keys);
   }
 
   private async loadRecordIds(namespaceKey: string): Promise<string[]> {
-    const rawValue = await AsyncStorage.getItem(this.buildRecordIdsKey(namespaceKey));
+    const rawValue = await this.storageEngine.getItem(this.buildRecordIdsKey(namespaceKey));
     return parseArray<string>(rawValue).filter(
       (recordId): recordId is string => isNonEmptyString(recordId),
     );
@@ -247,16 +256,21 @@ export class CampaignStateRepository implements CampaignStateRepositoryPort {
   }
 
   private async loadUpdatedAt(): Promise<string | null> {
-    const raw = await AsyncStorage.getItem(META_UPDATED_AT_KEY);
+    const raw = await this.storageEngine.getItem(META_UPDATED_AT_KEY);
     const row = parseJson<CampaignStateMetaRow>(raw);
     return isNonEmptyString(row?.updated_at) ? row.updated_at : null;
   }
 
   private async saveUpdatedAt(updatedAt: string): Promise<void> {
-    await AsyncStorage.setItem(META_UPDATED_AT_KEY, JSON.stringify({ updated_at: updatedAt }));
+    await this.storageEngine.setItem(
+      META_UPDATED_AT_KEY,
+      JSON.stringify({ updated_at: updatedAt }),
+    );
   }
 
   private async clearUpdatedAt(): Promise<void> {
-    await AsyncStorage.removeItem(META_UPDATED_AT_KEY);
+    await this.storageEngine.removeItem(META_UPDATED_AT_KEY);
   }
 }
+
+export class CampaignStateRepository extends StorageCampaignStateRepository {}
