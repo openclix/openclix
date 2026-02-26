@@ -19,3 +19,10 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# Agents
+.agent/
+.claude/
+.clix/
+.cursor/
+.gemini/
