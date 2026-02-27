@@ -84,7 +84,7 @@ export function PromptTerminalSection() {
         <SectionHeading>Ask for the campaign you need</SectionHeading>
         <p className="lede text-sm md:text-base text-measure">
           OpenClix is built for practical campaign prompts: onboarding nudges,
-          streak saves, win-back flows, and remote-config experiments.
+          streak saves, win-back flows, and hosted openclix-config.json experiments.
         </p>
       </div>
 
@@ -158,8 +158,8 @@ export function PromptTerminalSection() {
               </div>
               <p className="sr-only">
                 Examples include onboarding reminders, streak-save campaigns,
-                cart recovery, win-back flows, milestone messages, and remote
-                config experiments.
+                cart recovery, win-back flows, milestone messages, and
+                openclix-config.json experiments.
               </p>
             </div>
 

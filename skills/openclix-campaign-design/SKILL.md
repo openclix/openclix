@@ -144,9 +144,9 @@ Integration requirements:
 4. Load JSON from the resource file, parse into OpenClix `Config`, then call `ClixCampaignManager.replaceConfig(...)`.
 5. Run platform build/analysis checks after wiring.
 
-Optional remote publishing workflow (when user requests remote config hosting):
+Optional HTTP publishing workflow (when user requests hosted openclix-config.json):
 
-1. Confirm target hosting environment from the user's dev stack (for example Vercel, Netlify, S3/CloudFront, Firebase Hosting, Supabase, custom backend, etc.).
+1. Confirm target hosting environment from the user's dev stack (for example Vercel, Netlify, S3/CloudFront, object storage + CDN, or custom backend API).
 2. Explain and provide concrete upload/deploy steps tailored to that environment.
 3. Ensure the deployed config is reachable through a stable HTTPS URL.
 4. Update initialization wiring to use the HTTPS endpoint in `Clix.initialize(...)`.
@@ -156,7 +156,7 @@ Critical runtime note:
 
 - `Clix.initialize(...)` auto-fetches config only for HTTP(S) endpoints.
 - For in-app resource JSON, always load and apply config explicitly via `ClixCampaignManager.replaceConfig(...)` after initialization.
-- If the user asks for remote config delivery, prefer HTTPS endpoint wiring and verify the URL is accessible.
+- If the user asks for hosted config delivery, prefer HTTPS endpoint wiring and verify the URL is accessible.
 
 Completion requirements for implementation tasks:
 

@@ -15,7 +15,7 @@ export const useCases: UseCase[] = [
     title: "Re-Engagement Reminders",
     items: [
       "Trigger nudges after inactivity windows using local rules and last-seen signals.",
-      "Tune copy, timing, and suppression logic via remote config.",
+      "Tune copy, timing, and suppression logic by updating hosted openclix-config.json.",
     ],
   },
   {

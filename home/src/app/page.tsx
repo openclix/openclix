@@ -7,7 +7,7 @@ import { QuickStart } from "@/components/sections/quick-start";
 import { AudienceOutcomes } from "@/components/sections/audience-outcomes";
 import { Pillars } from "@/components/sections/pillars";
 import { Features } from "@/components/sections/features";
-import { Integrations } from "@/components/sections/integrations";
+import { ConfigDeliveryPatterns } from "@/components/sections/config-delivery-patterns";
 import { Mission } from "@/components/sections/mission";
 import { FAQ } from "@/components/sections/faq";
 import { FinalCTA } from "@/components/sections/final-cta";
@@ -74,7 +74,7 @@ export default function Home() {
         <Pillars />
         <UseCases />
         <Features />
-        <Integrations />
+        <ConfigDeliveryPatterns />
         <Mission />
         <FAQ />
         <FinalCTA />

@@ -35,7 +35,7 @@ export function FinalCTA() {
               copyable architecture
             </span>
             <span className="rounded-full border border-border px-2 py-1">
-              remote-config driven
+              openclix-config.json over HTTP
             </span>
             <span className="rounded-full border border-border px-2 py-1">
               on-device execution

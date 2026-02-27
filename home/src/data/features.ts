@@ -27,7 +27,7 @@ export const features: Feature[] = [
     icon: "Bell",
     title: "Local-First Execution",
     description:
-      "Run retention messaging on-device with remote config controlling behavior.",
+      "Run retention messaging on-device with openclix-config.json controlling behavior.",
   },
   {
     icon: "Route",
@@ -37,9 +37,9 @@ export const features: Feature[] = [
   },
   {
     icon: "Link",
-    title: "Adapter Patterns",
+    title: "HTTP Config Delivery",
     description:
-      "Connect config and analytics providers through adapters you can swap later.",
+      "Deliver openclix-config.json through a static file or dynamic API without changing core rules.",
   },
   {
     icon: "Webhook",

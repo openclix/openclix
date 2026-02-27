@@ -12,7 +12,7 @@ export const faqItems: FAQItem[] = [
   {
     question: "Do I need a backend or push infrastructure?",
     answer:
-      "No backend or APNS/FCM send pipeline is required for the local-first path. OpenClix focuses on on-device execution with remote-config-driven behavior.",
+      "No backend or APNS/FCM send pipeline is required for the local-first path. OpenClix focuses on on-device execution with openclix-config.json-driven behavior.",
   },
   {
     question: "Do I install OpenClix as a package dependency?",
@@ -22,12 +22,12 @@ export const faqItems: FAQItem[] = [
   {
     question: "Do I need Clix-hosted services or a control plane?",
     answer:
-      "No. OpenClix is intended to run in your app with your own integrations. You can use adapter patterns for config and events without relying on a hosted Clix control surface.",
+      "No. OpenClix is intended to run in your app with your own integrations. You can start bundled, then host openclix-config.json over HTTP when you need remote updates.",
   },
   {
-    question: "Can I use this with Firebase/PostHog/Supabase remote config?",
+    question: "How can I deliver openclix-config.json?",
     answer:
-      "Yes. The landing page and repo position these as adapter patterns. You can map OpenClix to those tools while keeping the core behavior app-controlled and auditable.",
+      "Serve openclix-config.json over HTTP as either a static file or a dynamic API response. Updating that JSON source lets you change campaign settings without shipping a new app build.",
   },
   {
     question: "Can AI agents actually modify this safely?",

@@ -163,7 +163,7 @@ For HTTPS delivery, both patterns are valid:
 | Core project spec / direction | Defined | Scope, use cases, and architecture direction are documented. |
 | Reference SDK / engine implementation | In progress | The main OSS implementation is the focus of the next phase. |
 | Config JSON runtime model | Planned (Phase 1) | Start with config JSON from app resources or HTTPS before adding provider-specific adapters. |
-| Remote config adapters | Optional next phase | Remote config is intended as an extension, not a requirement. |
+| `openclix-config.json` HTTP delivery | Optional next phase | Serve config over HTTP as a static file or dynamic API response. |
 | Hosted control plane | Not required | Local-first path does not require a Clix-hosted control plane. |
 
 ## Why OpenClix Exists
@@ -192,7 +192,7 @@ OpenClix is not:
 - A full hosted engagement platform
 - A mandatory package-level runtime dependency
 - A requirement to stand up APNS/FCM delivery infrastructure first for local-first flows
-- A requirement to use remote config from day one
+- A requirement to host `openclix-config.json` from day one
 - A requirement to use a Clix-hosted control plane or proprietary backend
 
 ## Why It Is Agent-Friendly
@@ -211,19 +211,19 @@ Target capabilities (reference vision / planned direction):
 - Local notifications and in-app messaging hooks
 - Config-driven behavior running on-device (in-app JSON or HTTPS JSON)
 - Readable rule engine with explicit eligibility and suppression reasons
-- Optional adapter patterns for remote config and analytics providers
+- Flexible `openclix-config.json` delivery (bundled, static HTTP file, or dynamic JSON API)
 - Forkable and auditable architecture
 - Clear edit points for AI-agent-assisted iteration
 
-## Configuration Model (Local-First, Remote Optional)
+## Configuration Model (Local-First, HTTP Optional)
 
 OpenClix is planned to ship in phases:
 
 1. Phase 1: Config JSON in app resources or from HTTPS (defaults, rules, templates, suppression settings)
-2. Phase 2: Optional adapter wiring to integrate broader remote config providers without changing core execution
-3. Phase 3: Additional adapters/integrations as needed
+2. Phase 2: Optional hosted `openclix-config.json` delivery via static web file updates or dynamic API responses
+3. Phase 3: Additional analytics/integration adapters as needed
 
-This keeps the core rule engine and scheduling behavior stable while letting teams adopt provider-specific remote config integrations only when they need them.
+This keeps the core rule engine and scheduling behavior stable while letting teams change campaigns without app redeploys by updating hosted JSON.
 
 ## Use Cases
 
@@ -254,15 +254,15 @@ The near-term implementation focus is:
 - Config JSON-driven rule model and scheduling runtime (in-app or HTTPS)
 - On-device eligibility/suppression evaluation
 - Debuggable execution traces and reason outputs
-- Stable interfaces that can later be wired to remote config providers
+- Stable interfaces for `openclix-config.json` delivery (bundled, static HTTP, or dynamic API)
 
-## Integration Direction (Adapter Patterns)
+## Config Delivery Direction (HTTP Patterns)
 
-These are planned adapter-pattern directions (not required for the first implementation phase):
+These are planned delivery directions (not required for the first implementation phase):
 
-- Firebase Remote Config: Use as a config input source while keeping rule evaluation and scheduling in-app.
-- PostHog: Map flags and events into OpenClix hooks without coupling rule models to provider-specific APIs.
-- Supabase: Use your own tables/endpoints as a config source while preserving the same local execution path.
+- Static web hosting: publish `openclix-config.json` as a versioned static asset on CDN/object storage.
+- Dynamic config API: return schema-compatible JSON from your backend at request time.
+- No app redeploy updates: update the static file or API response to change campaign copy, timing, and suppression rules.
 
 ## Who This Project Is For
 
@@ -285,17 +285,17 @@ No. The primary model is source-first integration through skills: OpenClix clien
 
 No for the local-first path. OpenClix focuses on on-device execution, so you can start without an APNS/FCM send pipeline.
 
-### Do I need remote config from the beginning?
+### Do I need hosted config delivery from the beginning?
 
-No. You can start with config JSON bundled as an app resource, or serve the same JSON over HTTPS (static asset or dynamically generated response).
+No. You can start with config JSON bundled in the app and move to hosted `openclix-config.json` over HTTPS later.
 
 ### Do I need Clix-hosted services or a control plane?
 
 No. The project is intended to run in your app with your own integrations, using adapter patterns for config and events.
 
-### Can I use this with Firebase, PostHog, or Supabase?
+### How can I serve `openclix-config.json`?
 
-Yes, that is the intended adapter-pattern direction described in the landing page content.
+You can serve it over HTTP as a static JSON file or from a dynamic API that returns JSON. Updating either source lets you change campaign settings without shipping a new app build.
 
 ### When is OpenClix enough vs when do I need a full engagement platform?
 

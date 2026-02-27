@@ -1,12 +1,12 @@
 # OpenClix
 
-> Remote Config + On-Device Notification Journeys
+> openclix-config.json over HTTP + On-Device Notification Journeys
 
-OpenClix is an open-source SDK for iOS and Android that enables remote config, feature flags, on-device notification journeys, and local notification campaigns—without requiring push tokens or FCM.
+OpenClix is an open-source SDK for iOS and Android that runs local notification journeys on-device. Campaign config comes from `openclix-config.json`, which can be bundled in-app or served over HTTP as a static file or dynamic API response.
 
 ## What It Does
 
-- Remote Config: Typed values, JSON payloads, versioning, defaults, and safe fallbacks.
+- openclix-config.json runtime: Typed values, JSON payloads, versioning, defaults, and safe fallbacks.
 - Targeting & Segments: Evaluate rules locally using device/user attributes.
 - Gradual Rollouts & Variants: Percentage rollouts, A/B-style variants, and deterministic bucketing.
 - Local Notification Campaigns: Schedule notifications with templates, quiet hours, and per-campaign frequency caps.
@@ -21,13 +21,13 @@ OpenClix is an open-source SDK for iOS and Android that enables remote config, f
 - Habit & Routine: Daily/weekly reminders, streak maintenance, quiet hours, cooldown windows.
 - Re-Engagement: 1/3/7-day inactive nudges evaluated on next app run.
 - In-App Triggered Notifications: Follow-ups after key actions, "next best action" prompts.
-- Scheduled Promotions: Weekend/event reminders editable via Remote Config with deep links.
+- Scheduled Promotions: Weekend/event reminders editable by updating hosted `openclix-config.json` with deep links.
 
 ## Platform Support
 
 - iOS and Android native SDKs with on-device evaluation engine.
-- Works with any backend (OpenClix Cloud or your own endpoint).
-- Compatible with any analytics (PostHog, Segment, Amplitude, Mixpanel, or custom collector via event hooks).
+- Works with any backend endpoint that serves `openclix-config.json` over HTTP.
+- Compatible with any analytics collector via event hooks.
 
 ## Links
 

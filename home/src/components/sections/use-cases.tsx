@@ -54,7 +54,7 @@ export function UseCases() {
       <div className="mt-6 panel-muted w-full px-4 py-3">
         <p className="text-muted-foreground text-sm">
           Local notifications first, with in-app messaging hooks and
-          remote-config tuning.
+          hosted openclix-config.json tuning.
         </p>
       </div>
     </section>

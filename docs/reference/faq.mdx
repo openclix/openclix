@@ -19,9 +19,9 @@ Not for the local-first path. You can start without APNS/FCM send pipelines.
 
 No. OpenClix is designed to run in your app with your own integrations.
 
-## Can I use Firebase/PostHog/Supabase with this?
+## How can I deliver `openclix-config.json`?
 
-Yes. These are adapter-pattern directions, with local rule execution kept stable in-app.
+Serve `openclix-config.json` over HTTP either as a static file or from a dynamic API that returns JSON. Updating that static file or API response lets you change campaign settings without shipping a new app release.
 
 ## When is OpenClix enough vs a full engagement platform?
 

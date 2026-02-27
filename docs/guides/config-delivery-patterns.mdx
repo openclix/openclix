@@ -1,0 +1,16 @@
+---
+title: "Config Delivery Patterns"
+description: "Deliver openclix-config.json over HTTP while keeping local rule execution stable."
+---
+
+Delivery patterns are optional and come after the local-first base is working.
+
+## Recommended directions
+
+- **Static HTTP JSON**: Host `openclix-config.json` on CDN/object storage/static web hosting.
+- **Dynamic JSON API**: Return schema-compatible `openclix-config.json` payloads from your backend.
+- **No app redeploy updates**: Change hosted JSON content to adjust copy, timing, and suppression rules without shipping a new build.
+
+## Principle
+
+Treat config delivery as a replaceable transport layer, not as a core rule-engine dependency.

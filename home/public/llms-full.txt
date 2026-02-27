@@ -1,6 +1,6 @@
 # OpenClix — Full Documentation for LLMs
 
-> Remote Config + On-Device Notification Journeys
+> openclix-config.json over HTTP + On-Device Notification Journeys
 
 ## Overview
 
@@ -8,8 +8,8 @@ OpenClix is an open-source SDK for iOS and Android that ships onboarding, habit,
 
 ## Core Features
 
-### Remote Config, Not Just Flags
-Typed values, JSON payloads, versioning, defaults, and safe fallbacks. Changes apply after the next config refresh (app start, foreground, and best-effort background refresh).
+### openclix-config.json Runtime
+Typed values, JSON payloads, versioning, defaults, and safe fallbacks. `openclix-config.json` can be bundled in-app or fetched over HTTP from a static file or dynamic API.
 
 ### Targeting & Segments (On-Device)
 Evaluate rules locally using device/user attributes you choose to provide. No server roundtrip needed for targeting decisions.
@@ -27,7 +27,7 @@ Stateful flows with delays, conditions, and auto-cancel when goals are met. Jour
 Route users to the right screen with parameterized deep links and message templates.
 
 ### Event Hooks (Bring Your Own Analytics)
-Export exposure + notification events to your analytics stack via HTTP. Compatible with PostHog, Segment, Amplitude, Mixpanel, or your own collector.
+Export exposure + notification events to your analytics stack via HTTP using your existing collector endpoint.
 
 ### Privacy-First by Design
 No push tokens required. Most decisions happen locally on the device.
@@ -51,20 +51,20 @@ No push tokens required. Most decisions happen locally on the device.
 - "Next best action" prompts after screen visits or events
 
 ### Scheduled Promotions
-- Weekend/event reminders you can edit anytime via Remote Config
+- Weekend/event reminders you can edit anytime by updating hosted `openclix-config.json`
 - Deep links to offers, content, or paywalls
 
 ## Quick Start
 
 1. Add the SDK: Install the OpenClix SDK for iOS or Android and initialize it in your app.
-2. Define flags + config: JSON values, variants, rollout rules — all managed remotely.
-3. Publish journeys: Local notification schedules + on-device rules. Updates propagate when the app fetches config.
+2. Define config: JSON values, variants, rollout rules in `openclix-config.json`.
+3. Publish journeys: Local notification schedules + on-device rules. Update static JSON or API responses to change campaigns without app redeploy.
 
 ## Platform Compatibility
 
 - iOS + Android: Native SDKs with an on-device evaluation engine.
-- Any Backend: Fetch Remote Config from OpenClix Cloud or your own endpoint.
-- Any Analytics: PostHog, Segment, Amplitude, Mixpanel — or your own collector (via event hooks).
+- Any Backend: Fetch `openclix-config.json` from your own static URL or dynamic API endpoint.
+- Any Analytics: Use your existing collector via event hooks.
 
 ## FAQ
 
@@ -75,7 +75,7 @@ For scheduled/on-device journeys (onboarding, habits, last-seen re-engagement, i
 Only if they were scheduled ahead of time on the device. OpenClix does not "wake" devices like push.
 
 ### Can I change copy, links, targeting, and timing without shipping an app update?
-Yes — via Remote Config. Changes apply after the next config refresh.
+Yes. Update the hosted static `openclix-config.json` file or the JSON response from your API. Changes apply after the next config refresh, without a new app release.
 
 ### Do you support A/B tests?
 OpenClix supports on-device variants and bucketing and can emit exposure events to your analytics.

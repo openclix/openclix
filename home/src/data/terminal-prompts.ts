@@ -33,6 +33,6 @@ export const terminalPromptExamples: TerminalPromptExample[] = [
   {
     id: "experiment",
     tag: "Experiment",
-    text: "Set up a remote-config experiment to test reminder timing and suppression rules.",
+    text: "Set up an openclix-config.json experiment served over HTTP to test reminder timing and suppression rules.",
   },
 ];

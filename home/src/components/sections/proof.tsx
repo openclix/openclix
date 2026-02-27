@@ -39,12 +39,11 @@ export function ProofSection() {
                       1. Config change
                     </span>
                     <span className="rounded-full border border-border px-2 py-0.5 text-[10px] text-muted-foreground">
-                      remote-config
+                      openclix-config.json
                     </span>
                   </div>
                   <p className="mt-2 text-sm leading-relaxed">
-                    Updated re-engagement rule copy and delay window for inactive
-                    users.
+                    Updated the hosted JSON copy and delay window for inactive users.
                   </p>
                 </div>
 

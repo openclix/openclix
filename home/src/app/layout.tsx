@@ -10,12 +10,13 @@ const siteDescription =
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: `${siteName} — Remote Config + On-Device Notification Journeys`,
+    default: `${siteName} — openclix-config.json over HTTP + On-Device Journeys`,
     template: `%s | ${siteName}`,
   },
   description: siteDescription,
   keywords: [
-    "remote config",
+    "openclix-config.json",
+    "config json over http",
     "feature flags",
     "local notifications",
     "on-device notifications",
@@ -40,7 +41,7 @@ export const metadata: Metadata = {
   manifest: "/site.webmanifest",
 
   openGraph: {
-    title: `${siteName} — Remote Config + On-Device Notification Journeys`,
+    title: `${siteName} — openclix-config.json over HTTP + On-Device Journeys`,
     description: siteDescription,
     url: siteUrl,
     siteName,
@@ -51,14 +52,14 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: `${siteName} — Remote Config + On-Device Notification Journeys`,
+        alt: `${siteName} — openclix-config.json over HTTP + On-Device Journeys`,
       },
     ],
   },
 
   twitter: {
     card: "summary_large_image",
-    title: `${siteName} — Remote Config + On-Device Notification Journeys`,
+    title: `${siteName} — openclix-config.json over HTTP + On-Device Journeys`,
     description: siteDescription,
     images: ["/og-image.png"],
   },
