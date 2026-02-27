@@ -17,8 +17,9 @@ Follow these phases in order.
 2. Build or refresh an app profile artifact.
 3. Design campaign set.
 4. Generate or update OpenClix config.
-5. Validate and hand off.
-6. Install config resource and wire app initialization.
+5. Validate artifact outputs.
+6. Inspect existing Clix integration and choose delivery mode.
+7. Execute selected delivery path and hand off.
 
 Repository hygiene rule:
 
@@ -34,6 +35,7 @@ Gather only missing facts needed for design decisions:
 - current campaign config path (if existing)
 - existing app resource/file management convention for JSON assets
 - startup location where Clix is currently initialized (or should be initialized)
+- user-owned HTTP server/deployment target for hosted config (if remote serving is expected)
 - global constraints: quiet hours, frequency cap expectations, locale/timezone assumptions
 
 If the user already provided enough detail, do not re-ask resolved points.
@@ -109,7 +111,7 @@ Guarantee these invariants:
 
 When editing existing config, keep diffs minimal and preserve unrelated campaigns.
 
-## 5) Validate And Hand Off
+## 5) Validate Artifact Outputs
 
 Run structural checks on each output JSON file:
 
@@ -132,49 +134,67 @@ Report at handoff:
 - key assumptions
 - unresolved gaps requiring user input
 
-## 6) Install Config Resource And Wire App Initialization
+## 6) Inspect Existing Clix Integration And Choose Delivery Mode
 
-When the user requests code integration, do not stop at JSON generation.
-Install the produced config into the app project and wire runtime loading.
+After generating config JSON, inspect existing Clix integration code before delivery decisions.
 
-Before editing app code:
+Inspection checklist:
 
-- Inspect how the target project already stores JSON resources/assets.
-- Follow existing conventions for directory, naming, and startup wiring.
-- If Clix client is not integrated yet, run `openclix-init` first.
+- Locate `Clix.initialize(...)` call sites and current `ClixConfig.endpoint` usage.
+- Locate any existing `ClixCampaignManager.replaceConfig(...)` usage.
+- Confirm project resource conventions used by current startup wiring.
+- If Clix client integration is missing, run `openclix-init` first and use its detected platform/startup/resource conventions.
 
-Integration requirements:
+Decision gate (mandatory unless user already specified mode):
 
-1. Copy final config JSON into a resource location consistent with the app:
+- Ask the user which delivery mode to use:
+  1. Bundle config in the app package.
+  2. Upload to the user's existing HTTP server and serve over HTTPS.
+- Do not assume delivery mode when the user has not chosen one.
+
+## 7) Execute Selected Delivery Path And Hand Off
+
+### A) Bundle In-App (Local Resource Delivery)
+
+When the user chooses bundle mode:
+
+1. Use platform/startup/resource information discovered from existing code and `openclix-init` outputs.
+2. Copy `.clix/campaigns/openclix-config.json` into the app resource location used by that project:
    - React Native / Expo: existing `assets/` or project resource pattern.
-   - Flutter: asset path already used by the app and declared in `pubspec.yaml`.
-   - iOS: bundle resource location already used by the app target.
-   - Android: existing `assets/` or `res/raw` pattern used by the app.
-2. Keep filename stable unless project convention requires a different name.
-3. Update app startup code so Clix is initialized and then receives the local config.
-4. Load JSON from the resource file, parse into OpenClix `Config`, then call `ClixCampaignManager.replaceConfig(...)`.
-5. Run platform build/analysis checks after wiring.
+   - Flutter: existing asset path and `pubspec.yaml` convention.
+   - iOS: existing app target bundle resource location.
+   - Android: existing `assets/` or `res/raw` pattern.
+3. Keep filename stable unless project convention requires a different name.
+4. Set `ClixConfig.endpoint` to the bundled config path identifier used by the project.
+5. Update startup code to load JSON from that same bundled path, parse `Config`, then call `ClixCampaignManager.replaceConfig(...)` after initialization.
+6. Run platform build/analysis checks after wiring.
 
-Optional HTTP publishing workflow (when user requests hosted openclix-config.json):
+### B) Hosted HTTP Delivery (User-Owned Server)
 
-1. Confirm target hosting environment from the user's dev stack (for example Vercel, Netlify, S3/CloudFront, object storage + CDN, or custom backend API).
-2. Explain and provide concrete upload/deploy steps tailored to that environment.
-3. Ensure the deployed config is reachable through a stable HTTPS URL.
-4. Update initialization wiring to use the HTTPS endpoint in `Clix.initialize(...)`.
-5. Keep a local resource fallback only if the user asks for dual-path operation.
+When the user chooses HTTP mode:
+
+1. Confirm user-owned hosting target and deploy access method (for example Vercel, Netlify, S3/CloudFront, object storage + CDN, or custom backend API).
+2. Upload/deploy `.clix/campaigns/openclix-config.json` to that environment.
+3. Verify the deployed config is reachable at a stable HTTPS URL.
+4. Set `ClixConfig.endpoint` to the deployed HTTPS URL.
+5. Keep local bundled fallback only if the user explicitly requests dual-path operation.
+6. Run platform build/analysis checks after wiring.
 
 Critical runtime note:
 
 - `Clix.initialize(...)` auto-fetches config only for HTTP(S) endpoints.
 - For in-app resource JSON, always load and apply config explicitly via `ClixCampaignManager.replaceConfig(...)` after initialization.
-- If the user asks for hosted config delivery, prefer HTTPS endpoint wiring and verify the URL is accessible.
+- For hosted delivery, always use HTTPS and verify the URL is accessible.
 
 Completion requirements for implementation tasks:
 
-- resource file path reported
+- selected delivery mode reported
+- source config path and applied runtime config path/URL reported
+- `ClixConfig.endpoint` value/location updated and reported
+- resource file path reported for bundle mode
 - modified startup/init file paths reported
 - confirmation that local resource config is applied at runtime
-- when remote publishing is requested, deployed HTTPS config URL and upload method summary reported
+- for hosted mode, deployed HTTPS config URL and upload method summary reported
 
 ## Design Guardrails
 
@@ -183,9 +203,11 @@ Completion requirements for implementation tasks:
 - Default to `connector: "and"`; use `or` only with explicit rationale.
 - Include `weekly_rule.days_of_week` whenever recurrence type is `weekly`.
 - Use global quiet-hour controls before introducing ad-hoc per-campaign windows.
+- After config generation, inspect existing Clix wiring and ask the user to choose bundle vs hosted delivery if not already specified.
+- Reuse project facts discovered by `openclix-init` when selecting resource path and startup patch points.
 - Do not rely on non-HTTP endpoints being auto-loaded by `Clix.initialize(...)`.
-- For local JSON delivery, always wire explicit resource load + `ClixCampaignManager.replaceConfig(...)`.
-- For remote JSON delivery, serve over HTTPS and keep the payload schema-compatible with `openclix/config/v1`.
+- For local JSON delivery, always set `ClixConfig.endpoint` to the chosen bundled path and wire explicit resource load + `ClixCampaignManager.replaceConfig(...)`.
+- For remote JSON delivery, set `ClixConfig.endpoint` to HTTPS URL and keep the payload schema-compatible with `openclix/config/v1`.
 - When asked, provide environment-specific upload guidance rather than generic hosting advice.
 - Keep integration edits minimal and aligned with existing project structure.
 
