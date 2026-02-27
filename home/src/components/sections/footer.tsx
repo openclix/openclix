@@ -1,8 +1,8 @@
-import { GITHUB_URL, TRY_NOW_URL } from "@/data/links";
+import { DOCS_URL, GITHUB_URL } from "@/data/links";
 
 const footerLinks = [
   { label: "See GitHub", href: GITHUB_URL },
-  { label: "Try Now", href: TRY_NOW_URL },
+  { label: "Docs", href: DOCS_URL },
 ];
 
 export function Footer() {

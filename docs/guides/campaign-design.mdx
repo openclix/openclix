@@ -1,0 +1,26 @@
+---
+title: "Campaign Design"
+description: "Design lifecycle campaigns and generate schema-valid OpenClix config."
+---
+
+Use `openclix-campaign-design` to convert product goals + event taxonomy into executable config.
+
+## Typical campaign families
+
+- Onboarding nudges
+- Re-engagement reminders
+- Streak maintenance
+- Milestone messages
+- Feature discovery prompts
+
+## Guardrails to apply
+
+- Use trigger and suppression logic that is deterministic and auditable.
+- Model `do_not_disturb` and `frequency_cap` explicitly.
+- Keep copy concise and action-oriented.
+- Validate config against the schema before shipping.
+
+## Output artifacts
+
+- `.clix-campaigns/app-profile.json`
+- `.clix-campaigns/openclix-config.json`

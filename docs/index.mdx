@@ -1,0 +1,35 @@
+---
+title: "OpenClix Docs"
+description: "Open-source, agent-friendly foundation for config-driven, on-device mobile engagement logic."
+---
+
+![OpenClix mascot](/images/mascot.png)
+
+OpenClix helps teams run onboarding, habit, re-engagement, and feature-discovery messaging with local-first execution.
+
+The project is designed to be:
+
+- Open source and auditable
+- Source-first (vendored client code, not runtime SDK lock-in)
+- Agent-friendly (explicit interfaces and clear edit points)
+- Practical for fast retention experiments
+
+## Start Here
+
+- [Install and integrate OpenClix](/getting-started/installation)
+- [Run the OpenClix workflow](/getting-started/workflow)
+- [Verify your integration](/getting-started/verification)
+
+## Conceptual Flow
+
+```text
+config source (app resource JSON or HTTPS JSON)
+  -> app event
+  -> rule evaluation
+  -> schedule/show message
+  -> debug reason
+```
+
+## What OpenClix Is Not
+
+OpenClix is not a hosted full engagement platform and does not require a Clix-hosted control plane for the local-first path.

@@ -1,0 +1,31 @@
+---
+title: "Config Delivery"
+description: "Choose and operate OpenClix config delivery: app resource or HTTPS JSON."
+---
+
+OpenClix supports two delivery paths for config JSON.
+
+## App resource JSON
+
+Use bundled config in the app package when you want:
+
+- Maximum determinism
+- No network dependency at evaluation time
+- Release-based config updates
+
+## HTTPS JSON
+
+Use remote JSON when you want:
+
+- Faster iteration without app release for each rules change
+- Central config management
+- Dynamic or static serving options
+
+Both patterns are valid:
+
+- Static asset JSON (CDN/object storage)
+- Dynamically generated JSON (API/server response)
+
+## Recommendation
+
+Start with app resource JSON, then move to HTTPS JSON when iteration speed requirements increase.

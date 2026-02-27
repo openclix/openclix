@@ -1,0 +1,16 @@
+---
+title: "Adapter Patterns"
+description: "Integrate OpenClix with external systems while keeping local rule execution stable."
+---
+
+Adapter patterns are optional and come after the local-first base is working.
+
+## Planned directions
+
+- **Firebase Remote Config**: Use as config input source while keeping evaluation and scheduling in-app.
+- **PostHog**: Map flags/events into OpenClix hooks without coupling rule logic to provider APIs.
+- **Supabase**: Use your own tables/endpoints as a config source while preserving local execution flow.
+
+## Principle
+
+Treat provider integrations as replaceable adapters, not as core rule-engine dependencies.

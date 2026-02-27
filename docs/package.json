@@ -1,0 +1,15 @@
+{
+  "name": "openclix-docs",
+  "private": true,
+  "version": "0.0.0",
+  "packageManager": "bun@1.3.5",
+  "scripts": {
+    "dev": "mint dev",
+    "validate": "mint validate",
+    "broken-links": "mint broken-links",
+    "a11y": "mint a11y"
+  },
+  "devDependencies": {
+    "mint": "4.2.390"
+  }
+}

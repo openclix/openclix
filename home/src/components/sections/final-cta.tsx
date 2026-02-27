@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { GITHUB_URL, TRY_NOW_URL } from "@/data/links";
+import { DOCS_URL, GITHUB_URL } from "@/data/links";
 
 export function FinalCTA() {
   return (
@@ -24,8 +24,8 @@ export function FinalCTA() {
               </a>
             </Button>
             <Button size="lg" asChild className="font-semibold">
-              <a href={TRY_NOW_URL} target="_blank" rel="noopener noreferrer">
-                Try Now
+              <a href={DOCS_URL} target="_blank" rel="noopener noreferrer">
+                Read Docs
               </a>
             </Button>
           </div>

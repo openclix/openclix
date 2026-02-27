@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { audienceOutcomes } from "@/data/audience-outcomes";
-import { TRY_NOW_URL } from "@/data/links";
+import { DOCS_URL } from "@/data/links";
 
 export function AudienceOutcomes() {
   return (
@@ -36,8 +36,8 @@ export function AudienceOutcomes() {
                   Start with a local-first baseline
                 </span>
                 <Button size="sm" variant="outline" asChild className="font-semibold">
-                  <a href={TRY_NOW_URL} target="_blank" rel="noopener noreferrer">
-                    Try Now
+                  <a href={DOCS_URL} target="_blank" rel="noopener noreferrer">
+                    Read Docs
                   </a>
                 </Button>
               </div>

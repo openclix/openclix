@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { GITHUB_URL, TRY_NOW_URL } from "@/data/links";
+import { DOCS_URL, GITHUB_URL } from "@/data/links";
 
 const proofBullets = [
   "Local notifications + in-app messaging hooks",
@@ -50,8 +50,8 @@ export function Hero() {
             className="font-semibold shadow-[0_0_0_1px_rgba(255,255,255,0.06)_inset]"
             asChild
           >
-            <a href={TRY_NOW_URL} target="_blank" rel="noopener noreferrer">
-              Try Now
+            <a href={DOCS_URL} target="_blank" rel="noopener noreferrer">
+              Read Docs
             </a>
           </Button>
         </div>

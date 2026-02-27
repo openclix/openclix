@@ -1,0 +1,28 @@
+---
+title: "FAQ"
+description: "Frequently asked questions about OpenClix positioning and usage."
+---
+
+## Is this a notification library or a full platform?
+
+OpenClix is an open-source reference codebase for on-device engagement logic, not a hosted full engagement platform.
+
+## Do I install OpenClix as a package dependency?
+
+No. OpenClix is source-distributed: client code is copied into your repository and checked in.
+
+## Do I need a backend or push infrastructure?
+
+Not for the local-first path. You can start without APNS/FCM send pipelines.
+
+## Do I need Clix-hosted services or a control plane?
+
+No. OpenClix is designed to run in your app with your own integrations.
+
+## Can I use Firebase/PostHog/Supabase with this?
+
+Yes. These are adapter-pattern directions, with local rule execution kept stable in-app.
+
+## When is OpenClix enough vs a full engagement platform?
+
+OpenClix is strong for local-first onboarding/habit/re-engagement/feature-discovery flows. If you need complex vendor tooling or server-triggered real-time push operations, pair it with a fuller engagement stack.

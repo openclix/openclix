@@ -1,0 +1,88 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "OpenClix",
+  "description": "Open-source, agent-friendly foundation for config-driven, on-device mobile engagement logic.",
+  "colors": {
+    "primary": "#00C49F",
+    "light": "#18D7B3",
+    "dark": "#0B8A73"
+  },
+  "favicon": "/images/mascot.png",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Get Started",
+        "groups": [
+          {
+            "group": "Start here",
+            "pages": [
+              "index",
+              "getting-started/installation",
+              "getting-started/workflow",
+              "getting-started/verification"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Guides",
+        "groups": [
+          {
+            "group": "Core guides",
+            "pages": [
+              "guides/config-delivery",
+              "guides/campaign-design",
+              "guides/analytics-impact",
+              "guides/adapter-patterns"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Reference",
+        "groups": [
+          {
+            "group": "Concepts",
+            "pages": [
+              "reference/runtime-model",
+              "reference/use-cases",
+              "reference/project-status",
+              "reference/faq"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Website",
+        "href": "https://openclix.ai"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "GitHub",
+      "href": "https://github.com/openclix/openclix"
+    }
+  },
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
+    ]
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/openclix/openclix"
+    }
+  }
+}

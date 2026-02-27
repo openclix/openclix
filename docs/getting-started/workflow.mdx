@@ -1,0 +1,40 @@
+---
+title: "Workflow"
+description: "Recommended OpenClix workflow from integration to campaign design and impact analysis."
+---
+
+## 1. Integrate with `openclix-init`
+
+`openclix-init`:
+
+- Detects platform (Expo/RN/Flutter/iOS/Android)
+- Copies local-source templates into your repo
+- Wires minimal initialization/event/lifecycle touchpoints
+- Reuses existing dependencies where possible
+- Runs platform-appropriate build/analyze verification
+
+## 2. Generate config with `openclix-campaign-design`
+
+`openclix-campaign-design`:
+
+- Creates a structured campaign planning profile
+- Designs lifecycle campaigns (onboarding/habit/re-engagement/milestone/feature discovery)
+- Produces schema-valid config (`openclix/config/v1`)
+
+Expected output:
+
+- `.clix-campaigns/app-profile.json`
+- `.clix-campaigns/openclix-config.json`
+
+## 3. Measure impact with `openclix-analytics`
+
+`openclix-analytics`:
+
+- Detects provider: Firebase > PostHog > Mixpanel > Amplitude
+- Wires OpenClix event forwarding with `openclix_*` properties
+- Produces pre/post impact artifacts for retention + engagement
+
+Expected output:
+
+- `.clix-analytics/impact-metrics.json`
+- `.clix-analytics/impact-report.md`

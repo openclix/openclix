@@ -1,0 +1,24 @@
+---
+title: "Verification"
+description: "Verification checklist for OpenClix integration and generated artifacts."
+---
+
+Use this checklist after running the workflow.
+
+## Build and runtime checks
+
+- Run your platform build/analyze commands successfully.
+- Confirm OpenClix touchpoints are wired in app initialization/event/lifecycle paths.
+- Confirm local notification / in-app hook paths execute in test scenarios.
+
+## Artifact checks
+
+- `.clix-campaigns/openclix-config.json` exists and is schema-valid.
+- `.clix-analytics/impact-metrics.json` exists.
+- `.clix-analytics/impact-report.md` exists.
+
+## Behavior checks
+
+- At least one representative campaign path can fire under expected conditions.
+- Suppression and quiet-hour logic behave as configured.
+- Debug reasons are available for fired and suppressed outcomes.

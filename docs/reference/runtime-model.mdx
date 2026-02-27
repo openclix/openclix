@@ -1,0 +1,26 @@
+---
+title: "Runtime Model"
+description: "Understand the local-first OpenClix execution path."
+---
+
+OpenClix executes engagement logic on-device.
+
+## Execution flow
+
+```text
+config source (in-app JSON or HTTPS JSON)
+  -> app event
+  -> rule evaluation
+  -> schedule/show message
+  -> debug reason
+```
+
+## Observability goals
+
+- What event happened
+- What rule matched
+- Why a message fired or was suppressed
+
+## Why this model
+
+This path removes early dependency on push-delivery infrastructure so teams can test retention hypotheses faster.

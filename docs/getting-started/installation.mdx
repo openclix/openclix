@@ -1,0 +1,36 @@
+---
+title: "Installation"
+description: "Install OpenClix skills and start integration with agent-first or manual flow."
+---
+
+OpenClix is currently delivered as agent skills plus reference templates.
+
+## Option A: Agent-first (recommended)
+
+Use this prompt in your coding agent:
+
+```text
+Install OpenClix skills from https://github.com/openclix/openclix and integrate OpenClix into this project.
+Use openclix-init to detect platform, copy templates into the dedicated OpenClix namespace,
+wire initialization/event/lifecycle touchpoints, and run build verification.
+Then use openclix-campaign-design to create .clix-campaigns/app-profile.json
+and generate .clix-campaigns/openclix-config.json.
+Then use openclix-analytics to detect installed Firebase/PostHog/Mixpanel/Amplitude,
+forward OpenClix events with openclix tags, and produce a pre/post impact report
+for D7 retention and engagement metrics.
+Do not add dependencies without approval.
+```
+
+## Option B: Manual skill install
+
+1. Install skills:
+
+```bash
+npx skills add openclix/openclix
+```
+
+2. Run `openclix-init` in your app project.
+3. Run `openclix-campaign-design` to generate campaign config.
+4. Run `openclix-analytics` to wire event forwarding and produce impact outputs.
+
+Continue with the full workflow at [Workflow](/getting-started/workflow).

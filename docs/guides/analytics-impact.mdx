@@ -1,0 +1,30 @@
+---
+title: "Analytics Impact"
+description: "Forward OpenClix events and generate pre/post impact analysis artifacts."
+---
+
+Use `openclix-analytics` after campaigns are running.
+
+## Provider behavior
+
+Supported providers:
+
+- Firebase
+- PostHog
+- Mixpanel
+- Amplitude
+
+Selection priority:
+
+```text
+Firebase > PostHog > Mixpanel > Amplitude
+```
+
+If no supported provider exists, the workflow should stop and provide setup guidance.
+
+## Output artifacts
+
+- `.clix-analytics/impact-metrics.json`
+- `.clix-analytics/impact-report.md`
+
+Default compare window is pre/post analysis with stabilization exclusion as defined by the skill workflow.
