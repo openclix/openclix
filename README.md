@@ -13,35 +13,91 @@ Most teams do not reach retention experiments because they get blocked by push i
 
 OpenClix is a practical, local-first foundation for mobile engagement logic that runs on-device. It is designed to be readable, auditable, forkable, and easy for humans and AI agents to extend through explicit interfaces and clear edit points. If you are building apps with your own agent workflows, OpenClix is intended to be a strong reference source for how to structure engagement logic so agents can safely read, modify, and evolve it. Configuration can be shipped as an in-app resource JSON or loaded from an HTTPS endpoint. The client runtime is delivered as source that you bring into your repository, not as a package dependency.
 
-## Install and Use OpenClix (Skills CLI)
+## Installation
 
 OpenClix is currently delivered as agent skills + reference templates.
-Install OpenClix skills with:
 
-### 1) Install Skills
+<details open>
+<summary><b>For Humans</b></summary>
 
-```bash
-npx skills add openclix/openclix
-```
+**Option A: Let an agent do it**
 
-### 2) Integrate OpenClix Into Your App (`openclix-init`)
-
-Ask your agent to run the integration skill on your mobile app codebase:
+Paste this into any coding agent (Codex, Claude Code, OpenCode, Cursor, etc.):
 
 ```text
-Use openclix-init to integrate OpenClix into this project.
-Detect the real platform, copy templates into the dedicated OpenClix namespace,
+Install OpenClix skills and integrate OpenClix into this project.
+Use openclix-init to detect platform, copy templates into the dedicated OpenClix namespace,
 wire initialization/event/lifecycle touchpoints, and run build verification.
+Then use openclix-campaign-design to create .clix-campaigns/app-profile.json
+and generate .clix-campaigns/openclix-config.json.
 Do not add dependencies without approval.
 ```
 
-What this skill does:
+**Option B: Manual setup**
+
+1. **Install skills:**
+
+   ```bash
+   npx skills add openclix/openclix
+   ```
+
+2. **Integrate OpenClix** with `openclix-init`:
+
+   ```text
+   Use openclix-init to integrate OpenClix into this project.
+   Detect the real platform, copy templates into the dedicated OpenClix namespace,
+   wire initialization/event/lifecycle touchpoints, and run build verification.
+   Do not add dependencies without approval.
+   ```
+
+3. **Design campaign config** with `openclix-campaign-design`:
+
+   ```text
+   Use openclix-campaign-design.
+   Create or update .clix-campaigns/app-profile.json from my app goals + event taxonomy,
+   then generate schema-valid OpenClix config in .clix-campaigns/openclix-config.json.
+   Use event/scheduled/recurring triggers with do_not_disturb and frequency_cap.
+   ```
+
+4. **Verify integration:**
+   - Run platform-appropriate build/analyze commands
+   - Confirm `.clix-campaigns/openclix-config.json` exists and is schema-valid
+
+</details>
+
+<details>
+<summary><b>For Agents</b></summary>
+
+### Step-by-Step Instructions
+
+1. Install OpenClix skills with `npx skills add openclix/openclix`.
+2. Run `openclix-init` on the target mobile app codebase.
+3. Run `openclix-campaign-design` to produce `.clix-campaigns/openclix-config.json`.
+4. Keep integration minimal and do not add dependencies without approval.
+
+### Verification
+
+- Run platform-appropriate build/analyze commands.
+- Confirm OpenClix touchpoints and generated campaign files are present.
+
+</details>
+
+---
+
+### What `openclix-init` does
 
 - Detects platform (Expo/RN/Flutter/iOS/Android) from real project files
 - Copies OpenClix local-source templates (shadcn-style)
 - Wires minimal integration points only
 - Reuses existing dependencies and chooses concrete adapters at integration time
 - Verifies with platform-appropriate build/analyze commands
+
+### What `openclix-campaign-design` does
+
+- Builds a structured campaign planning profile
+- Designs lifecycle campaigns (onboarding/habit/re-engagement/milestone/feature discovery)
+- Produces schema-valid OpenClix config (`openclix/config/v1`)
+- Applies guardrails for trigger modeling, cancellation, and message copy
 
 ### Why Source-First Delivery Is a Strength
 
@@ -54,25 +110,7 @@ OpenClix intentionally uses a vendoring model for client code:
 
 This is a deliberate alternative to SDK-package integration: install the skill, vendor the source, and keep full control in-repo.
 
-### 3) Design Campaign Config (`openclix-campaign-design`)
-
-After integration, design and validate campaign JSON:
-
-```text
-Use openclix-campaign-design.
-Create or update .clix-campaigns/app-profile.json from my app goals + event taxonomy,
-then generate schema-valid OpenClix config in .clix-campaigns/openclix-config.json.
-Use event/scheduled/recurring triggers with do_not_disturb and frequency_cap.
-```
-
-What this skill does:
-
-- Builds a structured campaign planning profile
-- Designs lifecycle campaigns (onboarding/habit/re-engagement/milestone/feature discovery)
-- Produces schema-valid OpenClix config (`openclix/config/v1`)
-- Applies guardrails for trigger modeling, cancellation, and message copy
-
-### 4) Runtime Model
+### Runtime Model
 
 OpenClix follows a local-first execution path:
 
@@ -82,7 +120,7 @@ config source (in-app resource JSON or HTTPS JSON) -> app event -> rule evaluati
 
 This lets teams ship onboarding and re-engagement flows without requiring push tokens, FCM/APNS send infrastructure, or a hosted control plane for the local-first path.
 
-### 5) Config Delivery Options
+### Config Delivery Options
 
 OpenClix config JSON can be delivered in either way:
 
