@@ -258,9 +258,10 @@ For HTTPS delivery, both patterns are valid:
 | Area | Status | Notes |
 | --- | --- | --- |
 | Core project spec / direction | Defined | Scope, use cases, and architecture direction are documented. |
-| Reference SDK / engine implementation | In progress | The main OSS implementation is the focus of the next phase. |
-| Config JSON runtime model | Planned (Phase 1) | Start with config JSON from app resources or HTTPS before adding provider-specific adapters. |
-| `openclix-config.json` HTTP delivery | Optional next phase | Serve config over HTTP as a static file or dynamic API response. |
+| Source-distributed reference runtime | Available (template-based) | `openclix-init` provides React Native / Flutter / iOS / Android source templates with verification scripts. |
+| Config JSON runtime model | Implemented in current templates | `openclix/config/v1` schema and runtime touchpoints for bundled or HTTPS config are available in the workflow. |
+| Agent retention operations workflow | Implemented (review-loop automation) | `openclix-analytics` + `openclix-update-campaigns` + `retention_ops_automation.sh` generate review artifacts with explicit human approval gates. |
+| `openclix-config.json` HTTP delivery | Supported (app-owned endpoint) | Hosted JSON delivery is supported without requiring OpenClix-hosted services. |
 | Hosted control plane | Not required | Local-first path does not require a Clix-hosted control plane. |
 
 ## Why OpenClix Exists
@@ -344,14 +345,14 @@ Observability goals:
 
 ## Implementation Focus (Current Phase)
 
-This repository is intended to become the main open-source OpenClix project. The core SDK / reference engine implementation is not fully published here yet, so this README focuses on the intended architecture and product direction.
+This repository publishes the OpenClix local-first workflow as agent skills, automation scripts, and cross-platform source templates. It is intentionally source-first and is not shipped as a hosted control plane.
 
 The near-term implementation focus is:
 
-- Config JSON-driven rule model and scheduling runtime (in-app or HTTPS)
-- On-device eligibility/suppression evaluation
-- Debuggable execution traces and reason outputs
-- Stable interfaces for `openclix-config.json` delivery (bundled, static HTTP, or dynamic API)
+- Expand reproducible operator evidence and KPI case studies.
+- Harden campaign evaluator heuristics and delivery-mode apply runbooks.
+- Keep cross-platform template parity and verification coverage.
+- Continue stabilizing interfaces for `openclix-config.json` delivery (bundled, static HTTP, or dynamic API).
 
 ## Config Delivery Direction (HTTP Patterns)
 
