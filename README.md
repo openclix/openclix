@@ -21,7 +21,7 @@ Install OpenClix skills with:
 ### 1) Install Skills
 
 ```bash
-npx skills add clix-so/openclix
+npx skills add openclix/openclix
 ```
 
 ### 2) Integrate OpenClix Into Your App (`openclix-init`)
@@ -242,7 +242,7 @@ OpenClix is a strong fit for local-first onboarding, habit, re-engagement, and f
 ## Links
 
 - Website: https://openclix.ai
-- GitHub: https://github.com/clix-so/openclix
+- GitHub: https://github.com/openclix/openclix
 - Docs (placeholder): https://docs.openclix.ai
 
 ## Contributing

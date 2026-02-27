@@ -36,7 +36,7 @@ const jsonLd = {
       name: "OpenClix",
       url: "https://openclix.ai",
       logo: "https://openclix.ai/icon-512.png",
-      sameAs: ["https://github.com/clix-so/openclix"],
+      sameAs: ["https://github.com/openclix/openclix"],
     },
     {
       "@type": "WebSite",

@@ -32,4 +32,4 @@ OpenClix is an open-source SDK for iOS and Android that enables remote config, f
 ## Links
 
 - Website: https://openclix.ai
-- GitHub: https://github.com/clix-so/openclix
+- GitHub: https://github.com/openclix/openclix

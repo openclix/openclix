@@ -83,4 +83,4 @@ OpenClix supports on-device variants and bucketing and can emit exposure events 
 ## Links
 
 - Website: https://openclix.ai
-- GitHub: https://github.com/clix-so/openclix
+- GitHub: https://github.com/openclix/openclix
