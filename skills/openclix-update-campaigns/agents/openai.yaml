@@ -1,0 +1,4 @@
+interface:
+  display_name: "OpenClix Update Campaigns"
+  short_description: "Update campaign operations from analytics metrics"
+  default_prompt: "Analyze OpenClix analytics metrics, propose campaign pause/resume/add/delete/update actions, and generate openclix-config.next.json with a safe confirmation gate."

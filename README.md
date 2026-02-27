@@ -33,6 +33,9 @@ and generate .clix/campaigns/openclix-config.json.
 Then use openclix-analytics to detect installed Firebase/PostHog/Mixpanel/Amplitude,
 forward OpenClix events with openclix tags, and produce a pre/post impact report
 for D7 retention and engagement metrics.
+Then use openclix-update-campaigns to propose pause/resume/add/delete/update
+actions from campaign metrics and produce openclix-config.next.json before
+applying any change to the active config.
 Do not add dependencies without approval.
 ```
 
@@ -73,10 +76,22 @@ Do not add dependencies without approval.
    If no provider is installed, explain provider setup options and stop.
    ```
 
-5. **Verify integration:**
+5. **Update campaign operations** with `openclix-update-campaigns`:
+
+   ```text
+   Use openclix-update-campaigns.
+   Read .clix/analytics/impact-metrics.json and .clix/campaigns/openclix-config.json.
+   Propose campaign pause/resume/add/delete/update actions per campaign with conservative sampling.
+   Detect delivery mode (bundle or hosted HTTP) from existing Clix wiring,
+   generate .clix/campaigns/update-recommendations.json and .clix/campaigns/openclix-config.next.json,
+   and only apply after explicit confirmation.
+   ```
+
+6. **Verify integration:**
    - Run platform-appropriate build/analyze commands
    - Confirm `.clix/campaigns/openclix-config.json` exists and is schema-valid
    - Confirm `.clix/analytics/impact-metrics.json` and `.clix/analytics/impact-report.md` are generated
+   - Confirm `.clix/campaigns/update-recommendations.json` and `.clix/campaigns/openclix-config.next.json` are generated
 
 </details>
 
@@ -89,7 +104,8 @@ Do not add dependencies without approval.
 2. Run `openclix-init` on the target mobile app codebase.
 3. Run `openclix-design-campaigns` to produce `.clix/campaigns/openclix-config.json`.
 4. Run `openclix-analytics` to detect PA providers, wire event forwarding, and output pre/post impact reports under `.clix/analytics/`.
-5. Keep integration minimal and do not add dependencies without approval.
+5. Run `openclix-update-campaigns` to evaluate campaign actions and produce `.clix/campaigns/openclix-config.next.json` with confirmation gating.
+6. Keep integration minimal and do not add dependencies without approval.
 
 ### Verification
 
@@ -122,6 +138,14 @@ Do not add dependencies without approval.
 - Wires OpenClix app/system event forwarding with standardized `openclix_*` properties
 - Produces pre/post impact artifacts focused on `d7_retention` with engagement support metrics
 - Stops with provider setup guidance when no supported PA is installed
+
+### What `openclix-update-campaigns` does
+
+- Reads campaign performance artifacts and evaluates actions per campaign (`pause`, `resume`, `update`, `add`, `delete`)
+- Applies conservative sampling guards before operational changes
+- Produces reviewable recommendation artifacts and a draft next config before any activation
+- Detects bundle vs hosted HTTP delivery mode and provides mode-specific apply guidance
+- Keeps active config unchanged until explicit user confirmation
 
 ### Why Source-First Delivery Is a Strength
 
