@@ -16,6 +16,14 @@
         "campaigns"
       ],
       "properties": {
+        "$schema": {
+          "type": "string",
+          "const": "https://openclix.ai/schemas/openclix.schema.json",
+          "description": "Canonical schema URL for self-describing config files.",
+          "examples": [
+            "https://openclix.ai/schemas/openclix.schema.json"
+          ]
+        },
         "schema_version": {
           "type": "string",
           "const": "openclix/config/v1",

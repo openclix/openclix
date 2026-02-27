@@ -90,9 +90,11 @@ Remote delivery note:
 
 - The same generated config JSON can be uploaded to a web server and served over HTTPS for remote access.
 - Use the same schema-valid JSON artifact for both local resource delivery and remote endpoint delivery.
+- Public schema reference for external validators: `https://openclix.ai/schemas/openclix.schema.json`.
 
 Guarantee these invariants:
 
+- `"$schema"` is exactly `https://openclix.ai/schemas/openclix.schema.json`.
 - `schema_version` is exactly `openclix/config/v1`.
 - `config_version` is explicit and traceable.
 - Campaign IDs are kebab-case.
@@ -113,6 +115,11 @@ When a JSON Schema validator is available, validate against:
 
 - `references/schemas/app-profile.schema.json` for app profiles
 - `references/schemas/openclix.schema.json` for config files
+- `https://openclix.ai/schemas/openclix.schema.json` as the canonical published config schema URL
+
+Preferred command for config validation:
+
+- `npx --yes ajv-cli validate -s https://openclix.ai/schemas/openclix.schema.json -d <config-file>`
 
 Report at handoff:
 

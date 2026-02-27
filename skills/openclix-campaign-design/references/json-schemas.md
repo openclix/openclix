@@ -17,6 +17,7 @@ Formal schema files live in `references/schemas/`:
 - `openclix.schema.json` validates executable OpenClix config
 
 Validate after every major update. Fix schema violations before presenting final config.
+Canonical published schema URL: `https://openclix.ai/schemas/openclix.schema.json`.
 
 ## App Profile JSON (Planning)
 
@@ -104,6 +105,7 @@ Use this shape to capture campaign design context:
 
 `openclix.schema.json` is the source of truth. Key constraints:
 
+- `"$schema"` must be `https://openclix.ai/schemas/openclix.schema.json`
 - `schema_version` must be `openclix/config/v1`
 - campaign keys must be kebab-case
 - one campaign has one `message`
@@ -115,6 +117,7 @@ Minimal valid example:
 
 ```json
 {
+  "$schema": "https://openclix.ai/schemas/openclix.schema.json",
   "schema_version": "openclix/config/v1",
   "config_version": "rev-2026-02-26-a",
   "settings": {

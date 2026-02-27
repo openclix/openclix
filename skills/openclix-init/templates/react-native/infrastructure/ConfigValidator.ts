@@ -262,11 +262,23 @@ export function validateConfig(config: Config): ValidationResult {
 
   validateNoAdditionalProperties(
     configRecord,
-    ['schema_version', 'config_version', 'settings', 'campaigns'],
+    ['$schema', 'schema_version', 'config_version', 'settings', 'campaigns'],
     '.',
     errors,
     'UNEXPECTED_CONFIG_PROPERTY',
   );
+
+  if (
+    configRecord['$schema'] !== undefined &&
+    configRecord['$schema'] !== 'https://openclix.ai/schemas/openclix.schema.json'
+  ) {
+    errors.push({
+      path: '.$schema',
+      code: 'INVALID_SCHEMA_POINTER',
+      message:
+        "Expected '$schema' to be 'https://openclix.ai/schemas/openclix.schema.json'",
+    });
+  }
 
   if (config.schema_version !== 'openclix/config/v1') {
     errors.push({

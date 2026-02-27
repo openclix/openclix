@@ -144,6 +144,10 @@ config source (in-app resource JSON or HTTPS JSON) -> app event -> rule evaluati
 
 This lets teams ship onboarding and re-engagement flows without requiring push tokens, FCM/APNS send infrastructure, or a hosted control plane for the local-first path.
 
+### `openclix-config.json` Schema Validation
+
+Include `"$schema": "https://openclix.ai/schemas/openclix.schema.json"` in generated config, and use [Verification](/getting-started/verification) for the validation command flow.
+
 ### Config Delivery Options
 
 OpenClix config JSON can be delivered in either way:
@@ -295,7 +299,7 @@ No. The project is intended to run in your app with your own integrations, using
 
 ### How can I serve `openclix-config.json`?
 
-You can serve it over HTTP as a static JSON file or from a dynamic API that returns JSON. Updating either source lets you change campaign settings without shipping a new app build.
+You can serve it over HTTP as a static JSON file or from a dynamic API that returns JSON. Publish schema-compatible payloads to change campaign settings without shipping a new app build.
 
 ### When is OpenClix enough vs when do I need a full engagement platform?
 
