@@ -86,6 +86,11 @@ Write updates in this order:
 1. Update the user-specified config path if provided.
 2. Otherwise write `.clix-campaigns/openclix-config.json`.
 
+Remote delivery note:
+
+- The same generated config JSON can be uploaded to a web server and served over HTTPS for remote access.
+- Use the same schema-valid JSON artifact for both local resource delivery and remote endpoint delivery.
+
 Guarantee these invariants:
 
 - `schema_version` is exactly `openclix/config/v1`.
@@ -139,16 +144,26 @@ Integration requirements:
 4. Load JSON from the resource file, parse into OpenClix `Config`, then call `ClixCampaignManager.replaceConfig(...)`.
 5. Run platform build/analysis checks after wiring.
 
+Optional remote publishing workflow (when user requests remote config hosting):
+
+1. Confirm target hosting environment from the user's dev stack (for example Vercel, Netlify, S3/CloudFront, Firebase Hosting, Supabase, custom backend, etc.).
+2. Explain and provide concrete upload/deploy steps tailored to that environment.
+3. Ensure the deployed config is reachable through a stable HTTPS URL.
+4. Update initialization wiring to use the HTTPS endpoint in `Clix.initialize(...)`.
+5. Keep a local resource fallback only if the user asks for dual-path operation.
+
 Critical runtime note:
 
 - `Clix.initialize(...)` auto-fetches config only for HTTP(S) endpoints.
 - For in-app resource JSON, always load and apply config explicitly via `ClixCampaignManager.replaceConfig(...)` after initialization.
+- If the user asks for remote config delivery, prefer HTTPS endpoint wiring and verify the URL is accessible.
 
 Completion requirements for implementation tasks:
 
 - resource file path reported
 - modified startup/init file paths reported
 - confirmation that local resource config is applied at runtime
+- when remote publishing is requested, deployed HTTPS config URL and upload method summary reported
 
 ## Design Guardrails
 
@@ -159,6 +174,8 @@ Completion requirements for implementation tasks:
 - Use global quiet-hour controls before introducing ad-hoc per-campaign windows.
 - Do not rely on non-HTTP endpoints being auto-loaded by `Clix.initialize(...)`.
 - For local JSON delivery, always wire explicit resource load + `ClixCampaignManager.replaceConfig(...)`.
+- For remote JSON delivery, serve over HTTPS and keep the payload schema-compatible with `openclix/config/v1`.
+- When asked, provide environment-specific upload guidance rather than generic hosting advice.
 - Keep integration edits minimal and aligned with existing project structure.
 
 ## Resources
