@@ -15,6 +15,7 @@ Use a local-source integration model (shadcn-style): copy, adapt, wire, verify.
 - Detect the real platform first using project files.
 - Prioritize minimal edits to existing user code.
 - Keep all OpenClix files in a dedicated namespace/directory.
+- When creating local planning/report artifacts under `.clix/**`, ensure `.clix/` is listed in `.gitignore` (add it if missing).
 - Reuse existing dependencies whenever possible.
 - Do not add or update dependencies without explicit user approval.
 - Run a build after integration and fix only integration-caused issues.

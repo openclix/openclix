@@ -13,9 +13,9 @@ Use this checklist after running the workflow.
 
 ## Artifact checks
 
-- `.clix-campaigns/openclix-config.json` exists and is schema-valid against `https://openclix.ai/schemas/openclix.schema.json`.
-- `.clix-analytics/impact-metrics.json` exists.
-- `.clix-analytics/impact-report.md` exists.
+- `.clix/campaigns/openclix-config.json` exists and is schema-valid against `https://openclix.ai/schemas/openclix.schema.json`.
+- `.clix/analytics/impact-metrics.json` exists.
+- `.clix/analytics/impact-report.md` exists.
 
 ## Schema validation commands
 
@@ -26,19 +26,19 @@ Use the canonical schema URL:
 Run:
 
 ```bash
-jq . .clix-campaigns/openclix-config.json >/dev/null
+jq . .clix/campaigns/openclix-config.json >/dev/null
 npx --yes ajv-cli validate \
   -s https://openclix.ai/schemas/openclix.schema.json \
-  -d .clix-campaigns/openclix-config.json
+  -d .clix/campaigns/openclix-config.json
 ```
 
 If remote schema fetch is restricted:
 
 ```bash
-curl -fsSL https://openclix.ai/schemas/openclix.schema.json -o .clix-campaigns/openclix.schema.json
+curl -fsSL https://openclix.ai/schemas/openclix.schema.json -o .clix/campaigns/openclix.schema.json
 npx --yes ajv-cli validate \
-  -s .clix-campaigns/openclix.schema.json \
-  -d .clix-campaigns/openclix-config.json
+  -s .clix/campaigns/openclix.schema.json \
+  -d .clix/campaigns/openclix-config.json
 ```
 
 ## Behavior checks

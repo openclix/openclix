@@ -20,6 +20,10 @@ Follow these phases in order.
 5. Validate and hand off.
 6. Install config resource and wire app initialization.
 
+Repository hygiene rule:
+
+- Before writing outputs under `.clix/**`, ensure `.clix/` is listed in `.gitignore` (add it if missing).
+
 ## 1) Collect Campaign Context
 
 Gather only missing facts needed for design decisions:
@@ -40,7 +44,7 @@ Before authoring campaigns:
 
 - Read `references/json-schemas.md`.
 - Read `references/schemas/app-profile.schema.json`.
-- Create or update `.clix-campaigns/app-profile.json`.
+- Create or update `.clix/campaigns/app-profile.json`.
 - Capture goals, event taxonomy, personalization variables, existing campaigns, and constraints.
 - Present the JSON and confirm accuracy before proceeding.
 
@@ -84,7 +88,7 @@ Before writing config:
 Write updates in this order:
 
 1. Update the user-specified config path if provided.
-2. Otherwise write `.clix-campaigns/openclix-config.json`.
+2. Otherwise write `.clix/campaigns/openclix-config.json`.
 
 Remote delivery note:
 

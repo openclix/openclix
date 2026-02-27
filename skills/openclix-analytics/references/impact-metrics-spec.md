@@ -73,8 +73,8 @@ When insufficient:
 
 Write both files under target project:
 
-- `.clix-analytics/impact-metrics.json`
-- `.clix-analytics/impact-report.md`
+- `.clix/analytics/impact-metrics.json`
+- `.clix/analytics/impact-report.md`
 
 ### impact-metrics.json shape
 

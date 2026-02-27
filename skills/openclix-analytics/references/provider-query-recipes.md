@@ -1,6 +1,6 @@
 # Provider Query Recipes
 
-Use these templates to extract metrics and fill `.clix-analytics/impact-metrics.json`.
+Use these templates to extract metrics and fill `.clix/analytics/impact-metrics.json`.
 
 ## Shared prerequisites
 
@@ -118,8 +118,8 @@ Use Event Segmentation + Retention charts, then export.
 
 After queries:
 
-1. Write `.clix-analytics/impact-metrics.json` with exact contract keys.
-2. Write `.clix-analytics/impact-report.md` including:
+1. Write `.clix/analytics/impact-metrics.json` with exact contract keys.
+2. Write `.clix/analytics/impact-report.md` including:
    - period boundaries
    - all required metrics
    - sample sizes

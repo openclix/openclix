@@ -28,8 +28,8 @@ Paste this into any coding agent (Codex, Claude Code, OpenCode, Cursor, etc.):
 Install OpenClix skills from https://github.com/openclix/openclix and integrate OpenClix into this project.
 Use openclix-init to detect platform, copy templates into the dedicated OpenClix namespace,
 wire initialization/event/lifecycle touchpoints, and run build verification.
-Then use openclix-campaign-design to create .clix-campaigns/app-profile.json
-and generate .clix-campaigns/openclix-config.json.
+Then use openclix-campaign-design to create .clix/campaigns/app-profile.json
+and generate .clix/campaigns/openclix-config.json.
 Then use openclix-analytics to detect installed Firebase/PostHog/Mixpanel/Amplitude,
 forward OpenClix events with openclix tags, and produce a pre/post impact report
 for D7 retention and engagement metrics.
@@ -57,8 +57,8 @@ Do not add dependencies without approval.
 
    ```text
    Use openclix-campaign-design.
-   Create or update .clix-campaigns/app-profile.json from my app goals + event taxonomy,
-   then generate schema-valid OpenClix config in .clix-campaigns/openclix-config.json.
+   Create or update .clix/campaigns/app-profile.json from my app goals + event taxonomy,
+   then generate schema-valid OpenClix config in .clix/campaigns/openclix-config.json.
    Use event/scheduled/recurring triggers with do_not_disturb and frequency_cap.
    ```
 
@@ -68,15 +68,15 @@ Do not add dependencies without approval.
    Use openclix-analytics.
    Detect installed Firebase/PostHog/Mixpanel/Amplitude in this app.
    If at least one provider is installed, wire OpenClix event forwarding with required openclix tags,
-   then generate .clix-analytics/impact-metrics.json and .clix-analytics/impact-report.md
+   then generate .clix/analytics/impact-metrics.json and .clix/analytics/impact-report.md
    using pre/post compare defaults (28d pre, 7d stabilization exclusion, 28d post).
    If no provider is installed, explain provider setup options and stop.
    ```
 
 5. **Verify integration:**
    - Run platform-appropriate build/analyze commands
-   - Confirm `.clix-campaigns/openclix-config.json` exists and is schema-valid
-   - Confirm `.clix-analytics/impact-metrics.json` and `.clix-analytics/impact-report.md` are generated
+   - Confirm `.clix/campaigns/openclix-config.json` exists and is schema-valid
+   - Confirm `.clix/analytics/impact-metrics.json` and `.clix/analytics/impact-report.md` are generated
 
 </details>
 
@@ -87,8 +87,8 @@ Do not add dependencies without approval.
 
 1. Install OpenClix skills with `npx skills add openclix/openclix` (repo: `https://github.com/openclix/openclix`).
 2. Run `openclix-init` on the target mobile app codebase.
-3. Run `openclix-campaign-design` to produce `.clix-campaigns/openclix-config.json`.
-4. Run `openclix-analytics` to detect PA providers, wire event forwarding, and output pre/post impact reports under `.clix-analytics/`.
+3. Run `openclix-campaign-design` to produce `.clix/campaigns/openclix-config.json`.
+4. Run `openclix-analytics` to detect PA providers, wire event forwarding, and output pre/post impact reports under `.clix/analytics/`.
 5. Keep integration minimal and do not add dependencies without approval.
 
 ### Verification

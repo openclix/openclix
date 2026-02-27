@@ -21,6 +21,7 @@ This skill is for proving impact, not only sending events.
 - Use one provider only, even when multiple are installed.
 - Provider selection priority is fixed: `firebase > posthog > mixpanel > amplitude`.
 - Keep OpenClix canonical event names (`clix.message.*`, app event names).
+- Before writing outputs under `.clix/**`, ensure `.clix/` is listed in `.gitignore` (add it if missing).
 - Always include required OpenClix analytics properties from `references/event-contract.md`.
 - Use pre/post defaults from `references/impact-metrics-spec.md`:
   - pre: 28 days before campaign go-live
@@ -106,8 +107,8 @@ Then verify that forwarding is wired in both event paths.
 
 After event flow is active, generate:
 
-- `.clix-analytics/impact-metrics.json`
-- `.clix-analytics/impact-report.md`
+- `.clix/analytics/impact-metrics.json`
+- `.clix/analytics/impact-report.md`
 
 Use:
 
