@@ -28,7 +28,7 @@ Paste this into any coding agent (Codex, Claude Code, OpenCode, Cursor, etc.):
 Install OpenClix skills from https://github.com/openclix/openclix and integrate OpenClix into this project.
 Use openclix-init to detect platform, copy templates into the dedicated OpenClix namespace,
 wire initialization/event/lifecycle touchpoints, and run build verification.
-Then use openclix-campaign-design to create .clix/campaigns/app-profile.json
+Then use openclix-design-campaigns to create .clix/campaigns/app-profile.json
 and generate .clix/campaigns/openclix-config.json.
 Then use openclix-analytics to detect installed Firebase/PostHog/Mixpanel/Amplitude,
 forward OpenClix events with openclix tags, and produce a pre/post impact report
@@ -53,10 +53,10 @@ Do not add dependencies without approval.
    Do not add dependencies without approval.
    ```
 
-3. **Design campaign config** with `openclix-campaign-design`:
+3. **Design campaign config** with `openclix-design-campaigns`:
 
    ```text
-   Use openclix-campaign-design.
+   Use openclix-design-campaigns.
    Create or update .clix/campaigns/app-profile.json from my app goals + event taxonomy,
    then generate schema-valid OpenClix config in .clix/campaigns/openclix-config.json.
    Use event/scheduled/recurring triggers with do_not_disturb and frequency_cap.
@@ -87,7 +87,7 @@ Do not add dependencies without approval.
 
 1. Install OpenClix skills with `npx skills add openclix/openclix` (repo: `https://github.com/openclix/openclix`).
 2. Run `openclix-init` on the target mobile app codebase.
-3. Run `openclix-campaign-design` to produce `.clix/campaigns/openclix-config.json`.
+3. Run `openclix-design-campaigns` to produce `.clix/campaigns/openclix-config.json`.
 4. Run `openclix-analytics` to detect PA providers, wire event forwarding, and output pre/post impact reports under `.clix/analytics/`.
 5. Keep integration minimal and do not add dependencies without approval.
 
@@ -108,7 +108,7 @@ Do not add dependencies without approval.
 - Reuses existing dependencies and chooses concrete adapters at integration time
 - Verifies with platform-appropriate build/analyze commands
 
-### What `openclix-campaign-design` does
+### What `openclix-design-campaigns` does
 
 - Builds a structured campaign planning profile
 - Designs lifecycle campaigns (onboarding/habit/re-engagement/milestone/feature discovery)
