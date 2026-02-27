@@ -25,7 +25,7 @@ OpenClix is currently delivered as agent skills + reference templates.
 Paste this into any coding agent (Codex, Claude Code, OpenCode, Cursor, etc.):
 
 ```text
-Install OpenClix skills and integrate OpenClix into this project.
+Install OpenClix skills from https://github.com/openclix/openclix and integrate OpenClix into this project.
 Use openclix-init to detect platform, copy templates into the dedicated OpenClix namespace,
 wire initialization/event/lifecycle touchpoints, and run build verification.
 Then use openclix-campaign-design to create .clix-campaigns/app-profile.json
@@ -70,7 +70,7 @@ Do not add dependencies without approval.
 
 ### Step-by-Step Instructions
 
-1. Install OpenClix skills with `npx skills add openclix/openclix`.
+1. Install OpenClix skills with `npx skills add openclix/openclix` (repo: `https://github.com/openclix/openclix`).
 2. Run `openclix-init` on the target mobile app codebase.
 3. Run `openclix-campaign-design` to produce `.clix-campaigns/openclix-config.json`.
 4. Keep integration minimal and do not add dependencies without approval.
