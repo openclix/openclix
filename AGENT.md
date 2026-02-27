@@ -29,10 +29,12 @@ Ignore generated artifacts unless debugging build outputs:
 - Landing page copy/UI/SEO changes: edit only `home/src/**` (and `home/public/**` if asset changes are required).
 - OpenClix runtime/template behavior: edit `skills/openclix-init/templates/**`.
 - Config model/schema changes: update schema + all affected platform templates together.
+- Project spec changes: update `README.md` and corresponding docs in `home/**` and `docs/**` within the same change set.
 - CI/CD/deploy behavior: edit `.github/workflows/**`.
 
 ## Command Reference
 Run commands in the correct directory.
+For JavaScript/TypeScript tasks in this repo, prefer Bun (`bun run`, `bun x`, `bun install`) over Node.js package managers/runners unless a task explicitly requires otherwise.
 
 ### Website (`home/`)
 - `bun install`
