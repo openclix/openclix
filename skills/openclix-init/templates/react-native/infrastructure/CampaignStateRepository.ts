@@ -4,6 +4,7 @@ import type {
   CampaignStateRecord,
   CampaignQueuedMessage,
   CampaignTriggerHistory,
+  Event,
 } from '../domain/ClixTypes';
 import {
   CAMPAIGN_STATE_KEYS,
@@ -36,6 +37,7 @@ export interface StorageEngine {
 }
 
 const META_UPDATED_AT_KEY = `${CAMPAIGN_STATE_KEYS.meta}/row`;
+const DEFAULT_MAX_EVENT_LOG_SIZE = 5000;
 
 function normalizeUpdatedAt(updatedAt: string): string {
   return isNonEmptyString(updatedAt) ? updatedAt : new Date().toISOString();
@@ -94,6 +96,24 @@ function normalizeTriggerHistoryRow(value: unknown): CampaignTriggerHistory | nu
   return {
     campaign_id: isNonEmptyString(value.campaign_id) ? value.campaign_id : undefined,
     triggered_at: value.triggered_at,
+  };
+}
+
+function normalizeEventRow(value: unknown): Event | null {
+  if (!isObjectRecord(value)) return null;
+  if (!isNonEmptyString(value.id)) return null;
+  if (!isNonEmptyString(value.name)) return null;
+  if (!isNonEmptyString(value.created_at)) return null;
+  if (value.source_type !== 'app' && value.source_type !== 'system') return null;
+
+  return {
+    id: value.id,
+    name: value.name,
+    source_type: value.source_type,
+    properties: isObjectRecord(value.properties)
+      ? (value.properties as Event['properties'])
+      : undefined,
+    created_at: value.created_at,
   };
 }
 
@@ -167,8 +187,56 @@ export class StorageCampaignStateRepository implements CampaignStateRepositoryPo
       this.clearRecords(CAMPAIGN_STATE_KEYS.campaign_states),
       this.clearRecords(CAMPAIGN_STATE_KEYS.queued_messages),
       this.clearRecords(CAMPAIGN_STATE_KEYS.trigger_history),
+      this.clearRecords(CAMPAIGN_STATE_KEYS.events),
       this.clearUpdatedAt(),
     ]);
+  }
+
+  async appendEvents(
+    events: Event[],
+    maxEntries: number = DEFAULT_MAX_EVENT_LOG_SIZE,
+  ): Promise<void> {
+    if (events.length === 0) return;
+
+    const existingEvents = await this.loadRecords(CAMPAIGN_STATE_KEYS.events, normalizeEventRow);
+    const mergedById = new Map<string, Event>();
+
+    for (const existing of existingEvents) {
+      mergedById.set(existing.id, existing);
+    }
+    for (const event of events) {
+      const normalized = normalizeEventRow(event);
+      if (!normalized) continue;
+      mergedById.set(normalized.id, normalized);
+    }
+
+    const merged = Array.from(mergedById.values()).sort((a, b) =>
+      a.created_at.localeCompare(b.created_at),
+    );
+    const cap = Number.isFinite(maxEntries) ? Math.max(1, Math.floor(maxEntries)) : DEFAULT_MAX_EVENT_LOG_SIZE;
+    const trimmed = merged.length > cap ? merged.slice(merged.length - cap) : merged;
+
+    await this.replaceRecords(
+      CAMPAIGN_STATE_KEYS.events,
+      trimmed,
+      (row) => `${row.created_at}:${row.id}`,
+    );
+  }
+
+  async loadEvents(limit?: number): Promise<Event[]> {
+    const events = await this.loadRecords(CAMPAIGN_STATE_KEYS.events, normalizeEventRow);
+    events.sort((a, b) => a.created_at.localeCompare(b.created_at));
+
+    if (!Number.isFinite(limit)) return events;
+    const normalizedLimit = Math.floor(limit as number);
+    if (normalizedLimit <= 0) return [];
+    if (events.length <= normalizedLimit) return events;
+
+    return events.slice(events.length - normalizedLimit);
+  }
+
+  async clearEvents(): Promise<void> {
+    await this.clearRecords(CAMPAIGN_STATE_KEYS.events);
   }
 
   private async loadRecords<RecordType>(

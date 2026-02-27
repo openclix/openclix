@@ -11,6 +11,7 @@ import type {
   LifecycleStateReader,
   Logger,
   JsonValue,
+  SystemEventName,
 } from '../domain/ClixTypes';
 import { TriggerService } from '../engine/TriggerService';
 import type { TriggerServiceDependencies } from '../engine/TriggerService';
@@ -56,6 +57,8 @@ const LOG_LEVEL_ORDER: Record<ClixLogLevel, number> = {
   error: 3,
   none: 4,
 };
+
+const MAXIMUM_EVENT_LOG_SIZE = 5000;
 
 export class ReactNativeLogger implements Logger {
   private logLevel: ClixLogLevel;
@@ -204,7 +207,8 @@ export class Clix {
       created_at: Clix.clock!.now(),
     };
 
-    Clix.logger?.debug(`Event tracked (not persisted): ${name}`);
+    await Clix.persistEvent(event);
+    Clix.logger?.debug(`Event tracked: ${name}`);
 
     try {
       await Clix.evaluate('event_tracked', event);
@@ -218,6 +222,67 @@ export class Clix {
     }
   }
 
+  static async trackSystemEvent(
+    name: SystemEventName,
+    properties?: Record<string, JsonValue>,
+  ): Promise<void> {
+    Clix.assertInitialized();
+
+    const event: Event = {
+      id: generateUUID(),
+      name,
+      source_type: 'system',
+      properties,
+      created_at: Clix.clock!.now(),
+    };
+
+    await Clix.persistEvent(event);
+  }
+
+  static async handleNotificationDelivered(
+    payload: Record<string, unknown>,
+  ): Promise<void> {
+    Clix.assertInitialized();
+
+    await Clix.trackSystemEvent(
+      'clix.message.delivered',
+      Clix.compactProperties({
+        campaign_id: Clix.extractString(payload, 'campaignId', 'campaign_id'),
+        queued_message_id: Clix.extractString(
+          payload,
+          'queuedMessageId',
+          'queued_message_id',
+        ),
+        channel_type:
+          Clix.extractString(payload, 'channelType', 'channel_type') ?? 'app_push',
+      }),
+    );
+  }
+
+  static async handleNotificationOpened(
+    payload: Record<string, unknown>,
+  ): Promise<string | undefined> {
+    Clix.assertInitialized();
+
+    const landingUrl = Clix.extractString(payload, 'landingUrl', 'landing_url');
+    await Clix.trackSystemEvent(
+      'clix.message.opened',
+      Clix.compactProperties({
+        campaign_id: Clix.extractString(payload, 'campaignId', 'campaign_id'),
+        queued_message_id: Clix.extractString(
+          payload,
+          'queuedMessageId',
+          'queued_message_id',
+        ),
+        channel_type:
+          Clix.extractString(payload, 'channelType', 'channel_type') ?? 'app_push',
+        landing_url: landingUrl,
+      }),
+    );
+
+    return landingUrl;
+  }
+
   static async reset(): Promise<void> {
     const logger = Clix.logger;
 
@@ -229,6 +294,17 @@ export class Clix {
           'Failed to clear campaign state during reset:',
           error instanceof Error ? error.message : String(error),
         );
+      }
+
+      if (Clix.campaignStateRepository.clearEvents) {
+        try {
+          await Clix.campaignStateRepository.clearEvents();
+        } catch (error) {
+          logger?.warn(
+            'Failed to clear event log during reset:',
+            error instanceof Error ? error.message : String(error),
+          );
+        }
       }
     }
 
@@ -324,7 +400,53 @@ export class Clix {
       messageScheduler: Clix.messageScheduler!,
       clock: Clix.clock!,
       logger: Clix.logger!,
+      recordEvent: async (event: Event) => {
+        await Clix.persistEvent(event);
+      },
     };
+  }
+
+  private static async persistEvent(event: Event): Promise<void> {
+    if (!Clix.campaignStateRepository?.appendEvents) {
+      Clix.logger?.debug(
+        `Event store is not available; skipping persistence for event '${event.name}'.`,
+      );
+      return;
+    }
+
+    try {
+      await Clix.campaignStateRepository.appendEvents([event], MAXIMUM_EVENT_LOG_SIZE);
+    } catch (error) {
+      Clix.logger?.warn(
+        `Failed to persist event '${event.name}':`,
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }
+
+  private static extractString(
+    source: Record<string, unknown>,
+    ...keys: string[]
+  ): string | undefined {
+    for (const key of keys) {
+      const value = source[key];
+      if (typeof value === 'string' && value.length > 0) {
+        return value;
+      }
+    }
+    return undefined;
+  }
+
+  private static compactProperties(
+    values: Record<string, JsonValue | undefined>,
+  ): Record<string, JsonValue> {
+    const compacted: Record<string, JsonValue> = {};
+    for (const [key, value] of Object.entries(values)) {
+      if (value !== undefined) {
+        compacted[key] = value;
+      }
+    }
+    return compacted;
   }
 
   private static async evaluate(

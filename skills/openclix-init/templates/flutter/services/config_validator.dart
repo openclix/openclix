@@ -53,6 +53,12 @@ final Set<String> validEventOperators = EventConditionOperator.values
     .map((operator) => operator.value)
     .toSet();
 
+const int maximumMessageTitleLength = 120;
+const int maximumMessageBodyLength = 500;
+
+// TODO: Additional-property enforcement is skipped because this validator
+// receives typed Config models instead of the raw JSON object graph.
+
 bool isValidIsoDateString(String? value) {
   if (value == null || value.isEmpty) return false;
 
@@ -66,6 +72,22 @@ bool isValidIsoDateString(String? value) {
 
 bool isNonEmptyStringValue(Object? value) {
   return value is String && value.isNotEmpty;
+}
+
+bool isValidUri(String? value) {
+  if (value == null || value.isEmpty) return false;
+  if (RegExp(r'\s').hasMatch(value)) return false;
+
+  final parsed = Uri.tryParse(value);
+  return parsed != null && parsed.scheme.isNotEmpty;
+}
+
+bool isValidUriReference(String? value) {
+  if (value == null || value.isEmpty) return false;
+  if (RegExp(r'\s').hasMatch(value)) return false;
+
+  final parsed = Uri.tryParse(value);
+  return parsed != null;
 }
 
 void validateEventConditionGroup(
@@ -219,7 +241,7 @@ ValidationResult validateConfig(Config config) {
         ValidationIssue(
           path: '.settings.frequency_cap.max_count',
           code: 'INVALID_FREQUENCY_CAP',
-          message: 'frequency_cap.max_count must be >= 1',
+          message: 'frequency_cap.max_count must be an integer >= 1',
         ),
       );
     }
@@ -229,7 +251,7 @@ ValidationResult validateConfig(Config config) {
         ValidationIssue(
           path: '.settings.frequency_cap.window_seconds',
           code: 'INVALID_FREQUENCY_CAP',
-          message: 'frequency_cap.window_seconds must be >= 1',
+          message: 'frequency_cap.window_seconds must be an integer >= 1',
         ),
       );
     }
@@ -242,7 +264,7 @@ ValidationResult validateConfig(Config config) {
         ValidationIssue(
           path: '.settings.do_not_disturb.start_hour',
           code: 'INVALID_DND_HOURS',
-          message: 'do_not_disturb.start_hour must be 0-23',
+          message: 'do_not_disturb.start_hour must be an integer 0-23',
         ),
       );
     }
@@ -252,7 +274,7 @@ ValidationResult validateConfig(Config config) {
         ValidationIssue(
           path: '.settings.do_not_disturb.end_hour',
           code: 'INVALID_DND_HOURS',
-          message: 'do_not_disturb.end_hour must be 0-23',
+          message: 'do_not_disturb.end_hour must be an integer 0-23',
         ),
       );
     }
@@ -293,12 +315,12 @@ ValidationResult validateConfig(Config config) {
       );
     }
 
-    if (campaign.description.isEmpty) {
-      warnings.add(
+    if (campaign.description.trim().isEmpty) {
+      errors.add(
         ValidationIssue(
           path: '$basePath.description',
           code: 'MISSING_DESCRIPTION',
-          message: 'Campaign is missing a description',
+          message: 'Campaign missing required description',
         ),
       );
     }
@@ -361,7 +383,7 @@ ValidationResult validateConfig(Config config) {
             ValidationIssue(
               path: '$basePath.trigger.event.delay_seconds',
               code: 'INVALID_DELAY_SECONDS',
-              message: 'event.delay_seconds must be >= 0',
+              message: 'event.delay_seconds must be an integer >= 0',
             ),
           );
         }
@@ -539,6 +561,16 @@ ValidationResult validateConfig(Config config) {
           message: 'Message content must have a title',
         ),
       );
+    } else if (campaign.message.content.title.length >
+        maximumMessageTitleLength) {
+      errors.add(
+        ValidationIssue(
+          path: '$basePath.message.content.title',
+          code: 'INVALID_MESSAGE_TITLE_LENGTH',
+          message:
+              'title must be $maximumMessageTitleLength characters or less',
+        ),
+      );
     }
 
     if (campaign.message.content.body.isEmpty) {
@@ -547,6 +579,37 @@ ValidationResult validateConfig(Config config) {
           path: '$basePath.message.content.body',
           code: 'MISSING_MESSAGE_BODY',
           message: 'Message content must have a body',
+        ),
+      );
+    } else if (campaign.message.content.body.length >
+        maximumMessageBodyLength) {
+      errors.add(
+        ValidationIssue(
+          path: '$basePath.message.content.body',
+          code: 'INVALID_MESSAGE_BODY_LENGTH',
+          message: 'body must be $maximumMessageBodyLength characters or less',
+        ),
+      );
+    }
+
+    if (campaign.message.content.imageUrl != null &&
+        !isValidUri(campaign.message.content.imageUrl)) {
+      errors.add(
+        ValidationIssue(
+          path: '$basePath.message.content.image_url',
+          code: 'INVALID_IMAGE_URL',
+          message: 'image_url must be a valid URI',
+        ),
+      );
+    }
+
+    if (campaign.message.content.landingUrl != null &&
+        !isValidUriReference(campaign.message.content.landingUrl)) {
+      errors.add(
+        ValidationIssue(
+          path: '$basePath.message.content.landing_url',
+          code: 'INVALID_LANDING_URL',
+          message: 'landing_url must be a valid URI reference',
         ),
       );
     }

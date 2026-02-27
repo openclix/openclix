@@ -127,4 +127,21 @@ public final class ClixCampaignManager {
             return true
         }
     }
+
+    public static func getEventLog(limit: Int? = nil) async -> [Event] {
+        let coordinator = Clix.coordinator
+
+        guard await coordinator.isInitialized() else { return [] }
+        guard let campaignStateRepository = await coordinator.getCampaignStateRepository() else {
+            return []
+        }
+
+        do {
+            return try await campaignStateRepository.loadEvents(limit: limit)
+        } catch {
+            let logger = await coordinator.getLogger()
+            logger?.error("Failed to load event log: \(error.localizedDescription)")
+            return []
+        }
+    }
 }

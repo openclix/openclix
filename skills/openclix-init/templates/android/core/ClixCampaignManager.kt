@@ -2,6 +2,7 @@ package ai.openclix.core
 
 import ai.openclix.models.CampaignStateSnapshot
 import ai.openclix.models.Config
+import ai.openclix.models.Event
 import ai.openclix.models.QueuedMessage
 import ai.openclix.models.TriggerContext
 import ai.openclix.models.TriggerResult
@@ -120,6 +121,23 @@ object ClixCampaignManager {
             val campaignMatches = campaignId == null || queuedMessage.campaign_id == campaignId
             val statusMatches = status == null || queuedMessage.status.value == status
             campaignMatches && statusMatches
+        }
+    }
+
+    @JvmStatic
+    suspend fun getEventLog(limit: Int? = null): List<Event> {
+        assertInitialized()
+
+        val repository = Clix.getCampaignStateRepositoryInternal() ?: return emptyList()
+
+        return try {
+            repository.loadEvents(limit)
+        } catch (error: Exception) {
+            Clix.getLoggerInternal()?.error(
+                "Failed to load event log:",
+                error.message ?: error.toString()
+            )
+            emptyList()
         }
     }
 }

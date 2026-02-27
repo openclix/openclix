@@ -2,6 +2,7 @@ export const CAMPAIGN_STATE_KEYS = {
   campaign_states: '@openclix/campaign_states',
   queued_messages: '@openclix/queued_messages',
   trigger_history: '@openclix/trigger_history',
+  events: '@openclix/events',
   meta: '@openclix/campaign_state_meta',
 } as const;
 

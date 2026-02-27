@@ -5,6 +5,7 @@ import type {
   TriggerResult,
   CampaignStateSnapshot,
   QueuedMessage,
+  Event,
 } from '../domain/ClixTypes';
 import { validateConfig } from '../infrastructure/ConfigValidator';
 import { createDefaultCampaignStateSnapshot } from '../infrastructure/CampaignStateRepository';
@@ -124,5 +125,22 @@ export class ClixCampaignManager {
       }
       return true;
     });
+  }
+
+  static async getEventLog(limit?: number): Promise<Event[]> {
+    assertInitialized();
+
+    const campaignStateRepository = Clix.getCampaignStateRepositoryInternal();
+    if (!campaignStateRepository?.loadEvents) return [];
+
+    try {
+      return await campaignStateRepository.loadEvents(limit);
+    } catch (error) {
+      Clix.getLoggerInternal()?.error(
+        'Failed to load event log:',
+        error instanceof Error ? error.message : String(error),
+      );
+      return [];
+    }
   }
 }

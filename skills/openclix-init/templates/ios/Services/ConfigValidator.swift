@@ -27,6 +27,8 @@ public struct ValidationResult {
 private let kebabCaseExpression = try! NSRegularExpression(
     pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
 )
+private let maximumMessageTitleLength = 120
+private let maximumMessageBodyLength = 500
 
 private func parseIsoDate(_ value: String?) -> Date? {
     guard let value = value, !value.isEmpty else { return nil }
@@ -42,6 +44,34 @@ private func parseIsoDate(_ value: String?) -> Date? {
 
 private func isValidIsoDate(_ value: String?) -> Bool {
     return parseIsoDate(value) != nil
+}
+
+private func isBlank(_ value: String) -> Bool {
+    return value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+}
+
+private func isValidUri(_ value: String?) -> Bool {
+    guard let value, !isBlank(value) else { return false }
+    if value.rangeOfCharacter(from: .whitespacesAndNewlines) != nil { return false }
+
+    guard let components = URLComponents(string: value),
+          let scheme = components.scheme,
+          !scheme.isEmpty else {
+        return false
+    }
+
+    return true
+}
+
+private func isValidUriReference(_ value: String?) -> Bool {
+    guard let value, !isBlank(value) else { return false }
+    if value.rangeOfCharacter(from: .whitespacesAndNewlines) != nil { return false }
+    if isValidUri(value) { return true }
+
+    guard let baseURL = URL(string: "https://openclix.local") else {
+        return false
+    }
+    return URL(string: value, relativeTo: baseURL) != nil
 }
 
 private func validateEventConditionGroup(
@@ -113,6 +143,7 @@ private func validateEventConditionGroup(
 public func validateConfig(_ config: Config) -> ValidationResult {
     var errors: [ValidationIssue] = []
     var warnings: [ValidationIssue] = []
+    // TODO: Validate additionalProperties with raw JSON before Codable decoding.
 
     if config.schema_version != "openclix/config/v1" {
         errors.append(
@@ -150,7 +181,7 @@ public func validateConfig(_ config: Config) -> ValidationResult {
                 ValidationIssue(
                     path: ".settings.frequency_cap.max_count",
                     code: "INVALID_FREQUENCY_CAP",
-                    message: "frequency_cap.max_count must be >= 1"
+                    message: "frequency_cap.max_count must be an integer >= 1"
                 )
             )
         }
@@ -160,7 +191,7 @@ public func validateConfig(_ config: Config) -> ValidationResult {
                 ValidationIssue(
                     path: ".settings.frequency_cap.window_seconds",
                     code: "INVALID_FREQUENCY_CAP",
-                    message: "frequency_cap.window_seconds must be >= 1"
+                    message: "frequency_cap.window_seconds must be an integer >= 1"
                 )
             )
         }
@@ -172,7 +203,7 @@ public func validateConfig(_ config: Config) -> ValidationResult {
                 ValidationIssue(
                     path: ".settings.do_not_disturb.start_hour",
                     code: "INVALID_DND_HOURS",
-                    message: "do_not_disturb.start_hour must be 0-23"
+                    message: "do_not_disturb.start_hour must be an integer between 0 and 23"
                 )
             )
         }
@@ -182,7 +213,7 @@ public func validateConfig(_ config: Config) -> ValidationResult {
                 ValidationIssue(
                     path: ".settings.do_not_disturb.end_hour",
                     code: "INVALID_DND_HOURS",
-                    message: "do_not_disturb.end_hour must be 0-23"
+                    message: "do_not_disturb.end_hour must be an integer between 0 and 23"
                 )
             )
         }
@@ -222,12 +253,12 @@ public func validateConfig(_ config: Config) -> ValidationResult {
             )
         }
 
-        if campaign.description.isEmpty {
-            warnings.append(
+        if isBlank(campaign.description) {
+            errors.append(
                 ValidationIssue(
                     path: "\(basePath).description",
                     code: "MISSING_DESCRIPTION",
-                    message: "Campaign is missing a description"
+                    message: "Campaign description is required"
                 )
             )
         }
@@ -267,7 +298,7 @@ public func validateConfig(_ config: Config) -> ValidationResult {
                     ValidationIssue(
                         path: "\(basePath).trigger.event.delay_seconds",
                         code: "INVALID_DELAY_SECONDS",
-                        message: "event.delay_seconds must be >= 0"
+                        message: "event.delay_seconds must be an integer >= 0"
                     )
                 )
             }
@@ -394,7 +425,7 @@ public func validateConfig(_ config: Config) -> ValidationResult {
             )
         }
 
-        if campaign.message.content.title.isEmpty {
+        if isBlank(campaign.message.content.title) {
             errors.append(
                 ValidationIssue(
                     path: "\(basePath).message.content.title",
@@ -402,14 +433,52 @@ public func validateConfig(_ config: Config) -> ValidationResult {
                     message: "Message content must have a title"
                 )
             )
+        } else if campaign.message.content.title.count > maximumMessageTitleLength {
+            errors.append(
+                ValidationIssue(
+                    path: "\(basePath).message.content.title",
+                    code: "INVALID_MESSAGE_TITLE_LENGTH",
+                    message: "title must be \(maximumMessageTitleLength) characters or less"
+                )
+            )
         }
 
-        if campaign.message.content.body.isEmpty {
+        if isBlank(campaign.message.content.body) {
             errors.append(
                 ValidationIssue(
                     path: "\(basePath).message.content.body",
                     code: "MISSING_MESSAGE_BODY",
                     message: "Message content must have a body"
+                )
+            )
+        } else if campaign.message.content.body.count > maximumMessageBodyLength {
+            errors.append(
+                ValidationIssue(
+                    path: "\(basePath).message.content.body",
+                    code: "INVALID_MESSAGE_BODY_LENGTH",
+                    message: "body must be \(maximumMessageBodyLength) characters or less"
+                )
+            )
+        }
+
+        if campaign.message.content.image_url != nil
+            && !isValidUri(campaign.message.content.image_url) {
+            errors.append(
+                ValidationIssue(
+                    path: "\(basePath).message.content.image_url",
+                    code: "INVALID_IMAGE_URL",
+                    message: "image_url must be a valid URI"
+                )
+            )
+        }
+
+        if campaign.message.content.landing_url != nil
+            && !isValidUriReference(campaign.message.content.landing_url) {
+            errors.append(
+                ValidationIssue(
+                    path: "\(basePath).message.content.landing_url",
+                    code: "INVALID_LANDING_URL",
+                    message: "landing_url must be a valid URI reference"
                 )
             )
         }

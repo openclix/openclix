@@ -309,4 +309,7 @@ export interface CampaignStateRepositoryPort {
   loadSnapshot(now: string): Promise<CampaignStateSnapshot>;
   saveSnapshot(snapshot: CampaignStateSnapshot): Promise<void>;
   clearCampaignState(): Promise<void>;
+  appendEvents?(events: Event[], maxEntries?: number): Promise<void>;
+  loadEvents?(limit?: number): Promise<Event[]>;
+  clearEvents?(): Promise<void>;
 }

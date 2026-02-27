@@ -26,6 +26,8 @@ private const val EXTRA_EXECUTE_AT = "openclix_executeAt"
 private const val EXTRA_CREATED_AT = "openclix_createdAt"
 private const val EXTRA_CONTENT_TITLE = "openclix_contentTitle"
 private const val EXTRA_CONTENT_BODY = "openclix_contentBody"
+private const val EXTRA_IMAGE_URL = "openclix_imageUrl"
+private const val EXTRA_LANDING_URL = "openclix_landingUrl"
 
 private const val PENDING_RECORDS_FILENAME = "openclix_pending_notifications.json"
 
@@ -43,6 +45,12 @@ class OpenClixAlarmReceiver : BroadcastReceiver() {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             putExtra(EXTRA_ID, id)
             putExtra(EXTRA_CAMPAIGN_ID, intent.getStringExtra(EXTRA_CAMPAIGN_ID))
+            putExtra(EXTRA_EXECUTE_AT, intent.getStringExtra(EXTRA_EXECUTE_AT))
+            putExtra(EXTRA_CREATED_AT, intent.getStringExtra(EXTRA_CREATED_AT))
+            putExtra(EXTRA_CONTENT_TITLE, title)
+            putExtra(EXTRA_CONTENT_BODY, body)
+            putExtra(EXTRA_IMAGE_URL, intent.getStringExtra(EXTRA_IMAGE_URL))
+            putExtra(EXTRA_LANDING_URL, intent.getStringExtra(EXTRA_LANDING_URL))
         }
 
         val contentIntent = if (launchIntent != null) {
@@ -151,6 +159,8 @@ class LocalNotificationScheduler(
             putExtra(EXTRA_CREATED_AT, record.created_at)
             putExtra(EXTRA_CONTENT_TITLE, record.content.title)
             putExtra(EXTRA_CONTENT_BODY, record.content.body)
+            putExtra(EXTRA_IMAGE_URL, record.content.image_url)
+            putExtra(EXTRA_LANDING_URL, record.content.landing_url)
         }
 
         val pendingIntent = PendingIntent.getBroadcast(

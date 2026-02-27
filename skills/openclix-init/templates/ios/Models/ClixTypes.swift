@@ -429,6 +429,14 @@ public enum EventSourceType: String, Codable, Equatable {
     case system
 }
 
+public enum SystemEventName: String, Codable, Equatable {
+    case clixMessageScheduled = "clix.message.scheduled"
+    case clixMessageDelivered = "clix.message.delivered"
+    case clixMessageOpened = "clix.message.opened"
+    case clixMessageCancelled = "clix.message.cancelled"
+    case clixMessageFailed = "clix.message.failed"
+}
+
 public struct Event: Codable, Equatable {
     public let id: String
     public let name: String
@@ -661,4 +669,7 @@ public protocol ClixCampaignStateRepository {
     func loadSnapshot(now: String) async throws -> CampaignStateSnapshot
     func saveSnapshot(_ snapshot: CampaignStateSnapshot) async throws
     func clearCampaignState() async throws
+    func appendEvents(_ events: [Event], maxEntries: Int?) async throws
+    func loadEvents(limit: Int?) async throws -> [Event]
+    func clearEvents() async throws
 }

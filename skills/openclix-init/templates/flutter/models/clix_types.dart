@@ -1,5 +1,37 @@
 typedef JsonValue = Object?;
 
+int parseStrictInt(
+  Object? value, {
+  required int fallback,
+  int? invalidFallback,
+}) {
+  if (value is int) {
+    return value;
+  }
+
+  if (value is num && value.isFinite && value % 1 == 0) {
+    return value.toInt();
+  }
+
+  return invalidFallback ?? fallback;
+}
+
+int? parseStrictOptionalInt(Object? value, {int? invalidFallback}) {
+  if (value == null) {
+    return null;
+  }
+
+  if (value is int) {
+    return value;
+  }
+
+  if (value is num && value.isFinite && value % 1 == 0) {
+    return value.toInt();
+  }
+
+  return invalidFallback;
+}
+
 class Config {
   final String schemaVersion;
   final String configVersion;
@@ -92,8 +124,16 @@ class FrequencyCap {
 
   factory FrequencyCap.fromJson(Map<String, dynamic> json) {
     return FrequencyCap(
-      maxCount: (json['max_count'] as num? ?? 0).toInt(),
-      windowSeconds: (json['window_seconds'] as num? ?? 0).toInt(),
+      maxCount: parseStrictInt(
+        json['max_count'],
+        fallback: 0,
+        invalidFallback: -1,
+      ),
+      windowSeconds: parseStrictInt(
+        json['window_seconds'],
+        fallback: 0,
+        invalidFallback: -1,
+      ),
     );
   }
 
@@ -110,8 +150,16 @@ class DoNotDisturb {
 
   factory DoNotDisturb.fromJson(Map<String, dynamic> json) {
     return DoNotDisturb(
-      startHour: (json['start_hour'] as num? ?? 0).toInt(),
-      endHour: (json['end_hour'] as num? ?? 0).toInt(),
+      startHour: parseStrictInt(
+        json['start_hour'],
+        fallback: -1,
+        invalidFallback: -1,
+      ),
+      endHour: parseStrictInt(
+        json['end_hour'],
+        fallback: -1,
+        invalidFallback: -1,
+      ),
     );
   }
 
@@ -269,7 +317,10 @@ class EventTriggerConfig {
       triggerEvent: EventConditionGroup.fromJson(
         Map<String, dynamic>.from(json['trigger_event'] as Map? ?? const {}),
       ),
-      delaySeconds: (json['delay_seconds'] as num?)?.toInt(),
+      delaySeconds: parseStrictOptionalInt(
+        json['delay_seconds'],
+        invalidFallback: -1,
+      ),
       cancelEvent: json['cancel_event'] is Map<String, dynamic>
           ? EventConditionGroup.fromJson(
               json['cancel_event'] as Map<String, dynamic>,
@@ -355,8 +406,8 @@ class TimeOfDayRule {
 
   factory TimeOfDayRule.fromJson(Map<String, dynamic> json) {
     return TimeOfDayRule(
-      hour: (json['hour'] as num? ?? 0).toInt(),
-      minute: (json['minute'] as num? ?? 0).toInt(),
+      hour: parseStrictInt(json['hour'], fallback: -1, invalidFallback: -1),
+      minute: parseStrictInt(json['minute'], fallback: -1, invalidFallback: -1),
     );
   }
 
@@ -401,7 +452,11 @@ class RecurrenceRule {
   factory RecurrenceRule.fromJson(Map<String, dynamic> json) {
     return RecurrenceRule(
       type: RecurrenceType.fromJson(json['type'] as String?),
-      interval: (json['interval'] as num? ?? 1).toInt(),
+      interval: parseStrictInt(
+        json['interval'],
+        fallback: 0,
+        invalidFallback: 0,
+      ),
       weeklyRule: json['weekly_rule'] is Map<String, dynamic>
           ? WeeklyRule.fromJson(json['weekly_rule'] as Map<String, dynamic>)
           : json['weekly_rule'] is Map
@@ -719,6 +774,26 @@ enum EventSourceType {
     return EventSourceType.values.firstWhere(
       (value) => value.value == raw,
       orElse: () => EventSourceType.app,
+    );
+  }
+
+  String toJson() => value;
+}
+
+enum SystemEventName {
+  messageScheduled('clix.message.scheduled'),
+  messageDelivered('clix.message.delivered'),
+  messageOpened('clix.message.opened'),
+  messageCancelled('clix.message.cancelled'),
+  messageFailed('clix.message.failed');
+
+  const SystemEventName(this.value);
+  final String value;
+
+  static SystemEventName fromJson(String? raw) {
+    return SystemEventName.values.firstWhere(
+      (value) => value.value == raw,
+      orElse: () => SystemEventName.messageFailed,
     );
   }
 
@@ -1074,4 +1149,10 @@ abstract class CampaignStateRepositoryPort {
   Future<void> saveSnapshot(CampaignStateSnapshot snapshot);
 
   Future<void> clearCampaignState();
+
+  Future<void> appendEvents(List<Event> events, [int maxEntries = 5000]);
+
+  Future<List<Event>> loadEvents([int? limit]);
+
+  Future<void> clearEvents();
 }

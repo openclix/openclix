@@ -71,6 +71,8 @@ export class NotifeeScheduler implements MessageScheduler {
         data: {
           campaignId: record.campaign_id,
           queuedMessageId: record.id,
+          landingUrl: record.content.landing_url,
+          imageUrl: record.content.image_url,
         },
       },
       {
@@ -98,6 +100,14 @@ export class NotifeeScheduler implements MessageScheduler {
         content: {
           title: triggerNotification.notification.title || '',
           body: triggerNotification.notification.body || '',
+          landing_url:
+            typeof triggerNotification.notification.data?.landingUrl === 'string'
+              ? triggerNotification.notification.data.landingUrl
+              : undefined,
+          image_url:
+            typeof triggerNotification.notification.data?.imageUrl === 'string'
+              ? triggerNotification.notification.data.imageUrl
+              : undefined,
         },
         created_at: new Date().toISOString(),
       }));

@@ -130,4 +130,20 @@ class ClixCampaignManager {
       return true;
     }).toList();
   }
+
+  static Future<List<Event>> getEventLog([int? limit]) async {
+    assertClixInitialized();
+
+    final campaignStateRepository = Clix.getCampaignStateRepositoryInternal();
+    if (campaignStateRepository == null) {
+      return const [];
+    }
+
+    try {
+      return campaignStateRepository.loadEvents(limit);
+    } catch (error) {
+      Clix.getLoggerInternal()?.error('Failed to load event log:', error);
+      return const [];
+    }
+  }
 }

@@ -1,4 +1,5 @@
 import '../models/clix_types.dart';
+import '../services/utils.dart';
 import 'campaign_processor.dart';
 import 'campaign_state_service.dart';
 import 'event_condition_processor.dart';
@@ -9,6 +10,7 @@ class TriggerServiceDependencies {
   final ClixLocalMessageScheduler messageScheduler;
   final ClixClock clock;
   final ClixLogger logger;
+  final Future<void> Function(Event event)? recordEvent;
   final CampaignStateService? campaignStateService;
 
   TriggerServiceDependencies({
@@ -16,6 +18,7 @@ class TriggerServiceDependencies {
     required this.messageScheduler,
     required this.clock,
     required this.logger,
+    this.recordEvent,
     this.campaignStateService,
   });
 }
@@ -91,6 +94,7 @@ class TriggerService {
       final cancellationTraces = await cancelQueuedMessages(
         triggerContext.event!,
         snapshot,
+        now,
         logger,
       );
       traces.addAll(cancellationTraces);
@@ -132,6 +136,12 @@ class TriggerService {
         try {
           await messageScheduler.schedule(queuedMessage);
         } catch (scheduleError) {
+          await emitSystemEvent(SystemEventName.messageFailed, {
+            'campaign_id': campaignId,
+            'queued_message_id': queuedMessage.id,
+            'channel_type': queuedMessage.channelType.value,
+            'failure_reason': scheduleError.toString(),
+          }, now);
           logger.error(
             '[TriggerService] Error scheduling message for campaign $campaignId:',
             scheduleError,
@@ -150,6 +160,12 @@ class TriggerService {
             maxTriggerHistory: maximumTriggerHistorySize,
           ),
         );
+        await emitSystemEvent(SystemEventName.messageScheduled, {
+          'campaign_id': campaignId,
+          'queued_message_id': queuedMessage.id,
+          'channel_type': queuedMessage.channelType.value,
+          'execute_at': queuedMessage.executeAt,
+        }, now);
 
         queuedMessages.add(queuedMessage);
       } catch (error) {
@@ -215,6 +231,7 @@ class TriggerService {
   Future<List<DecisionTrace>> cancelQueuedMessages(
     Event event,
     CampaignStateSnapshot snapshot,
+    String now,
     ClixLogger logger,
   ) async {
     final traces = <DecisionTrace>[];
@@ -253,6 +270,9 @@ class TriggerService {
       if (!matched) {
         continue;
       }
+      if (!isWithinCancellationWindow(event, pendingMessage, now)) {
+        continue;
+      }
 
       try {
         await dependencies.messageScheduler.cancel(pendingMessage.messageId);
@@ -277,12 +297,23 @@ class TriggerService {
                 "because event '${event.name}' matched cancel_event",
           ),
         );
+        await emitSystemEvent(SystemEventName.messageCancelled, {
+          'campaign_id': pendingMessage.campaignId,
+          'queued_message_id': pendingMessage.messageId,
+          'skip_reason': SkipReason.triggerCancelEventMatched.value,
+        }, event.createdAt);
 
         logger.debug(
           '[TriggerService] Cancelled queued message ${pendingMessage.messageId} '
           'for campaign ${pendingMessage.campaignId}',
         );
       } catch (error) {
+        await emitSystemEvent(SystemEventName.messageFailed, {
+          'campaign_id': pendingMessage.campaignId,
+          'queued_message_id': pendingMessage.messageId,
+          'channel_type': campaign.message.channelType.value,
+          'failure_reason': error.toString(),
+        }, event.createdAt);
         logger.warn(
           '[TriggerService] Failed to cancel queued message '
           '${pendingMessage.messageId}:',
@@ -292,5 +323,65 @@ class TriggerService {
     }
 
     return traces;
+  }
+
+  bool isWithinCancellationWindow(
+    Event event,
+    CampaignQueuedMessage pendingMessage,
+    String now,
+  ) {
+    final cancellationAt =
+        parseTimestamp(event.createdAt) ?? parseTimestamp(now);
+    final windowStart = parseTimestamp(pendingMessage.createdAt);
+    final windowEnd = parseTimestamp(pendingMessage.executeAt);
+
+    if (cancellationAt == null || windowStart == null || windowEnd == null) {
+      return false;
+    }
+
+    return cancellationAt >= windowStart && cancellationAt <= windowEnd;
+  }
+
+  int? parseTimestamp(String? value) {
+    if (value == null || value.isEmpty) {
+      return null;
+    }
+
+    final parsed = DateTime.tryParse(value)?.toUtc();
+    return parsed?.millisecondsSinceEpoch;
+  }
+
+  Future<void> emitSystemEvent(
+    SystemEventName name,
+    Map<String, JsonValue?> properties,
+    String createdAt,
+  ) async {
+    if (dependencies.recordEvent == null) {
+      return;
+    }
+
+    final normalizedProperties = <String, JsonValue>{};
+    properties.forEach((key, value) {
+      if (value != null) {
+        normalizedProperties[key] = value;
+      }
+    });
+
+    try {
+      await dependencies.recordEvent!(
+        Event(
+          id: generateUUID(),
+          name: name.value,
+          sourceType: EventSourceType.system,
+          properties: normalizedProperties,
+          createdAt: createdAt,
+        ),
+      );
+    } catch (error) {
+      dependencies.logger.warn(
+        "[TriggerService] Failed to persist system event '${name.value}':",
+        error,
+      );
+    }
   }
 }

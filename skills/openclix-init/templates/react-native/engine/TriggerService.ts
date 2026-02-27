@@ -10,8 +10,13 @@ import type {
   MessageScheduler,
   Clock,
   Logger,
+  JsonValue,
 } from '../domain/ClixTypes';
-import { EventConditionProcessor, ScheduleCalculator } from '../domain/CampaignUtils';
+import {
+  EventConditionProcessor,
+  ScheduleCalculator,
+  generateUUID,
+} from '../domain/CampaignUtils';
 import { CampaignProcessor } from '../domain/CampaignProcessor';
 import { CampaignStateService } from '../domain/CampaignStateService';
 
@@ -20,6 +25,7 @@ export interface TriggerServiceDependencies {
   messageScheduler: MessageScheduler;
   clock: Clock;
   logger: Logger;
+  recordEvent?: (event: Event) => Promise<void>;
   campaignStateService?: CampaignStateService;
 }
 
@@ -94,6 +100,7 @@ export class TriggerService {
       const cancellationTraces = await this.cancelQueuedMessages(
         triggerContext.event,
         snapshot,
+        now,
         logger,
       );
       traces.push(...cancellationTraces);
@@ -131,6 +138,19 @@ export class TriggerService {
         try {
           await messageScheduler.schedule(queuedMessage);
         } catch (scheduleError) {
+          await this.emitSystemEvent(
+            'clix.message.failed',
+            {
+              campaign_id: campaignId,
+              queued_message_id: queuedMessage.id,
+              channel_type: queuedMessage.channel_type,
+              failure_reason:
+                scheduleError instanceof Error
+                  ? scheduleError.message
+                  : String(scheduleError),
+            },
+            now,
+          );
           logger.error(
             `[TriggerService] Error scheduling message for campaign ${campaignId}:`,
             scheduleError,
@@ -147,6 +167,16 @@ export class TriggerService {
           scheduled_for: decision.scheduled_for,
           max_trigger_history: MAXIMUM_TRIGGER_HISTORY_SIZE,
         });
+        await this.emitSystemEvent(
+          'clix.message.scheduled',
+          {
+            campaign_id: campaignId,
+            queued_message_id: queuedMessage.id,
+            channel_type: queuedMessage.channel_type,
+            execute_at: queuedMessage.execute_at,
+          },
+          now,
+        );
 
         queuedMessages.push(queuedMessage);
       } catch (error) {
@@ -204,6 +234,7 @@ export class TriggerService {
   private async cancelQueuedMessages(
     event: Event,
     snapshot: CampaignStateSnapshot,
+    now: string,
     logger: Logger,
   ): Promise<DecisionTrace[]> {
     const traces: DecisionTrace[] = [];
@@ -223,6 +254,7 @@ export class TriggerService {
 
       const isMatched = this.eventConditionProcessor.process(cancelEvent, event);
       if (!isMatched) continue;
+      if (!this.isWithinCancellationWindow(event, pendingMessage, now)) continue;
 
       try {
         await this.dependencies.messageScheduler.cancel(pendingMessage.message_id);
@@ -240,10 +272,30 @@ export class TriggerService {
             `Cancelled queued message ${pendingMessage.message_id} for campaign ${pendingMessage.campaign_id} ` +
             `because event '${event.name}' matched cancel_event`,
         });
+        await this.emitSystemEvent(
+          'clix.message.cancelled',
+          {
+            campaign_id: pendingMessage.campaign_id,
+            queued_message_id: pendingMessage.message_id,
+            skip_reason: 'trigger_cancel_event_matched',
+          },
+          event.created_at,
+        );
         logger.debug(
           `[TriggerService] Cancelled queued message ${pendingMessage.message_id} for campaign ${pendingMessage.campaign_id}`,
         );
       } catch (error) {
+        await this.emitSystemEvent(
+          'clix.message.failed',
+          {
+            campaign_id: pendingMessage.campaign_id,
+            queued_message_id: pendingMessage.message_id,
+            channel_type: 'app_push',
+            failure_reason:
+              error instanceof Error ? error.message : String(error),
+          },
+          event.created_at,
+        );
         logger.warn(
           `[TriggerService] Failed to cancel queued message ${pendingMessage.message_id}:`,
           error instanceof Error ? error.message : String(error),
@@ -252,5 +304,60 @@ export class TriggerService {
     }
 
     return traces;
+  }
+
+  private isWithinCancellationWindow(
+    event: Event,
+    pendingMessage: CampaignStateSnapshot['queued_messages'][number],
+    now: string,
+  ): boolean {
+    const cancellationAtMs = this.parseTimestamp(event.created_at) ?? this.parseTimestamp(now);
+    const windowStartMs = this.parseTimestamp(pendingMessage.created_at);
+    const windowEndMs = this.parseTimestamp(pendingMessage.execute_at);
+    if (
+      cancellationAtMs === null ||
+      windowStartMs === null ||
+      windowEndMs === null
+    ) {
+      return false;
+    }
+
+    return cancellationAtMs >= windowStartMs && cancellationAtMs <= windowEndMs;
+  }
+
+  private parseTimestamp(value: string | undefined): number | null {
+    if (!value) return null;
+    const timestamp = new Date(value).getTime();
+    return Number.isNaN(timestamp) ? null : timestamp;
+  }
+
+  private async emitSystemEvent(
+    name: string,
+    properties: Record<string, JsonValue | undefined>,
+    created_at: string,
+  ): Promise<void> {
+    if (!this.dependencies.recordEvent) return;
+
+    const normalizedProperties: Record<string, JsonValue> = {};
+    for (const [key, value] of Object.entries(properties)) {
+      if (value !== undefined) {
+        normalizedProperties[key] = value;
+      }
+    }
+
+    try {
+      await this.dependencies.recordEvent({
+        id: generateUUID(),
+        name,
+        source_type: 'system',
+        properties: normalizedProperties,
+        created_at,
+      });
+    } catch (error) {
+      this.dependencies.logger.warn(
+        `[TriggerService] Failed to persist system event '${name}':`,
+        error instanceof Error ? error.message : String(error),
+      );
+    }
   }
 }

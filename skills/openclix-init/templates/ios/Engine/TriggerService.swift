@@ -5,17 +5,20 @@ public struct TriggerServiceDependencies {
     public let messageScheduler: ClixMessageScheduler
     public let clock: ClixClock
     public let logger: ClixLogger
+    public let recordEvent: ((Event) async -> Void)?
 
     public init(
         campaignStateRepository: ClixCampaignStateRepository,
         messageScheduler: ClixMessageScheduler,
         clock: ClixClock,
-        logger: ClixLogger
+        logger: ClixLogger,
+        recordEvent: ((Event) async -> Void)? = nil
     ) {
         self.campaignStateRepository = campaignStateRepository
         self.messageScheduler = messageScheduler
         self.clock = clock
         self.logger = logger
+        self.recordEvent = recordEvent
     }
 }
 
@@ -126,6 +129,16 @@ public actor TriggerService {
             do {
                 try await dependencies.messageScheduler.schedule(queuedMessage)
             } catch {
+                await emitSystemEvent(
+                    name: .clixMessageFailed,
+                    properties: [
+                        "campaign_id": .string(campaignId),
+                        "queued_message_id": .string(queuedMessage.id),
+                        "channel_type": .string(queuedMessage.channel_type.rawValue),
+                        "failure_reason": .string(error.localizedDescription),
+                    ],
+                    createdAt: now
+                )
                 dependencies.logger.error(
                     "[TriggerService] Error scheduling message for campaign \(campaignId):",
                     error.localizedDescription
@@ -143,6 +156,17 @@ public actor TriggerService {
                     scheduled_for: decision.scheduled_for,
                     max_trigger_history: maximumTriggerHistorySize
                 )
+            )
+
+            await emitSystemEvent(
+                name: .clixMessageScheduled,
+                properties: [
+                    "campaign_id": .string(campaignId),
+                    "queued_message_id": .string(queuedMessage.id),
+                    "channel_type": .string(queuedMessage.channel_type.rawValue),
+                    "execute_at": .string(queuedMessage.execute_at),
+                ],
+                createdAt: now
             )
 
             queuedMessages.append(queuedMessage)
@@ -231,6 +255,9 @@ public actor TriggerService {
             )
 
             guard isMatched else { continue }
+            guard isWithinCancellationWindow(event: event, pendingMessage: pendingMessage) else {
+                continue
+            }
 
             do {
                 try await dependencies.messageScheduler.cancel(pendingMessage.message_id)
@@ -255,10 +282,31 @@ public actor TriggerService {
                     )
                 )
 
+                await emitSystemEvent(
+                    name: .clixMessageCancelled,
+                    properties: [
+                        "campaign_id": .string(pendingMessage.campaign_id),
+                        "queued_message_id": .string(pendingMessage.message_id),
+                        "skip_reason": .string(SkipReason.trigger_cancel_event_matched.rawValue),
+                    ],
+                    createdAt: event.created_at
+                )
+
                 dependencies.logger.debug(
                     "[TriggerService] Cancelled queued message \(pendingMessage.message_id) for campaign \(pendingMessage.campaign_id)"
                 )
             } catch {
+                await emitSystemEvent(
+                    name: .clixMessageFailed,
+                    properties: [
+                        "campaign_id": .string(pendingMessage.campaign_id),
+                        "queued_message_id": .string(pendingMessage.message_id),
+                        "channel_type": .string(campaign.message.channel_type.rawValue),
+                        "failure_reason": .string(error.localizedDescription),
+                    ],
+                    createdAt: event.created_at
+                )
+
                 dependencies.logger.warn(
                     "[TriggerService] Failed to cancel queued message \(pendingMessage.message_id):",
                     error.localizedDescription
@@ -267,5 +315,57 @@ public actor TriggerService {
         }
 
         return (updatedSnapshot, traces)
+    }
+
+    private func isWithinCancellationWindow(
+        event: Event,
+        pendingMessage: CampaignQueuedMessage
+    ) -> Bool {
+        guard let cancellationTimestamp = parseTimestamp(event.created_at),
+              let windowStartTimestamp = parseTimestamp(pendingMessage.created_at),
+              let windowEndTimestamp = parseTimestamp(pendingMessage.execute_at) else {
+            return false
+        }
+
+        return cancellationTimestamp >= windowStartTimestamp
+            && cancellationTimestamp <= windowEndTimestamp
+    }
+
+    private func parseTimestamp(_ value: String?) -> TimeInterval? {
+        guard let value, !value.isEmpty else { return nil }
+
+        let internetFormatter = ISO8601DateFormatter()
+        internetFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let parsedDate = internetFormatter.date(from: value) {
+            return parsedDate.timeIntervalSince1970
+        }
+
+        let fallbackFormatter = ISO8601DateFormatter()
+        return fallbackFormatter.date(from: value)?.timeIntervalSince1970
+    }
+
+    private func emitSystemEvent(
+        name: SystemEventName,
+        properties: [String: JsonValue?],
+        createdAt: String
+    ) async {
+        guard let recordEvent = dependencies.recordEvent else { return }
+
+        var normalizedProperties: [String: JsonValue] = [:]
+        for (key, value) in properties {
+            if let value {
+                normalizedProperties[key] = value
+            }
+        }
+
+        await recordEvent(
+            Event(
+                id: generateUUID(),
+                name: name.rawValue,
+                source_type: .system,
+                properties: normalizedProperties,
+                created_at: createdAt
+            )
+        )
     }
 }

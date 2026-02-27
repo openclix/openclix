@@ -6,6 +6,7 @@ import ai.openclix.models.CampaignStateRecord
 import ai.openclix.models.CampaignStateRepository
 import ai.openclix.models.CampaignStateSnapshot
 import ai.openclix.models.CampaignTriggerHistory
+import ai.openclix.models.Event
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -13,7 +14,9 @@ import java.io.File
 private const val CAMPAIGN_STATES_FILENAME = "campaign_states.json"
 private const val QUEUED_MESSAGES_FILENAME = "queued_messages.json"
 private const val TRIGGER_HISTORY_FILENAME = "trigger_history.json"
+private const val EVENTS_FILENAME = "events.json"
 private const val META_FILENAME = "campaign_state_meta.json"
+private const val DEFAULT_MAX_EVENT_LOG_SIZE = 5_000
 
 fun createDefaultCampaignStateSnapshot(now: String): CampaignStateSnapshot {
     return CampaignStateSnapshot(
@@ -32,6 +35,7 @@ class FileCampaignStateRepository(
     private val campaignStatesFile: File
     private val queuedMessagesFile: File
     private val triggerHistoryFile: File
+    private val eventsFile: File
     private val metadataFile: File
 
     init {
@@ -43,6 +47,7 @@ class FileCampaignStateRepository(
         campaignStatesFile = File(openClixDirectory, CAMPAIGN_STATES_FILENAME)
         queuedMessagesFile = File(openClixDirectory, QUEUED_MESSAGES_FILENAME)
         triggerHistoryFile = File(openClixDirectory, TRIGGER_HISTORY_FILENAME)
+        eventsFile = File(openClixDirectory, EVENTS_FILENAME)
         metadataFile = File(openClixDirectory, META_FILENAME)
     }
 
@@ -78,7 +83,55 @@ class FileCampaignStateRepository(
             if (campaignStatesFile.exists()) campaignStatesFile.delete()
             if (queuedMessagesFile.exists()) queuedMessagesFile.delete()
             if (triggerHistoryFile.exists()) triggerHistoryFile.delete()
+            if (eventsFile.exists()) eventsFile.delete()
             if (metadataFile.exists()) metadataFile.delete()
+        }
+    }
+
+    override suspend fun appendEvents(events: List<Event>, maxEntries: Int) {
+        if (events.isEmpty()) return
+
+        synchronized(lock) {
+            val existingEvents = loadEventRows()
+            val mergedById = LinkedHashMap<String, Event>()
+
+            for (event in existingEvents) {
+                mergedById[event.id] = event
+            }
+
+            for (event in events) {
+                if (event.id.isBlank() || event.name.isBlank() || event.created_at.isBlank()) {
+                    continue
+                }
+                mergedById[event.id] = event
+            }
+
+            val merged = mergedById.values.sortedBy { event -> event.created_at }
+            val cappedSize = if (maxEntries > 0) maxEntries else DEFAULT_MAX_EVENT_LOG_SIZE
+            val trimmed = if (merged.size > cappedSize) {
+                merged.takeLast(cappedSize)
+            } else {
+                merged
+            }
+
+            saveRows(eventsFile, trimmed.map { event -> event.toJson() })
+        }
+    }
+
+    override suspend fun loadEvents(limit: Int?): List<Event> {
+        synchronized(lock) {
+            val events = loadEventRows().sortedBy { event -> event.created_at }
+            if (limit == null) return events
+            if (limit <= 0) return emptyList()
+            if (events.size <= limit) return events
+
+            return events.takeLast(limit)
+        }
+    }
+
+    override suspend fun clearEvents() {
+        synchronized(lock) {
+            if (eventsFile.exists()) eventsFile.delete()
         }
     }
 
@@ -139,6 +192,22 @@ class FileCampaignStateRepository(
                 if (row.triggered_at.isNotBlank()) {
                     rows.add(row)
                 }
+            } catch (_: Exception) {
+                continue
+            }
+        }
+        return rows
+    }
+
+    private fun loadEventRows(): MutableList<Event> {
+        val rows = mutableListOf<Event>()
+        for (jsonObject in loadRows(eventsFile)) {
+            try {
+                val row = Event.fromJson(jsonObject)
+                if (row.id.isBlank() || row.name.isBlank() || row.created_at.isBlank()) {
+                    continue
+                }
+                rows.add(row)
             } catch (_: Exception) {
                 continue
             }

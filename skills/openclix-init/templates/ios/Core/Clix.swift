@@ -65,6 +65,8 @@ private func isRemoteEndpoint(_ endpoint: String) -> Bool {
     return endpoint.hasPrefix("http://") || endpoint.hasPrefix("https://")
 }
 
+private let maximumEventLogSize = 5_000
+
 public final class Clix {
 
     actor Coordinator {
@@ -105,7 +107,19 @@ public final class Clix {
                     campaignStateRepository: campaignStateRepository,
                     messageScheduler: messageScheduler,
                     clock: clock,
-                    logger: logger
+                    logger: logger,
+                    recordEvent: { event in
+                        do {
+                            try await campaignStateRepository.appendEvents(
+                                [event],
+                                maxEntries: maximumEventLogSize
+                            )
+                        } catch {
+                            logger.warn(
+                                "Failed to persist event '\(event.name)': \(error.localizedDescription)"
+                            )
+                        }
+                    }
                 )
             )
             self.triggerService = triggerService
@@ -193,7 +207,8 @@ public final class Clix {
                 created_at: clock.now()
             )
 
-            logger?.debug("Event tracked (not persisted): \(name)")
+            await persistEvent(event)
+            logger?.debug("Event tracked: \(name)")
 
             let context = TriggerContext(
                 event: event,
@@ -201,6 +216,74 @@ public final class Clix {
                 now: clock.now()
             )
             _ = await triggerService.trigger(context)
+        }
+
+        func trackSystemEvent(_ name: SystemEventName, properties: [String: JsonValue]?) async {
+            assertInitialized()
+
+            guard let clock = clock else { return }
+
+            let event = Event(
+                id: generateUUID(),
+                name: name.rawValue,
+                source_type: .system,
+                properties: properties,
+                created_at: clock.now()
+            )
+
+            await persistEvent(event)
+        }
+
+        func handleNotificationDelivered(payload: [String: Any]) async {
+            assertInitialized()
+
+            let campaignId = extractString(from: payload, keys: "campaignId", "campaign_id")
+            let queuedMessageId = extractString(
+                from: payload,
+                keys: "queuedMessageId",
+                "queued_message_id"
+            )
+            let channelType = extractString(from: payload, keys: "channelType", "channel_type")
+                ?? ChannelType.app_push.rawValue
+
+            await trackSystemEvent(
+                .clixMessageDelivered,
+                properties: compactProperties(
+                    [
+                        "campaign_id": campaignId.map { JsonValue.string($0) },
+                        "queued_message_id": queuedMessageId.map { JsonValue.string($0) },
+                        "channel_type": .string(channelType),
+                    ]
+                )
+            )
+        }
+
+        func handleNotificationOpened(payload: [String: Any]) async -> String? {
+            assertInitialized()
+
+            let campaignId = extractString(from: payload, keys: "campaignId", "campaign_id")
+            let queuedMessageId = extractString(
+                from: payload,
+                keys: "queuedMessageId",
+                "queued_message_id"
+            )
+            let channelType = extractString(from: payload, keys: "channelType", "channel_type")
+                ?? ChannelType.app_push.rawValue
+            let landingUrl = extractString(from: payload, keys: "landingUrl", "landing_url")
+
+            await trackSystemEvent(
+                .clixMessageOpened,
+                properties: compactProperties(
+                    [
+                        "campaign_id": campaignId.map { JsonValue.string($0) },
+                        "queued_message_id": queuedMessageId.map { JsonValue.string($0) },
+                        "channel_type": .string(channelType),
+                        "landing_url": landingUrl.map { JsonValue.string($0) },
+                    ]
+                )
+            )
+
+            return landingUrl
         }
 
         func reset() async {
@@ -212,6 +295,14 @@ public final class Clix {
                 } catch {
                     previousLogger?.warn(
                         "Failed to clear campaign state during reset: \(error.localizedDescription)"
+                    )
+                }
+
+                do {
+                    try await campaignStateRepository.clearEvents()
+                } catch {
+                    previousLogger?.warn(
+                        "Failed to clear event log during reset: \(error.localizedDescription)"
                     )
                 }
             }
@@ -271,6 +362,48 @@ public final class Clix {
         func getMessageScheduler() -> ClixMessageScheduler? { return messageScheduler }
         func isInitialized() -> Bool { return initialized }
 
+        private func persistEvent(_ event: Event) async {
+            guard let campaignStateRepository = campaignStateRepository else {
+                logger?.debug(
+                    "Event store is not available; skipping persistence for event '\(event.name)'."
+                )
+                return
+            }
+
+            do {
+                try await campaignStateRepository.appendEvents(
+                    [event],
+                    maxEntries: maximumEventLogSize
+                )
+            } catch {
+                logger?.warn(
+                    "Failed to persist event '\(event.name)': \(error.localizedDescription)"
+                )
+            }
+        }
+
+        private func extractString(from source: [String: Any], keys: String...) -> String? {
+            for key in keys {
+                guard let value = source[key] as? String else { continue }
+                if !value.isEmpty {
+                    return value
+                }
+            }
+            return nil
+        }
+
+        private func compactProperties(
+            _ values: [String: JsonValue?]
+        ) -> [String: JsonValue] {
+            var compacted: [String: JsonValue] = [:]
+            for (key, value) in values {
+                if let value {
+                    compacted[key] = value
+                }
+            }
+            return compacted
+        }
+
         private func assertInitialized() {
             precondition(
                 initialized,
@@ -292,6 +425,21 @@ public final class Clix {
         properties: [String: JsonValue]? = nil
     ) async {
         await coordinator.trackEvent(name, properties: properties)
+    }
+
+    public static func trackSystemEvent(
+        name: SystemEventName,
+        properties: [String: JsonValue]? = nil
+    ) async {
+        await coordinator.trackSystemEvent(name, properties: properties)
+    }
+
+    public static func handleNotificationDelivered(payload: [String: Any]) async {
+        await coordinator.handleNotificationDelivered(payload: payload)
+    }
+
+    public static func handleNotificationOpened(payload: [String: Any]) async -> String? {
+        return await coordinator.handleNotificationOpened(payload: payload)
     }
 
     public static func reset() async {

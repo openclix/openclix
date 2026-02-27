@@ -520,6 +520,20 @@ enum class EventSourceType(val value: String) {
     }
 }
 
+enum class SystemEventName(val value: String) {
+    MESSAGE_SCHEDULED("clix.message.scheduled"),
+    MESSAGE_DELIVERED("clix.message.delivered"),
+    MESSAGE_OPENED("clix.message.opened"),
+    MESSAGE_CANCELLED("clix.message.cancelled"),
+    MESSAGE_FAILED("clix.message.failed");
+
+    companion object {
+        fun fromValue(value: String): SystemEventName =
+            entries.firstOrNull { it.value == value }
+                ?: throw IllegalArgumentException("Unknown SystemEventName: $value")
+    }
+}
+
 data class Event(
     val id: String,
     val name: String,
@@ -782,6 +796,9 @@ interface CampaignStateRepository {
     suspend fun loadSnapshot(now: String): CampaignStateSnapshot
     suspend fun saveSnapshot(snapshot: CampaignStateSnapshot)
     suspend fun clearCampaignState()
+    suspend fun appendEvents(events: List<Event>, maxEntries: Int = 5_000)
+    suspend fun loadEvents(limit: Int? = null): List<Event>
+    suspend fun clearEvents()
 }
 
 // ---------------------------------------------------------------------------

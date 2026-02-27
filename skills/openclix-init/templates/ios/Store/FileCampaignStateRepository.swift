@@ -13,11 +13,14 @@ private struct CampaignStateMetaRow: Codable {
     let updated_at: String
 }
 
+private let defaultMaxEventLogSize = 5_000
+
 public actor FileCampaignStateRepository: ClixCampaignStateRepository {
 
     private let campaignStatesURL: URL
     private let queuedMessagesURL: URL
     private let triggerHistoryURL: URL
+    private let eventsURL: URL
     private let metaURL: URL
 
     public init() {
@@ -40,6 +43,7 @@ public actor FileCampaignStateRepository: ClixCampaignStateRepository {
         self.campaignStatesURL = openClixDirectory.appendingPathComponent("campaign_states.json")
         self.queuedMessagesURL = openClixDirectory.appendingPathComponent("queued_messages.json")
         self.triggerHistoryURL = openClixDirectory.appendingPathComponent("trigger_history.json")
+        self.eventsURL = openClixDirectory.appendingPathComponent("events.json")
         self.metaURL = openClixDirectory.appendingPathComponent("campaign_state_meta.json")
     }
 
@@ -78,6 +82,61 @@ public actor FileCampaignStateRepository: ClixCampaignStateRepository {
         try? FileManager.default.removeItem(at: queuedMessagesURL)
         try? FileManager.default.removeItem(at: triggerHistoryURL)
         try? FileManager.default.removeItem(at: metaURL)
+    }
+
+    public func appendEvents(_ events: [Event], maxEntries: Int?) async throws {
+        guard !events.isEmpty else { return }
+
+        let existingEvents: [Event] = loadRows(at: eventsURL, fallback: [])
+        var mergedById: [String: Event] = [:]
+
+        for existingEvent in existingEvents {
+            mergedById[existingEvent.id] = existingEvent
+        }
+
+        for event in events {
+            mergedById[event.id] = event
+        }
+
+        let sortedEvents = mergedById.values.sorted { lhs, rhs in
+            if lhs.created_at == rhs.created_at {
+                return lhs.id < rhs.id
+            }
+            return lhs.created_at < rhs.created_at
+        }
+
+        let normalizedMaxEntries = maxEntries.map { max(1, $0) } ?? defaultMaxEventLogSize
+        let trimmedEvents =
+            sortedEvents.count > normalizedMaxEntries
+            ? Array(sortedEvents.suffix(normalizedMaxEntries))
+            : sortedEvents
+
+        try saveRows(trimmedEvents, to: eventsURL)
+    }
+
+    public func loadEvents(limit: Int?) async throws -> [Event] {
+        let events: [Event] = loadRows(at: eventsURL, fallback: [])
+        let sortedEvents = events.sorted { lhs, rhs in
+            if lhs.created_at == rhs.created_at {
+                return lhs.id < rhs.id
+            }
+            return lhs.created_at < rhs.created_at
+        }
+
+        guard let limit else {
+            return sortedEvents
+        }
+        if limit <= 0 {
+            return []
+        }
+        if sortedEvents.count <= limit {
+            return sortedEvents
+        }
+        return Array(sortedEvents.suffix(limit))
+    }
+
+    public func clearEvents() async throws {
+        try? FileManager.default.removeItem(at: eventsURL)
     }
 
     private func loadRows<Row: Decodable>(at url: URL, fallback: [Row]) -> [Row] {

@@ -452,39 +452,54 @@ class CampaignProcessor {
             val daysOfWeek = recurrenceRule.weekly_rule?.days_of_week ?: emptyList()
             if (daysOfWeek.isEmpty()) return null
 
-            val allowedDays = daysOfWeek.map(DayOfWeek::index).toSet()
+            val allowedDays = daysOfWeek
+                .map(DayOfWeek::index)
+                .distinct()
+                .sorted()
             val startCalendar = Calendar.getInstance().apply { time = startDate }
             val hour = recurrenceRule.time_of_day?.hour ?: startCalendar.get(Calendar.HOUR_OF_DAY)
             val minute = recurrenceRule.time_of_day?.minute ?: startCalendar.get(Calendar.MINUTE)
 
-            val anchorWeekStartEpoch = startOfWeek(startDate).time
-            val cursorCalendar = Calendar.getInstance().apply {
-                time = fromDate
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
+            val weekMilliseconds = 7L * 24L * 60L * 60L * 1000L
+            val anchorWeekStartMilliseconds = startOfWeek(startDate).time
+            val fromWeekStartMilliseconds = startOfWeek(fromDate).time
+            val rawWeekDiff = kotlin.math.floor(
+                (fromWeekStartMilliseconds - anchorWeekStartMilliseconds).toDouble() / weekMilliseconds.toDouble()
+            ).toInt()
+            val baselineWeekDiff = maxOf(0, rawWeekDiff)
+            val remainder = baselineWeekDiff % interval
+            var alignedWeekDiff = if (remainder == 0) {
+                baselineWeekDiff
+            } else {
+                baselineWeekDiff + (interval - remainder)
             }
 
-            for (offset in 0 until (366 * 2)) {
-                val candidateCalendar = Calendar.getInstance().apply {
-                    time = cursorCalendar.time
-                    add(Calendar.DAY_OF_MONTH, offset)
-                    set(Calendar.HOUR_OF_DAY, hour)
-                    set(Calendar.MINUTE, minute)
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
+            repeat(2) {
+                val weekStartDate = Date(anchorWeekStartMilliseconds + alignedWeekDiff * weekMilliseconds)
+                var earliestCandidate: Date? = null
+
+                for (dayIndex in allowedDays) {
+                    val candidateCalendar = Calendar.getInstance().apply {
+                        time = weekStartDate
+                        add(Calendar.DAY_OF_MONTH, dayIndex)
+                        set(Calendar.HOUR_OF_DAY, hour)
+                        set(Calendar.MINUTE, minute)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }
+                    val candidate = candidateCalendar.time
+
+                    if (candidate.before(startDate) || candidate.before(fromDate)) continue
+                    if (earliestCandidate == null || candidate.before(earliestCandidate)) {
+                        earliestCandidate = candidate
+                    }
                 }
 
-                val candidateDate = candidateCalendar.time
-                if (candidateDate.before(fromDate)) continue
-
-                val candidateDayIndex = candidateCalendar.get(Calendar.DAY_OF_WEEK) - Calendar.SUNDAY
-                if (!allowedDays.contains(candidateDayIndex)) continue
-
-                val candidateWeekStartEpoch = startOfWeek(candidateDate).time
-                val weekDiff = ((candidateWeekStartEpoch - anchorWeekStartEpoch) / (7L * 24L * 60L * 60L * 1000L)).toInt()
-                if (weekDiff >= 0 && weekDiff % interval == 0) {
-                    return candidateDate
+                if (earliestCandidate != null) {
+                    return earliestCandidate
                 }
+
+                alignedWeekDiff += interval
             }
 
             return null

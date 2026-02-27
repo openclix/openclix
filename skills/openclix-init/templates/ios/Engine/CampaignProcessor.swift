@@ -553,40 +553,61 @@ public final class CampaignProcessor {
             let daysOfWeek = recurring.rule.weekly_rule?.days_of_week ?? []
             if daysOfWeek.isEmpty { return nil }
 
-            let allowedDays = Set(daysOfWeek.compactMap { dayIndex[$0] })
+            let allowedDays = Array(Set(daysOfWeek.compactMap { dayIndex[$0] })).sorted()
             let hour = recurring.rule.time_of_day?.hour ?? Calendar.current.component(.hour, from: startDate)
             let minute = recurring.rule.time_of_day?.minute ?? Calendar.current.component(.minute, from: startDate)
+            let weekSeconds: TimeInterval = 7 * daySeconds
             let anchorWeekStart = startOfWeek(startDate)
+            let fromWeekStart = startOfWeek(fromDate)
+            let rawWeekDifference = Int(
+                floor(fromWeekStart.timeIntervalSince(anchorWeekStart) / weekSeconds)
+            )
+            let baselineWeekDifference = max(0, rawWeekDifference)
+            let remainder = baselineWeekDifference % interval
+            var alignedWeekDifference =
+                remainder == 0
+                ? baselineWeekDifference
+                : baselineWeekDifference + (interval - remainder)
 
             var calendar = Calendar.current
             calendar.timeZone = .current
 
-            var cursor = fromDate
-            cursor = calendar.date(bySettingHour: calendar.component(.hour, from: cursor), minute: calendar.component(.minute, from: cursor), second: 0, of: cursor) ?? cursor
-
-            for dayOffset in 0..<(366 * 2) {
-                guard let dayCandidate = calendar.date(byAdding: .day, value: dayOffset, to: cursor) else {
+            for _ in 0..<2 {
+                guard let weekStart = calendar.date(
+                    byAdding: .day,
+                    value: alignedWeekDifference * 7,
+                    to: anchorWeekStart
+                ) else {
+                    alignedWeekDifference += interval
                     continue
                 }
 
-                let candidate = withTime(dayCandidate, hour: hour, minute: minute)
-                if candidate < fromDate {
-                    continue
+                var earliestCandidate: Date?
+
+                for allowedDay in allowedDays {
+                    guard let candidateDay = calendar.date(
+                        byAdding: .day,
+                        value: allowedDay,
+                        to: weekStart
+                    ) else {
+                        continue
+                    }
+
+                    let candidate = withTime(candidateDay, hour: hour, minute: minute)
+                    if candidate < startDate || candidate < fromDate {
+                        continue
+                    }
+
+                    if earliestCandidate == nil || candidate < earliestCandidate! {
+                        earliestCandidate = candidate
+                    }
                 }
 
-                let weekday = calendar.component(.weekday, from: candidate) - 1
-                if !allowedDays.contains(weekday) {
-                    continue
+                if let earliestCandidate {
+                    return earliestCandidate
                 }
 
-                let candidateWeekStart = startOfWeek(candidate)
-                let weekDifference = Int(
-                    floor(candidateWeekStart.timeIntervalSince(anchorWeekStart) / (7 * daySeconds))
-                )
-
-                if weekDifference >= 0 && weekDifference % interval == 0 {
-                    return candidate
-                }
+                alignedWeekDifference += interval
             }
 
             return nil

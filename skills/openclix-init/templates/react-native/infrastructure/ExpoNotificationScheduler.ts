@@ -48,6 +48,8 @@ export class ExpoNotificationScheduler implements MessageScheduler {
         data: {
           campaignId: record.campaign_id,
           queuedMessageId: record.id,
+          landingUrl: record.content.landing_url,
+          imageUrl: record.content.image_url,
         },
       },
       trigger: {
@@ -82,6 +84,14 @@ export class ExpoNotificationScheduler implements MessageScheduler {
         content: {
           title: notification.content.title || '',
           body: notification.content.body || '',
+          landing_url:
+            typeof notification.content.data?.landingUrl === 'string'
+              ? notification.content.data.landingUrl
+              : undefined,
+          image_url:
+            typeof notification.content.data?.imageUrl === 'string'
+              ? notification.content.data.imageUrl
+              : undefined,
         },
         created_at: new Date().toISOString(),
       }));

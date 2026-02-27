@@ -15,15 +15,18 @@ import ai.openclix.models.DecisionTrace
 import ai.openclix.models.Event
 import ai.openclix.models.QueuedMessage
 import ai.openclix.models.SkipReason
+import ai.openclix.models.SystemEventName
 import ai.openclix.models.TriggerContext
 import ai.openclix.models.TriggerResult
 import ai.openclix.models.TriggerType
+import java.util.UUID
 
 data class TriggerServiceDependencies(
     val campaignStateRepository: CampaignStateRepository,
     val scheduler: ClixLocalMessageScheduler,
     val clock: ClixClock,
-    val logger: ClixLogger
+    val logger: ClixLogger,
+    val recordEvent: (suspend (Event) -> Unit)? = null
 )
 
 private const val MAXIMUM_TRIGGER_HISTORY_SIZE = 5_000
@@ -82,7 +85,7 @@ class TriggerService(
         }
 
         if (triggerContext.trigger == "event_tracked" && triggerContext.event != null) {
-            traces.addAll(cancelQueuedMessages(triggerContext.event, snapshot, logger))
+            traces.addAll(cancelQueuedMessages(triggerContext.event, snapshot, now, logger))
         }
 
         logger.debug("[TriggerService] Processing ${loadedConfig.campaigns.size} campaigns")
@@ -115,6 +118,16 @@ class TriggerService(
                 try {
                     scheduler.schedule(queuedMessage)
                 } catch (scheduleError: Exception) {
+                    emitSystemEvent(
+                        name = SystemEventName.MESSAGE_FAILED,
+                        properties = mapOf(
+                            "campaign_id" to campaignId,
+                            "queued_message_id" to queuedMessage.id,
+                            "channel_type" to queuedMessage.channel_type.value,
+                            "failure_reason" to (scheduleError.message ?: scheduleError.toString())
+                        ),
+                        createdAt = now
+                    )
                     logger.error(
                         "[TriggerService] Error scheduling message for campaign $campaignId:",
                         scheduleError
@@ -129,6 +142,17 @@ class TriggerService(
                     queuedMessage = queuedMessage,
                     now = now,
                     scheduledFor = decision.scheduled_for
+                )
+
+                emitSystemEvent(
+                    name = SystemEventName.MESSAGE_SCHEDULED,
+                    properties = mapOf(
+                        "campaign_id" to campaignId,
+                        "queued_message_id" to queuedMessage.id,
+                        "channel_type" to queuedMessage.channel_type.value,
+                        "execute_at" to queuedMessage.execute_at
+                    ),
+                    createdAt = now
                 )
 
                 queuedMessages.add(queuedMessage)
@@ -209,6 +233,7 @@ class TriggerService(
     private suspend fun cancelQueuedMessages(
         event: Event,
         snapshot: CampaignStateSnapshot,
+        now: String,
         logger: ClixLogger
     ): List<DecisionTrace> {
         val traces = mutableListOf<DecisionTrace>()
@@ -227,6 +252,7 @@ class TriggerService(
             val cancelEventGroup = campaign.trigger.event?.cancel_event ?: continue
             val isMatched = eventConditionProcessor.process(cancelEventGroup, event)
             if (!isMatched) continue
+            if (!isWithinCancellationWindow(event, pendingMessage, now)) continue
 
             try {
                 dependencies.scheduler.cancel(pendingMessage.message_id)
@@ -244,10 +270,30 @@ class TriggerService(
                     )
                 )
 
+                emitSystemEvent(
+                    name = SystemEventName.MESSAGE_CANCELLED,
+                    properties = mapOf(
+                        "campaign_id" to pendingMessage.campaign_id,
+                        "queued_message_id" to pendingMessage.message_id,
+                        "skip_reason" to SkipReason.TRIGGER_CANCEL_EVENT_MATCHED.value
+                    ),
+                    createdAt = event.created_at
+                )
+
                 logger.debug(
                     "[TriggerService] Cancelled queued message ${pendingMessage.message_id} for campaign ${pendingMessage.campaign_id}"
                 )
             } catch (error: Exception) {
+                emitSystemEvent(
+                    name = SystemEventName.MESSAGE_FAILED,
+                    properties = mapOf(
+                        "campaign_id" to pendingMessage.campaign_id,
+                        "queued_message_id" to pendingMessage.message_id,
+                        "channel_type" to "app_push",
+                        "failure_reason" to (error.message ?: error.toString())
+                    ),
+                    createdAt = event.created_at
+                )
                 logger.warn(
                     "[TriggerService] Failed to cancel queued message ${pendingMessage.message_id}:",
                     error.message ?: error.toString()
@@ -256,6 +302,80 @@ class TriggerService(
         }
 
         return traces
+    }
+
+    private fun isWithinCancellationWindow(
+        event: Event,
+        pendingMessage: CampaignQueuedMessage,
+        now: String
+    ): Boolean {
+        val cancellationAtMilliseconds = parseTimestamp(event.created_at) ?: parseTimestamp(now)
+        val windowStartMilliseconds = parseTimestamp(pendingMessage.created_at)
+        val windowEndMilliseconds = parseTimestamp(pendingMessage.execute_at)
+
+        if (cancellationAtMilliseconds == null || windowStartMilliseconds == null || windowEndMilliseconds == null) {
+            return false
+        }
+
+        return cancellationAtMilliseconds >= windowStartMilliseconds &&
+                cancellationAtMilliseconds <= windowEndMilliseconds
+    }
+
+    private fun parseTimestamp(value: String?): Long? {
+        if (value.isNullOrBlank()) return null
+
+        val formats = listOf(
+            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+            "yyyy-MM-dd'T'HH:mm:ss'Z'"
+        )
+
+        for (pattern in formats) {
+            try {
+                val formatter = java.text.SimpleDateFormat(pattern, java.util.Locale.US).apply {
+                    timeZone = java.util.TimeZone.getTimeZone("UTC")
+                    isLenient = false
+                }
+                val parsedDate = formatter.parse(value)
+                if (parsedDate != null) {
+                    return parsedDate.time
+                }
+            } catch (_: Exception) {
+                continue
+            }
+        }
+
+        return null
+    }
+
+    private suspend fun emitSystemEvent(
+        name: SystemEventName,
+        properties: Map<String, Any?>,
+        createdAt: String
+    ) {
+        val recordEvent = dependencies.recordEvent ?: return
+        val compactProperties = mutableMapOf<String, Any?>()
+        for ((key, value) in properties) {
+            if (value != null) {
+                compactProperties[key] = value
+            }
+        }
+
+        try {
+            recordEvent(
+                Event(
+                    id = UUID.randomUUID().toString(),
+                    name = name.value,
+                    source_type = ai.openclix.models.EventSourceType.SYSTEM,
+                    properties = compactProperties,
+                    created_at = createdAt
+                )
+            )
+        } catch (error: Exception) {
+            dependencies.logger.warn(
+                "[TriggerService] Failed to persist system event '${name.value}':",
+                error.message ?: error.toString()
+            )
+        }
     }
 
     private fun applyQueuedMessage(

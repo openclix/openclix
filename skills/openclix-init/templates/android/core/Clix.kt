@@ -14,6 +14,7 @@ import ai.openclix.models.ClixLogLevel
 import ai.openclix.models.ClixLogger
 import ai.openclix.models.Event
 import ai.openclix.models.EventSourceType
+import ai.openclix.models.SystemEventName
 import ai.openclix.models.TriggerContext
 import ai.openclix.models.TriggerResult
 import ai.openclix.services.loadConfig
@@ -21,6 +22,7 @@ import ai.openclix.services.validateConfig
 import java.util.UUID
 
 private const val DEFAULT_CONFIG_TIMEOUT_MILLISECONDS = 10_000
+private const val MAXIMUM_EVENT_LOG_SIZE = 5_000
 
 object Clix {
 
@@ -145,7 +147,8 @@ object Clix {
             created_at = clock!!.now()
         )
 
-        logger?.debug("Event tracked (not persisted): $name")
+        persistEvent(event)
+        logger?.debug("Event tracked: $name")
 
         try {
             evaluate("event_tracked", event)
@@ -158,6 +161,60 @@ object Clix {
     }
 
     @JvmStatic
+    suspend fun trackSystemEvent(
+        name: SystemEventName,
+        properties: Map<String, Any?>? = null
+    ) {
+        assertInitialized()
+
+        val event = Event(
+            id = UUID.randomUUID().toString(),
+            name = name.value,
+            source_type = EventSourceType.SYSTEM,
+            properties = properties,
+            created_at = clock!!.now()
+        )
+
+        persistEvent(event)
+    }
+
+    @JvmStatic
+    suspend fun handleNotificationDelivered(payload: Map<String, Any?>) {
+        assertInitialized()
+
+        trackSystemEvent(
+            SystemEventName.MESSAGE_DELIVERED,
+            compactProperties(
+                mapOf(
+                    "campaign_id" to extractString(payload, "campaignId", "campaign_id"),
+                    "queued_message_id" to extractString(payload, "queuedMessageId", "queued_message_id"),
+                    "channel_type" to (extractString(payload, "channelType", "channel_type") ?: "app_push")
+                )
+            )
+        )
+    }
+
+    @JvmStatic
+    suspend fun handleNotificationOpened(payload: Map<String, Any?>): String? {
+        assertInitialized()
+
+        val landingUrl = extractString(payload, "landingUrl", "landing_url")
+        trackSystemEvent(
+            SystemEventName.MESSAGE_OPENED,
+            compactProperties(
+                mapOf(
+                    "campaign_id" to extractString(payload, "campaignId", "campaign_id"),
+                    "queued_message_id" to extractString(payload, "queuedMessageId", "queued_message_id"),
+                    "channel_type" to (extractString(payload, "channelType", "channel_type") ?: "app_push"),
+                    "landing_url" to landingUrl
+                )
+            )
+        )
+
+        return landingUrl
+    }
+
+    @JvmStatic
     suspend fun reset() {
         val activeLogger = logger
 
@@ -167,6 +224,15 @@ object Clix {
             } catch (error: Exception) {
                 activeLogger?.warn(
                     "Failed to clear campaign state during reset:",
+                    error.message ?: error.toString()
+                )
+            }
+
+            try {
+                repository.clearEvents()
+            } catch (error: Exception) {
+                activeLogger?.warn(
+                    "Failed to clear event log during reset:",
                     error.message ?: error.toString()
                 )
             }
@@ -248,8 +314,53 @@ object Clix {
             campaignStateRepository = campaignStateRepository!!,
             scheduler = messageScheduler!!,
             clock = clock!!,
-            logger = logger!!
+            logger = logger!!,
+            recordEvent = { event ->
+                persistEvent(event)
+            }
         )
+    }
+
+    private suspend fun persistEvent(event: Event) {
+        val repository = campaignStateRepository
+        if (repository == null) {
+            logger?.debug(
+                "Event store is not available; skipping persistence for event '${event.name}'."
+            )
+            return
+        }
+
+        try {
+            repository.appendEvents(listOf(event), MAXIMUM_EVENT_LOG_SIZE)
+        } catch (error: Exception) {
+            logger?.warn(
+                "Failed to persist event '${event.name}':",
+                error.message ?: error.toString()
+            )
+        }
+    }
+
+    private fun extractString(
+        source: Map<String, Any?>,
+        vararg keys: String
+    ): String? {
+        for (key in keys) {
+            val value = source[key]
+            if (value is String && value.isNotBlank()) {
+                return value
+            }
+        }
+        return null
+    }
+
+    private fun compactProperties(values: Map<String, Any?>): Map<String, Any?> {
+        val compacted = mutableMapOf<String, Any?>()
+        for ((key, value) in values) {
+            if (value != null) {
+                compacted[key] = value
+            }
+        }
+        return compacted
     }
 
     internal suspend fun evaluate(

@@ -99,6 +99,8 @@ bool isRemoteEndpoint(String endpoint) {
   return endpoint.startsWith('http://') || endpoint.startsWith('https://');
 }
 
+const int maximumEventLogSize = 5000;
+
 class Clix {
   static ClixConfig? config;
   static TriggerService? triggerService;
@@ -225,13 +227,85 @@ class Clix {
       createdAt: clock!.now(),
     );
 
-    logger?.debug('Event tracked (not persisted): $name');
+    await persistEvent(event);
+    logger?.debug('Event tracked: $name');
 
     try {
       await evaluateInternal('event_tracked', event);
     } catch (evaluationError) {
       logger?.warn("Evaluation after event '$name' failed:", evaluationError);
     }
+  }
+
+  static Future<void> trackSystemEvent(
+    SystemEventName name, [
+    Map<String, JsonValue>? properties,
+  ]) async {
+    assertInitialized();
+
+    final event = Event(
+      id: generateUUID(),
+      name: name.value,
+      sourceType: EventSourceType.system,
+      properties: properties,
+      createdAt: clock!.now(),
+    );
+
+    await persistEvent(event);
+  }
+
+  static Future<void> handleNotificationDelivered(
+    Map<String, Object?> payload,
+  ) async {
+    assertInitialized();
+
+    await trackSystemEvent(
+      SystemEventName.messageDelivered,
+      compactProperties({
+        'campaign_id': extractString(payload, const [
+          'campaignId',
+          'campaign_id',
+        ]),
+        'queued_message_id': extractString(payload, const [
+          'queuedMessageId',
+          'queued_message_id',
+        ]),
+        'channel_type':
+            extractString(payload, const ['channelType', 'channel_type']) ??
+            ChannelType.appPush.value,
+      }),
+    );
+  }
+
+  static Future<String?> handleNotificationOpened(
+    Map<String, Object?> payload,
+  ) async {
+    assertInitialized();
+
+    final landingUrl = extractString(payload, const [
+      'landingUrl',
+      'landing_url',
+    ]);
+
+    await trackSystemEvent(
+      SystemEventName.messageOpened,
+      compactProperties({
+        'campaign_id': extractString(payload, const [
+          'campaignId',
+          'campaign_id',
+        ]),
+        'queued_message_id': extractString(payload, const [
+          'queuedMessageId',
+          'queued_message_id',
+        ]),
+        'channel_type':
+            extractString(payload, const ['channelType', 'channel_type']) ??
+            ChannelType.appPush.value,
+        'landing_url': landingUrl,
+      }),
+    );
+
+    return landingUrl;
   }
 
   static Future<void> reset() async {
@@ -243,6 +317,15 @@ class Clix {
       } catch (error) {
         loggerAtResetStart?.warn(
           'Failed to clear campaign state during reset:',
+          error,
+        );
+      }
+
+      try {
+        await campaignStateRepository!.clearEvents();
+      } catch (error) {
+        loggerAtResetStart?.warn(
+          'Failed to clear event log during reset:',
           error,
         );
       }
@@ -330,7 +413,47 @@ class Clix {
       messageScheduler: messageScheduler!,
       clock: clock!,
       logger: logger!,
+      recordEvent: (event) async {
+        await persistEvent(event);
+      },
     );
+  }
+
+  static Future<void> persistEvent(Event event) async {
+    if (campaignStateRepository == null) {
+      logger?.debug(
+        "Event store is not available; skipping persistence for event '${event.name}'.",
+      );
+      return;
+    }
+
+    try {
+      await campaignStateRepository!.appendEvents([event], maximumEventLogSize);
+    } catch (error) {
+      logger?.warn("Failed to persist event '${event.name}':", error);
+    }
+  }
+
+  static String? extractString(Map<String, Object?> source, List<String> keys) {
+    for (final key in keys) {
+      final value = source[key];
+      if (value is String && value.isNotEmpty) {
+        return value;
+      }
+    }
+    return null;
+  }
+
+  static Map<String, JsonValue> compactProperties(
+    Map<String, JsonValue?> values,
+  ) {
+    final compacted = <String, JsonValue>{};
+    values.forEach((key, value) {
+      if (value != null) {
+        compacted[key] = value;
+      }
+    });
+    return compacted;
   }
 
   static Future<TriggerResult?> evaluateInternal(

@@ -6,6 +6,7 @@ import ai.openclix.models.EventConditionGroup
 import ai.openclix.models.EventConditionOperator
 import ai.openclix.models.RecurrenceType
 import ai.openclix.models.TriggerType
+import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
@@ -31,6 +32,10 @@ private val validWeekDays = DayOfWeek.entries.map { dayOfWeek -> dayOfWeek.value
 private val validEventConnectors = setOf("and", "or")
 private val validEventFields = setOf("name", "property")
 private val validEventOperators = EventConditionOperator.entries.map { operator -> operator.value }.toSet()
+private const val MAX_MESSAGE_TITLE_LENGTH = 120
+private const val MAX_MESSAGE_BODY_LENGTH = 500
+
+// TODO: Additional-properties validation is not enforced after typed decoding; reject unknown keys in the decoder layer for strict schema parity.
 
 private fun isValidIsoDate(value: String?): Boolean {
     if (value.isNullOrBlank()) return false
@@ -81,6 +86,31 @@ private fun parseIsoDateEpoch(value: String?): Long? {
     }
 
     return null
+}
+
+private fun isValidUri(value: String?): Boolean {
+    if (value.isNullOrBlank()) return false
+    if (value.any(Char::isWhitespace)) return false
+
+    return try {
+        val uri = URI(value)
+        !uri.scheme.isNullOrBlank()
+    } catch (_: Exception) {
+        false
+    }
+}
+
+private fun isValidUriReference(value: String?): Boolean {
+    if (value.isNullOrBlank()) return false
+    if (value.any(Char::isWhitespace)) return false
+    if (isValidUri(value)) return true
+
+    return try {
+        URI(value)
+        true
+    } catch (_: Exception) {
+        false
+    }
 }
 
 private fun validateEventConditionGroup(
@@ -229,7 +259,7 @@ fun validateConfig(config: Config): ValidationResult {
                 ValidationIssue(
                     path = ".settings.frequency_cap.max_count",
                     code = "INVALID_FREQUENCY_CAP",
-                    message = "frequency_cap.max_count must be >= 1"
+                    message = "frequency_cap.max_count must be an integer >= 1"
                 )
             )
         }
@@ -238,7 +268,7 @@ fun validateConfig(config: Config): ValidationResult {
                 ValidationIssue(
                     path = ".settings.frequency_cap.window_seconds",
                     code = "INVALID_FREQUENCY_CAP",
-                    message = "frequency_cap.window_seconds must be >= 1"
+                    message = "frequency_cap.window_seconds must be an integer >= 1"
                 )
             )
         }
@@ -250,7 +280,7 @@ fun validateConfig(config: Config): ValidationResult {
                 ValidationIssue(
                     path = ".settings.do_not_disturb.start_hour",
                     code = "INVALID_DND_HOURS",
-                    message = "do_not_disturb.start_hour must be 0-23"
+                    message = "do_not_disturb.start_hour must be an integer between 0 and 23"
                 )
             )
         }
@@ -259,7 +289,7 @@ fun validateConfig(config: Config): ValidationResult {
                 ValidationIssue(
                     path = ".settings.do_not_disturb.end_hour",
                     code = "INVALID_DND_HOURS",
-                    message = "do_not_disturb.end_hour must be 0-23"
+                    message = "do_not_disturb.end_hour must be an integer between 0 and 23"
                 )
             )
         }
@@ -299,11 +329,11 @@ fun validateConfig(config: Config): ValidationResult {
         }
 
         if (campaign.description.isBlank()) {
-            warnings.add(
+            errors.add(
                 ValidationIssue(
                     path = "$basePath.description",
                     code = "MISSING_DESCRIPTION",
-                    message = "Campaign is missing a description"
+                    message = "Campaign description is required"
                 )
             )
         }
@@ -359,7 +389,7 @@ fun validateConfig(config: Config): ValidationResult {
                         ValidationIssue(
                             path = "$basePath.trigger.event.delay_seconds",
                             code = "INVALID_DELAY_SECONDS",
-                            message = "event.delay_seconds must be >= 0"
+                            message = "event.delay_seconds must be an integer >= 0"
                         )
                     )
                 }
@@ -521,6 +551,14 @@ fun validateConfig(config: Config): ValidationResult {
                     message = "Message content must have a title"
                 )
             )
+        } else if (campaign.message.content.title.length > MAX_MESSAGE_TITLE_LENGTH) {
+            errors.add(
+                ValidationIssue(
+                    path = "$basePath.message.content.title",
+                    code = "INVALID_MESSAGE_TITLE_LENGTH",
+                    message = "title must be $MAX_MESSAGE_TITLE_LENGTH characters or less"
+                )
+            )
         }
 
         if (campaign.message.content.body.isBlank()) {
@@ -529,6 +567,34 @@ fun validateConfig(config: Config): ValidationResult {
                     path = "$basePath.message.content.body",
                     code = "MISSING_MESSAGE_BODY",
                     message = "Message content must have a body"
+                )
+            )
+        } else if (campaign.message.content.body.length > MAX_MESSAGE_BODY_LENGTH) {
+            errors.add(
+                ValidationIssue(
+                    path = "$basePath.message.content.body",
+                    code = "INVALID_MESSAGE_BODY_LENGTH",
+                    message = "body must be $MAX_MESSAGE_BODY_LENGTH characters or less"
+                )
+            )
+        }
+
+        if (campaign.message.content.image_url != null && !isValidUri(campaign.message.content.image_url)) {
+            errors.add(
+                ValidationIssue(
+                    path = "$basePath.message.content.image_url",
+                    code = "INVALID_IMAGE_URL",
+                    message = "image_url must be a valid URI"
+                )
+            )
+        }
+
+        if (campaign.message.content.landing_url != null && !isValidUriReference(campaign.message.content.landing_url)) {
+            errors.add(
+                ValidationIssue(
+                    path = "$basePath.message.content.landing_url",
+                    code = "INVALID_LANDING_URL",
+                    message = "landing_url must be a valid URI reference"
                 )
             )
         }

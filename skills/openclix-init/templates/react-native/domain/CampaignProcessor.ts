@@ -410,23 +410,41 @@ export class CampaignProcessor {
     if (rule.type === 'weekly') {
       const days = rule.weekly_rule?.days_of_week ?? [];
       if (days.length === 0) return null;
-      const allowed = new Set(days.map((day) => DAY_INDEX[day]));
+      const allowed = [...new Set(days.map((day) => DAY_INDEX[day]))].sort(
+        (a, b) => a - b,
+      );
       const hour = rule.time_of_day?.hour ?? startDate.getHours();
       const minute = rule.time_of_day?.minute ?? startDate.getMinutes();
-      const anchorWeekStart = startOfWeek(startDate).getTime();
-      const cursor = new Date(fromDate);
-      cursor.setSeconds(0, 0);
-      for (let i = 0; i < 366 * 2; i += 1) {
-        const candidate = new Date(cursor);
-        candidate.setDate(cursor.getDate() + i);
-        candidate.setHours(hour, minute, 0, 0);
-        if (candidate < fromDate) continue;
-        if (!allowed.has(candidate.getDay())) continue;
-        const weekDiff = Math.floor((startOfWeek(candidate).getTime() - anchorWeekStart) / (7 * 24 * 60 * 60 * 1000));
-        if (weekDiff >= 0 && weekDiff % interval === 0) {
-          return candidate;
+      const weekMs = 7 * 24 * 60 * 60 * 1000;
+      const anchorWeekStartMs = startOfWeek(startDate).getTime();
+      const fromWeekStartMs = startOfWeek(fromDate).getTime();
+      const rawWeekDiff = Math.floor((fromWeekStartMs - anchorWeekStartMs) / weekMs);
+      const baselineWeekDiff = Math.max(0, rawWeekDiff);
+      const remainder = baselineWeekDiff % interval;
+      let alignedWeekDiff =
+        remainder === 0
+          ? baselineWeekDiff
+          : baselineWeekDiff + (interval - remainder);
+
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        const weekStart = new Date(anchorWeekStartMs + alignedWeekDiff * weekMs);
+        let earliestCandidate: Date | null = null;
+
+        for (const dayIndex of allowed) {
+          const candidate = new Date(weekStart);
+          candidate.setDate(weekStart.getDate() + dayIndex);
+          candidate.setHours(hour, minute, 0, 0);
+
+          if (candidate < startDate || candidate < fromDate) continue;
+          if (!earliestCandidate || candidate < earliestCandidate) {
+            earliestCandidate = candidate;
+          }
         }
+
+        if (earliestCandidate) return earliestCandidate;
+        alignedWeekDiff += interval;
       }
+
       return null;
     }
 

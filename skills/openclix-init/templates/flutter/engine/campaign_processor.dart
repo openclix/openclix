@@ -495,38 +495,53 @@ class CampaignProcessor {
       final days = rule.weeklyRule?.daysOfWeek ?? const <DayOfWeek>[];
       if (days.isEmpty) return null;
 
-      final allowedDays = days.map((day) => dayIndex[day]!).toSet();
+      final allowedDays = days.map((day) => dayIndex[day]!).toSet().toList()
+        ..sort();
       final hour = rule.timeOfDay?.hour ?? startDate.hour;
       final minute = rule.timeOfDay?.minute ?? startDate.minute;
       final anchorWeekStart = startOfWeek(startDate).millisecondsSinceEpoch;
 
-      final cursor = DateTime.utc(fromDate.year, fromDate.month, fromDate.day);
+      const weekMilliseconds = 7 * 24 * 60 * 60 * 1000;
+      final fromWeekStart = startOfWeek(fromDate).millisecondsSinceEpoch;
+      final rawWeekDiff = ((fromWeekStart - anchorWeekStart) / weekMilliseconds)
+          .floor();
+      final baselineWeekDiff = rawWeekDiff < 0 ? 0 : rawWeekDiff;
+      final remainder = baselineWeekDiff % interval;
+      var alignedWeekDiff = remainder == 0
+          ? baselineWeekDiff
+          : baselineWeekDiff + (interval - remainder);
 
-      for (var offset = 0; offset < 732; offset += 1) {
-        final candidateDay = cursor.add(Duration(days: offset));
-        final candidate = DateTime.utc(
-          candidateDay.year,
-          candidateDay.month,
-          candidateDay.day,
-          hour,
-          minute,
+      for (var attempt = 0; attempt < 2; attempt += 1) {
+        final weekStart = DateTime.fromMillisecondsSinceEpoch(
+          anchorWeekStart + alignedWeekDiff * weekMilliseconds,
+          isUtc: true,
         );
 
-        if (candidate.isBefore(fromDate)) continue;
+        DateTime? earliestCandidate;
+        for (final allowedDay in allowedDays) {
+          final candidate = DateTime.utc(
+            weekStart.year,
+            weekStart.month,
+            weekStart.day + allowedDay,
+            hour,
+            minute,
+          );
 
-        final candidateDayIndex = candidate.weekday % 7;
-        if (!allowedDays.contains(candidateDayIndex)) continue;
+          if (candidate.isBefore(startDate) || candidate.isBefore(fromDate)) {
+            continue;
+          }
 
-        final candidateWeekStart = startOfWeek(
-          candidate,
-        ).millisecondsSinceEpoch;
-        final weekDiff =
-            ((candidateWeekStart - anchorWeekStart) / (7 * 24 * 60 * 60 * 1000))
-                .floor();
-
-        if (weekDiff >= 0 && weekDiff % interval == 0) {
-          return candidate;
+          if (earliestCandidate == null ||
+              candidate.isBefore(earliestCandidate)) {
+            earliestCandidate = candidate;
+          }
         }
+
+        if (earliestCandidate != null) {
+          return earliestCandidate;
+        }
+
+        alignedWeekDiff += interval;
       }
 
       return null;
