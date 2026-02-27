@@ -30,6 +30,9 @@ Use openclix-init to detect platform, copy templates into the dedicated OpenClix
 wire initialization/event/lifecycle touchpoints, and run build verification.
 Then use openclix-campaign-design to create .clix-campaigns/app-profile.json
 and generate .clix-campaigns/openclix-config.json.
+Then use openclix-analytics to detect installed Firebase/PostHog/Mixpanel/Amplitude,
+forward OpenClix events with openclix tags, and produce a pre/post impact report
+for D7 retention and engagement metrics.
 Do not add dependencies without approval.
 ```
 
@@ -59,9 +62,21 @@ Do not add dependencies without approval.
    Use event/scheduled/recurring triggers with do_not_disturb and frequency_cap.
    ```
 
-4. **Verify integration:**
+4. **Measure campaign impact** with `openclix-analytics`:
+
+   ```text
+   Use openclix-analytics.
+   Detect installed Firebase/PostHog/Mixpanel/Amplitude in this app.
+   If at least one provider is installed, wire OpenClix event forwarding with required openclix tags,
+   then generate .clix-analytics/impact-metrics.json and .clix-analytics/impact-report.md
+   using pre/post compare defaults (28d pre, 7d stabilization exclusion, 28d post).
+   If no provider is installed, explain provider setup options and stop.
+   ```
+
+5. **Verify integration:**
    - Run platform-appropriate build/analyze commands
    - Confirm `.clix-campaigns/openclix-config.json` exists and is schema-valid
+   - Confirm `.clix-analytics/impact-metrics.json` and `.clix-analytics/impact-report.md` are generated
 
 </details>
 
@@ -73,7 +88,8 @@ Do not add dependencies without approval.
 1. Install OpenClix skills with `npx skills add openclix/openclix` (repo: `https://github.com/openclix/openclix`).
 2. Run `openclix-init` on the target mobile app codebase.
 3. Run `openclix-campaign-design` to produce `.clix-campaigns/openclix-config.json`.
-4. Keep integration minimal and do not add dependencies without approval.
+4. Run `openclix-analytics` to detect PA providers, wire event forwarding, and output pre/post impact reports under `.clix-analytics/`.
+5. Keep integration minimal and do not add dependencies without approval.
 
 ### Verification
 
@@ -98,6 +114,14 @@ Do not add dependencies without approval.
 - Designs lifecycle campaigns (onboarding/habit/re-engagement/milestone/feature discovery)
 - Produces schema-valid OpenClix config (`openclix/config/v1`)
 - Applies guardrails for trigger modeling, cancellation, and message copy
+
+### What `openclix-analytics` does
+
+- Detects installed PA providers (Firebase, PostHog, Mixpanel, Amplitude)
+- Selects one provider by fixed priority (Firebase > PostHog > Mixpanel > Amplitude)
+- Wires OpenClix app/system event forwarding with standardized `openclix_*` properties
+- Produces pre/post impact artifacts focused on `d7_retention` with engagement support metrics
+- Stops with provider setup guidance when no supported PA is installed
 
 ### Why Source-First Delivery Is a Strength
 
