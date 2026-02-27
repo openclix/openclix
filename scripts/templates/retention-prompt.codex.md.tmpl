@@ -1,0 +1,31 @@
+# OpenClix Retention Ops (Codex)
+
+Project root: `{{ROOT}}`
+Delivery mode: `{{DELIVERY_MODE}}`
+Selected analytics provider: `{{SELECTED_PROVIDER}}`
+Dry run: `{{DRY_RUN}}`
+
+## Inputs
+- Impact metrics: `{{IMPACT_FILE}}`
+- Campaign metrics: `{{CAMPAIGN_METRICS_FILE}}`
+- Active config: `{{CONFIG_FILE}}`
+- Evaluator recommendations: `{{RECOMMENDATIONS_FILE}}`
+- Evaluator next config: `{{NEXT_CONFIG_FILE}}`
+
+## Task
+1. Audit evaluator output consistency against metrics.
+2. Produce campaign-level implementation diffs to consider for next config.
+3. Flag operational conflicts by delivery mode (`bundle`, `hosted_http`, `dual`).
+4. Return a deterministic pre-apply checklist for human approval.
+
+## Output format
+Return Markdown with exactly these sections:
+- `## Metrics Audit`
+- `## Proposed Changes`
+- `## Delivery-Mode Checks`
+- `## Human Approval Gate`
+
+## Guardrails
+- Keep active config unchanged until explicit approval.
+- Do not introduce new dependencies.
+- Bias toward reversible changes when confidence is moderate.

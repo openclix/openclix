@@ -130,6 +130,34 @@ Run platform checks and report:
 - verification command results
 - any insufficient-data blockers
 
+## Automation handoff
+
+For multi-agent retention review loops, run:
+
+```bash
+bash scripts/retention_ops_automation.sh \
+  --root <target-project-root> \
+  --agent all \
+  --delivery-mode auto \
+  --dry-run
+```
+
+The helper executes delivery mode detection + evaluator orchestration and writes:
+
+- `.clix/automation/run-summary.json`
+- `.clix/automation/prompts/openclaw.md`
+- `.clix/automation/prompts/claude-code.md`
+- `.clix/automation/prompts/codex.md`
+
+Failure codes from helper script:
+
+- `10`: prerequisite command or required script missing
+- `20`: no supported PA provider detected
+- `21`: OpenClix integration not detected
+- `30`: required input artifact missing
+- `31`: delivery mode unresolved (`unknown`)
+- `40`: evaluator failed
+
 ## Resources
 
 - `references/decision-rules.md`

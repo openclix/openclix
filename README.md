@@ -147,6 +147,45 @@ Do not add dependencies without approval.
 - Detects bundle vs hosted HTTP delivery mode and provides mode-specific apply guidance
 - Keeps active config unchanged until explicit user confirmation
 
+### Agent-Driven Retention Ops (OpenClaw + Claude Code + Codex)
+
+Use OpenClix artifacts as the system-of-record and run an agent review loop on top:
+
+```text
+metrics/config artifacts -> evaluator recommendations -> agent review brief -> human approval -> apply
+```
+
+Operational helper script:
+
+```bash
+bash scripts/retention_ops_automation.sh \
+  --root <target-project-root> \
+  --agent all \
+  --delivery-mode auto \
+  --dry-run
+```
+
+Generated outputs:
+
+- `.clix/automation/run-summary.json`
+- `.clix/automation/prompts/openclaw.md`
+- `.clix/automation/prompts/claude-code.md`
+- `.clix/automation/prompts/codex.md`
+
+Evidence grading model used in docs (`A/B/C`):
+
+| Grade | Meaning |
+| --- | --- |
+| A | Public implementation artifacts and reproducible workflow evidence are available. |
+| B | Public workflow exists but business KPI proof is limited or indirect. |
+| C | Anecdotal or directional evidence only. |
+
+OpenClaw safety note:
+
+- Treat third-party OpenClaw skills/plugins as untrusted until source-reviewed and sandboxed.
+- Keep explicit approval gates before applying config changes.
+- Prefer reversible updates when signal confidence is moderate.
+
 ### Why Source-First Delivery Is a Strength
 
 OpenClix intentionally uses a vendoring model for client code:

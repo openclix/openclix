@@ -3,7 +3,14 @@ import { Badge } from "@/components/ui/badge";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { useCases } from "@/data/use-cases";
 
-const tags = ["onboarding", "retention", "streak", "milestone", "discovery"];
+const tags = [
+  "onboarding",
+  "retention",
+  "streak",
+  "milestone",
+  "discovery",
+  "agent-ops",
+];
 
 export function UseCases() {
   return (

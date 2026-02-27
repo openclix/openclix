@@ -35,4 +35,9 @@ export const terminalPromptExamples: TerminalPromptExample[] = [
     tag: "Experiment",
     text: "Set up an openclix-config.json experiment served over HTTP to test reminder timing and suppression rules.",
   },
+  {
+    id: "agent-ops",
+    tag: "Ops",
+    text: "Run retention_ops_automation in dry-run mode and generate OpenClaw, Claude Code, and Codex review prompts with manual approval gates.",
+  },
 ];

@@ -16,6 +16,10 @@ Use this checklist after running the workflow.
 - `.clix/campaigns/openclix-config.json` exists and is schema-valid against `https://openclix.ai/schemas/openclix.schema.json`.
 - `.clix/analytics/impact-metrics.json` exists.
 - `.clix/analytics/impact-report.md` exists.
+- `.clix/campaigns/update-recommendations.json` exists after `openclix-update-campaigns`.
+- `.clix/campaigns/openclix-config.next.json` exists after `openclix-update-campaigns`.
+- `.clix/automation/run-summary.json` exists after running retention ops automation.
+- `.clix/automation/prompts/` contains expected agent prompt files.
 
 ## Schema validation commands
 
@@ -40,6 +44,22 @@ npx --yes ajv-cli validate \
   -s .clix/campaigns/openclix.schema.json \
   -d .clix/campaigns/openclix-config.json
 ```
+
+## Retention ops automation check
+
+```bash
+bash scripts/retention_ops_automation.sh \
+  --root <target-project-root> \
+  --agent all \
+  --delivery-mode auto \
+  --dry-run
+```
+
+Validate:
+
+- Script exits with code `0`.
+- `.clix/automation/run-summary.json` reports `status: "ok"`.
+- Prompt files are generated under `.clix/automation/prompts/`.
 
 ## Behavior checks
 

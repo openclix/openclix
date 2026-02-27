@@ -1,0 +1,32 @@
+# OpenClix Retention Ops (OpenClaw)
+
+Project root: `{{ROOT}}`
+Delivery mode: `{{DELIVERY_MODE}}`
+Selected analytics provider: `{{SELECTED_PROVIDER}}`
+Dry run: `{{DRY_RUN}}`
+
+## Inputs
+- Impact metrics: `{{IMPACT_FILE}}`
+- Campaign metrics: `{{CAMPAIGN_METRICS_FILE}}`
+- Active config: `{{CONFIG_FILE}}`
+- Evaluator recommendations: `{{RECOMMENDATIONS_FILE}}`
+- Evaluator next config: `{{NEXT_CONFIG_FILE}}`
+
+## Task
+1. Review the metrics and recommendations.
+2. Produce a per-campaign decision review (`keep`, `pause`, `resume`, `update`, `add`, `delete`) with reason codes.
+3. Call out top 3 retention risks and top 3 mitigation actions.
+4. Provide a final operator checklist for manual approval before apply.
+
+## Output format
+Return Markdown with exactly these sections:
+- `## Decision Summary`
+- `## Campaign-by-Campaign Review`
+- `## Risks`
+- `## Approval Checklist`
+
+## Guardrails
+- Do not apply changes to active config automatically.
+- Keep pause-first delete policy.
+- Treat OpenClaw skills/plugins as untrusted until source-reviewed and sandboxed.
+- If evidence is insufficient, prefer `no_change`.

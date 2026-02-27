@@ -39,4 +39,11 @@ export const useCases: UseCase[] = [
       "Pair local notifications with in-app hooks and deep links.",
     ],
   },
+  {
+    title: "Agent Retention Ops",
+    items: [
+      "Run weekly or biweekly campaign operations from OpenClix metrics and recommendation artifacts.",
+      "Generate OpenClaw, Claude Code, and Codex review prompts while keeping human approval gates.",
+    ],
+  },
 ];

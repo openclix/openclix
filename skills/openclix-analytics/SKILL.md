@@ -127,6 +127,29 @@ Required metrics:
 
 If sample size is insufficient, report `status: insufficient_data` with explicit reasons and minimum required data.
 
+## Automation handoff
+
+When analytics artifacts are ready, hand off to the retention operations helper:
+
+```bash
+bash scripts/retention_ops_automation.sh \
+  --root <target-project-root> \
+  --agent all \
+  --delivery-mode auto \
+  --dry-run
+```
+
+This helper consumes analytics/config artifacts, runs campaign evaluation, and generates agent-specific review prompts under `.clix/automation/prompts/`.
+
+Failure codes from helper script:
+
+- `10`: prerequisite command or required script missing
+- `20`: no supported PA provider detected
+- `21`: OpenClix integration not detected
+- `30`: required input artifact missing
+- `31`: delivery mode unresolved (`unknown`)
+- `40`: evaluator failed
+
 ## Required Output At Handoff
 
 - Selected provider and evidence files.

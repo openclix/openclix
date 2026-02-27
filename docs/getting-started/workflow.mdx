@@ -38,3 +38,37 @@ Expected output:
 
 - `.clix/analytics/impact-metrics.json`
 - `.clix/analytics/impact-report.md`
+
+## 4. Draft campaign operations with `openclix-update-campaigns`
+
+`openclix-update-campaigns`:
+
+- Reads impact + campaign metrics and evaluates per-campaign actions.
+- Produces `openclix-config.next.json` without mutating active config.
+- Keeps apply behind explicit confirmation.
+
+Expected output:
+
+- `.clix/campaigns/update-recommendations.json`
+- `.clix/campaigns/openclix-config.next.json`
+
+## 5. Run agent retention operations with `retention_ops_automation.sh`
+
+Use the helper script when you want OpenClaw, Claude Code, and/or Codex prompts generated from the latest OpenClix artifacts.
+
+```bash
+bash scripts/retention_ops_automation.sh \
+  --root <target-project-root> \
+  --agent all \
+  --delivery-mode auto \
+  --dry-run
+```
+
+Expected output:
+
+- `.clix/automation/run-summary.json`
+- `.clix/automation/prompts/openclaw.md`
+- `.clix/automation/prompts/claude-code.md`
+- `.clix/automation/prompts/codex.md`
+
+Next: [Agent Retention Automation](/guides/agent-retention-automation)

@@ -1,0 +1,102 @@
+---
+title: "Agent Retention Automation"
+description: "Run a repeatable retention-operations loop using OpenClix artifacts and OpenClaw/Claude Code/Codex prompts."
+---
+
+Use this guide after the base workflow (`openclix-init`, `openclix-design-campaigns`, `openclix-analytics`, `openclix-update-campaigns`) is already producing artifacts.
+
+## Why this layer exists
+
+OpenClix already gives deterministic config + metrics artifacts. This guide adds an operations layer so teams can run a weekly or biweekly decision loop with coding agents while preserving a strict human approval gate.
+
+## Operations loop
+
+```text
+impact metrics + campaign metrics + active config
+  -> evaluate_campaigns.sh recommendation draft
+  -> agent-specific review prompt (OpenClaw / Claude Code / Codex)
+  -> human approval
+  -> apply by delivery mode
+```
+
+## Evidence confidence model
+
+Use this grading model when citing examples in retention automation docs:
+
+| Grade | Criteria |
+| --- | --- |
+| A | Public implementation artifacts and reproducible workflow evidence are available. |
+| B | Workflow and tooling are public, but KPI impact proof is limited. |
+| C | Anecdotal/operator report without reproducible KPI evidence. |
+
+See [Agent Case Evidence](/reference/agent-case-evidence) for the current source table.
+
+## Run automation helper script
+
+```bash
+bash scripts/retention_ops_automation.sh \
+  --root <target-project-root> \
+  --agent all \
+  --delivery-mode auto \
+  --dry-run
+```
+
+CLI options:
+
+- `--agent openclaw|claude-code|codex|all`
+- `--delivery-mode auto|bundle|hosted_http|dual`
+- `--impact-file <path>`
+- `--campaign-metrics-file <path>`
+- `--config-file <path>`
+- `--output-dir <path>` (default: `.clix/automation`)
+
+## Generated artifacts
+
+- `.clix/automation/run-summary.json`
+- `.clix/automation/prompts/openclaw.md`
+- `.clix/automation/prompts/claude-code.md`
+- `.clix/automation/prompts/codex.md`
+
+The script also generates evaluator outputs in `.clix/automation/evaluator/` so dry-run usage can stay isolated from active campaign files.
+
+## Weekly / biweekly operating cadence
+
+1. Refresh analytics artifacts with `openclix-analytics`.
+2. Run `retention_ops_automation.sh` in dry-run mode.
+3. Paste generated prompt(s) into the selected agent.
+4. Compare agent recommendations with `update-recommendations.json`.
+5. Approve only high-confidence, reversible changes.
+6. Apply changes by delivery mode (`bundle`, `hosted_http`, `dual`).
+7. Record rationale in your team changelog.
+
+## Approval gate and rollback policy
+
+Before apply:
+
+- Confirm sampling thresholds were met (`delivered >= 200`, `opened >= 20`).
+- Reject recommendations that rely on low-confidence data.
+- Keep delete actions pause-first.
+
+Rollback defaults:
+
+- `bundle`: restore previous bundled config and redeploy app build.
+- `hosted_http`: roll back to previous JSON version at stable HTTPS URL.
+- `dual`: revert both hosted primary and local fallback together.
+
+## OpenClaw-specific safety constraints
+
+OpenClaw can be part of the same workflow, but treat skills/plugins as a supply-chain risk surface.
+
+- Review skill source before execution.
+- Run unknown skills in sandboxed or isolated environments.
+- Prefer read-only analysis prompts for first-pass review.
+- Require human approval before config apply.
+
+## Failure codes from helper script
+
+- `10`: required command/script missing
+- `20`: no supported analytics provider detected
+- `21`: OpenClix integration not detected
+- `30`: required input artifact missing
+- `31`: delivery mode unresolved (`unknown`)
+- `40`: evaluator execution failed
