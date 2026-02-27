@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+AUTOMATION_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
 ROOT="$PWD"
 AGENT="all"
 DELIVERY_MODE="auto"
@@ -65,6 +68,42 @@ require_command() {
     printf '[error] required command not found: %s\n' "$cmd" >&2
     exit "$EXIT_PREREQ"
   fi
+}
+
+resolve_helper_path() {
+  local rel_path="$1"
+  local preferred="${AUTOMATION_ROOT}/${rel_path}"
+  local fallback="${ROOT}/${rel_path}"
+
+  if [[ -f "$preferred" ]]; then
+    printf '%s\n' "$preferred"
+    return 0
+  fi
+
+  if [[ -f "$fallback" ]]; then
+    printf '%s\n' "$fallback"
+    return 0
+  fi
+
+  return 1
+}
+
+resolve_helper_dir() {
+  local rel_path="$1"
+  local preferred="${AUTOMATION_ROOT}/${rel_path}"
+  local fallback="${ROOT}/${rel_path}"
+
+  if [[ -d "$preferred" ]]; then
+    printf '%s\n' "$preferred"
+    return 0
+  fi
+
+  if [[ -d "$fallback" ]]; then
+    printf '%s\n' "$fallback"
+    return 0
+  fi
+
+  return 1
 }
 
 write_summary() {
@@ -288,14 +327,15 @@ require_command bash
 require_command jq
 require_command rg
 
-DETECT_PA_SCRIPT="$ROOT/skills/openclix-analytics/scripts/detect_pa.sh"
-DETECT_MODE_SCRIPT="$ROOT/skills/openclix-update-campaigns/scripts/detect_delivery_mode.sh"
-EVALUATOR_SCRIPT="$ROOT/skills/openclix-update-campaigns/scripts/evaluate_campaigns.sh"
-TEMPLATES_DIR="$ROOT/scripts/templates"
+DETECT_PA_SCRIPT="$(resolve_helper_path "skills/openclix-analytics/scripts/detect_pa.sh" || true)"
+DETECT_MODE_SCRIPT="$(resolve_helper_path "skills/openclix-update-campaigns/scripts/detect_delivery_mode.sh" || true)"
+EVALUATOR_SCRIPT="$(resolve_helper_path "skills/openclix-update-campaigns/scripts/evaluate_campaigns.sh" || true)"
+TEMPLATES_DIR="$(resolve_helper_dir "scripts/templates" || true)"
 
-for script_path in "$DETECT_PA_SCRIPT" "$DETECT_MODE_SCRIPT" "$EVALUATOR_SCRIPT"; do
-  if [[ ! -f "$script_path" ]]; then
-    printf '[error] required script missing: %s\n' "$script_path" >&2
+for required_var in DETECT_PA_SCRIPT DETECT_MODE_SCRIPT EVALUATOR_SCRIPT TEMPLATES_DIR; do
+  if [[ -z "${!required_var}" ]]; then
+    printf '[error] required helper not found: %s\n' "$required_var" >&2
+    printf '[hint] expected under %s or target root %s\n' "$AUTOMATION_ROOT" "$ROOT" >&2
     exit "$EXIT_PREREQ"
   fi
 done

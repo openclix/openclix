@@ -99,6 +99,55 @@ if [[ ! -f "$HISTORY_FILE" ]]; then
 fi
 
 GLOBAL_D7_DELTA="$(jq -r '.metrics.d7_retention_delta_pp // .d7_retention_delta_pp // 0' "$IMPACT_FILE")"
+LIFECYCLE_GAP_DETECTED=0
+LIFECYCLE_GAP_DETAILS='null'
+
+if [[ -f "$APP_PROFILE_FILE" ]]; then
+  if LIFECYCLE_GAP_DETAILS="$(jq -n --slurpfile app "$APP_PROFILE_FILE" --slurpfile cfg "$CONFIG_FILE" '
+    def lifecycle_stages($text):
+      ($text // "" | tostring | ascii_downcase) as $t
+      | [
+          (if ($t | test("onboarding")) then "onboarding" else empty end),
+          (if ($t | test("re[- ]?engage|reengagement|reactivat|win[- ]?back")) then "re-engagement" else empty end),
+          (if ($t | test("habit|streak|daily|weekly|routine")) then "habit" else empty end),
+          (if ($t | test("milestone|achievement|level|progress")) then "milestone" else empty end),
+          (if ($t | test("feature[ _-]?discover|adoption|activation")) then "feature-discovery" else empty end)
+        ];
+    ($app[0] // {}) as $app_profile
+    | ($cfg[0] // {}) as $config
+    | ($config.campaigns // {}) as $campaigns
+    | ([
+        ($app_profile.goals // [])[]? | lifecycle_stages(.)[]
+      ] + [
+        ($app_profile.campaign_design_brief // [])[]? | lifecycle_stages(.id)[]
+      ] + [
+        ($app_profile.campaign_design_brief // [])[]? | lifecycle_stages(.purpose)[]
+      ]) | unique as $desired_stages
+    | ([
+        ($campaigns | to_entries[]? | (.key + " " + (.value.name // "") + " " + (.value.description // "")))
+        | lifecycle_stages(.)[]
+      ] | unique) as $covered_stages
+    | ([
+        ($app_profile.campaign_design_brief // [])[]?
+        | .id? as $id
+        | select(($id | type) == "string" and (($campaigns | has($id)) | not))
+        | $id
+      ] | unique) as $missing_brief_ids
+    | (($desired_stages - $covered_stages) | unique) as $missing_goal_stages
+    | {
+        lifecycle_gap_detected: ((($missing_brief_ids | length) > 0) or (($missing_goal_stages | length) > 0)),
+        missing_brief_ids: $missing_brief_ids,
+        missing_goal_stages: $missing_goal_stages,
+        desired_stages: $desired_stages,
+        covered_stages: $covered_stages
+      }' 2>/dev/null)"; then
+    if [[ "$(jq -r '.lifecycle_gap_detected // false' <<< "$LIFECYCLE_GAP_DETAILS")" == "true" ]]; then
+      LIFECYCLE_GAP_DETECTED=1
+    fi
+  else
+    LIFECYCLE_GAP_DETAILS='null'
+  fi
+fi
 
 TMP_ACTIONS="$(mktemp)"
 TMP_RUN_CAMPAIGNS="$(mktemp)"
@@ -223,21 +272,24 @@ for CAMPAIGN_ID in "${CAMPAIGN_IDS[@]}"; do
     }' >> "$TMP_RUN_CAMPAIGNS"
 done
 
-if [[ -f "$APP_PROFILE_FILE" ]] && awk "BEGIN { exit !($GLOBAL_D7_DELTA <= -1.0) }"; then
+if [[ -f "$APP_PROFILE_FILE" && "$LIFECYCLE_GAP_DETECTED" -eq 1 ]] && awk "BEGIN { exit !($GLOBAL_D7_DELTA <= -1.0) }"; then
   ADD_ACTION_JSON="$(jq -n \
     --arg id "reengagement-recovery-1" \
+    --argjson lifecycle_gap "$LIFECYCLE_GAP_DETAILS" \
     '{
       campaign_id: $id,
       action: "add",
       reason_codes: ["global_retention_decline","lifecycle_gap_detected"],
-      metrics_snapshot: null,
+      metrics_snapshot: {
+        lifecycle_gap_signal: $lifecycle_gap
+      },
       proposed_patch: {
         op: "add",
         path: ("/campaigns/" + $id),
         value: {
           name: "Re-engagement Recovery 1",
           type: "campaign",
-          description: "Generated from retention decline signal.",
+          description: "Generated from retention decline + lifecycle gap signal.",
           status: "paused",
           trigger: {
             type: "event",

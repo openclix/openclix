@@ -193,6 +193,8 @@ bash scripts/retention_ops_automation.sh \
   --dry-run
 ```
 
+Run from the OpenClix repository root, or use an absolute script path when running from another directory.
+
 Generated outputs:
 
 - `.clix/automation/run-summary.json`

@@ -106,6 +106,8 @@ Conditions:
 
 - global `d7_retention_delta_pp <= -1.0`
 - app profile indicates lifecycle goal gaps not covered by current campaign set
+  - `campaign_design_brief[].id` exists in app profile but is missing in active config
+  - or lifecycle stages inferred from app profile goals/brief (`onboarding`, `habit`, `re-engagement`, `milestone`, `feature-discovery`) are not covered by active campaign id/name/description signals
 
 Output:
 
