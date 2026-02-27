@@ -1,84 +1,72 @@
 # OpenClix — Full Documentation for LLMs
 
-> openclix-config.json over HTTP + On-Device Notification Journeys
+> Agent-based mobile app retention and engagement automation (local-first, source-first).
 
-## Overview
+## Product summary
 
-OpenClix is an open-source SDK for iOS and Android that ships onboarding, habit, and re-engagement campaigns that run entirely on the device—without FCM. No push tokens. No deliverability promises. Just deterministic, on-device control.
+OpenClix is an open-source reference project for iOS and Android engagement logic. It helps teams automate retention and engagement operations through explicit skills and scripts while keeping runtime decisions on-device.
 
-## Core Features
+## What OpenClix automates today
 
-### openclix-config.json Runtime
-Typed values, JSON payloads, versioning, defaults, and safe fallbacks. `openclix-config.json` can be bundled in-app or fetched over HTTP from a static file or dynamic API.
+### Skill layer
 
-### Targeting & Segments (On-Device)
-Evaluate rules locally using device/user attributes you choose to provide. No server roundtrip needed for targeting decisions.
+1. `openclix-init`
+- Integrates OpenClix source templates into mobile apps.
+- Wires initialization, event tracking, and lifecycle triggers.
 
-### Gradual Rollouts & Variants
-Percentage rollouts, A/B-style variants, and deterministic bucketing. Supports on-device variants and can emit exposure events to your analytics.
+2. `openclix-design-campaigns`
+- Converts product goals and event taxonomy into schema-valid campaign config.
+- Supports event/scheduled/recurring triggers with suppression controls.
 
-### Local Notification Campaigns
-Schedule notifications with templates, quiet hours, and per-campaign frequency caps. Notifications are scheduled on the device and do not require push infrastructure.
+3. `openclix-analytics`
+- Detects supported analytics providers (Firebase, PostHog, Mixpanel, Amplitude).
+- Wires OpenClix event forwarding and generates retention-impact artifacts.
 
-### On-Device Journey Engine
-Stateful flows with delays, conditions, and auto-cancel when goals are met. Journey state is managed locally on the device.
+4. `openclix-update-campaigns`
+- Evaluates campaign performance and proposes pause/resume/update/add/delete actions.
+- Produces draft next config with explicit confirmation gate.
 
-### Deep Links & Personalization
-Route users to the right screen with parameterized deep links and message templates.
+### Script layer
 
-### Event Hooks (Bring Your Own Analytics)
-Export exposure + notification events to your analytics stack via HTTP using your existing collector endpoint.
+1. `scripts/retention_ops_automation.sh`
+- Orchestrates provider detection, delivery-mode detection, campaign evaluation, and agent prompt generation.
+- Generates prompts for OpenClaw, Claude Code, and Codex.
 
-### Privacy-First by Design
-No push tokens required. Most decisions happen locally on the device.
+2. `skills/openclix-analytics/scripts/detect_pa.sh`
+- Detects installed analytics provider and OpenClix integration evidence.
 
-## Use Cases
+3. `skills/openclix-update-campaigns/scripts/detect_delivery_mode.sh`
+- Detects `bundle`, `hosted_http`, or `dual` config delivery mode.
 
-### Onboarding Journeys
-- Welcome series with step-by-step nudges
-- "Finish setup" reminders that auto-cancel when completed
+4. `skills/openclix-update-campaigns/scripts/evaluate_campaigns.sh`
+- Evaluates recommendations with conservative sampling guardrails.
 
-### Habit & Routine
-- Daily/weekly reminders at user-chosen times
-- Streak maintenance, quiet hours, cooldown windows
+5. `scripts/verify_templates.sh`
+- Verifies cross-platform template contracts for React Native, Android, iOS, and Flutter.
 
-### Re-Engagement (Last-Seen Based)
-- 1/3/7-day inactive nudges
-- "You haven't tried X yet" prompts (evaluated on next app run)
+## Core workflow
 
-### In-App Triggered Notifications
-- Immediate follow-ups after key actions
-- "Next best action" prompts after screen visits or events
+```text
+openclix-init
+  -> openclix-design-campaigns
+  -> openclix-analytics
+  -> openclix-update-campaigns
+  -> retention_ops_automation.sh (OpenClaw/Claude Code/Codex prompt loop)
+```
 
-### Scheduled Promotions
-- Weekend/event reminders you can edit anytime by updating hosted `openclix-config.json`
-- Deep links to offers, content, or paywalls
+## Search-intent aliases
 
-## Quick Start
+- agent-based mobile app retention automation
+- mobile engagement automation
+- agent-driven retention ops
+- OpenClaw Claude Code Codex retention workflow
+- on-device campaign operations
 
-1. Add the SDK: Install the OpenClix SDK for iOS or Android and initialize it in your app.
-2. Define config: JSON values, variants, rollout rules in `openclix-config.json`.
-3. Publish journeys: Local notification schedules + on-device rules. Update static JSON or API responses to change campaigns without app redeploy.
+## Directional boundaries
 
-## Platform Compatibility
-
-- iOS + Android: Native SDKs with an on-device evaluation engine.
-- Any Backend: Fetch `openclix-config.json` from your own static URL or dynamic API endpoint.
-- Any Analytics: Use your existing collector via event hooks.
-
-## FAQ
-
-### Can OpenClix replace Braze or OneSignal?
-For scheduled/on-device journeys (onboarding, habits, last-seen re-engagement, in-app triggers): yes, partially. For server-triggered real-time push (payments, chat, security alerts, time-sensitive ops): no — use APNs/FCM push for that.
-
-### Will notifications work if the app hasn't been opened in a long time?
-Only if they were scheduled ahead of time on the device. OpenClix does not "wake" devices like push.
-
-### Can I change copy, links, targeting, and timing without shipping an app update?
-Yes. Update the hosted static `openclix-config.json` file or the JSON response from your API. Changes apply after the next config refresh, without a new app release.
-
-### Do you support A/B tests?
-OpenClix supports on-device variants and bucketing and can emit exposure events to your analytics.
+- Local-first: campaign rule evaluation and suppression happen on-device.
+- Source-first: OpenClix runtime code is copied into your repository.
+- Not hosted full platform: OpenClix does not claim server-triggered real-time push orchestration.
 
 ## Links
 

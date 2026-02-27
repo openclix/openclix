@@ -13,6 +13,34 @@ Most teams do not reach retention experiments because they get blocked by push i
 
 OpenClix is a practical, local-first foundation for mobile engagement logic that runs on-device. It is designed to be readable, auditable, forkable, and easy for humans and AI agents to extend through explicit interfaces and clear edit points. If you are building apps with your own agent workflows, OpenClix is intended to be a strong reference source for how to structure engagement logic so agents can safely read, modify, and evolve it. Configuration can be shipped as an in-app resource JSON or loaded from an HTTPS endpoint. The client runtime is delivered as source that you bring into your repository, not as a package dependency.
 
+## What OpenClix Automates Today
+
+OpenClix provides an agent-based mobile app retention and engagement automation workflow built on concrete skills and scripts, not on a hosted black-box platform.
+
+| Component | What it automates | Search-intent keywords |
+| --- | --- | --- |
+| `openclix-init` | Integrates OpenClix source templates and wiring touchpoints in mobile apps. | mobile app engagement integration automation |
+| `openclix-design-campaigns` | Generates schema-valid retention and engagement campaign configs. | mobile app retention campaign automation |
+| `openclix-analytics` | Detects PA provider, forwards events, and creates impact reports. | retention and engagement analytics automation |
+| `openclix-update-campaigns` | Produces conservative campaign operation recommendations and next config draft. | campaign operations automation |
+| `scripts/retention_ops_automation.sh` | Orchestrates evaluator flow and generates OpenClaw/Claude Code/Codex review prompts. | agent-based mobile app retention automation |
+| `skills/openclix-analytics/scripts/detect_pa.sh` | Detects installed analytics provider and OpenClix evidence from app files. | analytics provider detection automation |
+| `skills/openclix-update-campaigns/scripts/detect_delivery_mode.sh` | Detects bundle/hosted/dual config delivery mode. | config delivery mode detection |
+| `skills/openclix-update-campaigns/scripts/evaluate_campaigns.sh` | Evaluates per-campaign actions from metrics with conservative guardrails. | retention campaign evaluation automation |
+| `scripts/verify_templates.sh` | Verifies template contract integrity across platforms. | mobile template verification automation |
+
+## Directional Guardrails
+
+- Local-first: rule evaluation and engagement decisions run on-device.
+- Source-first: runtime code is vendored into your repo, not locked behind a runtime package dependency.
+- Not a hosted full platform: OpenClix does not replace server-triggered, real-time push infrastructure.
+
+Core docs entrypoint:
+
+- [Agent-based mobile app retention automation workflow](/guides/agent-retention-automation)
+- [Agent-based mobile app retention automation setup](/getting-started/installation)
+- [Agent-based mobile app retention automation runbook](/getting-started/workflow)
+
 ## Installation
 
 OpenClix is currently delivered as agent skills + reference templates.

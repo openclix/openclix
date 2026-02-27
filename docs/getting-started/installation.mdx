@@ -1,9 +1,10 @@
 ---
 title: "Installation"
-description: "Install OpenClix skills and start integration with agent-first or manual flow."
+description: "Install OpenClix skills and start agent-based mobile app retention and engagement automation."
 ---
 
 OpenClix is currently delivered as agent skills plus reference templates.
+This installation path is intended for agent-based mobile app retention and engagement automation.
 
 ## Option A: Agent-first (recommended)
 
@@ -18,6 +19,9 @@ and generate .clix/campaigns/openclix-config.json.
 Then use openclix-analytics to detect installed Firebase/PostHog/Mixpanel/Amplitude,
 forward OpenClix events with openclix tags, and produce a pre/post impact report
 for D7 retention and engagement metrics.
+Then use openclix-update-campaigns to draft campaign action recommendations.
+Then run scripts/retention_ops_automation.sh with --agent all to generate
+OpenClaw, Claude Code, and Codex review prompts before apply.
 Do not add dependencies without approval.
 ```
 
@@ -35,4 +39,4 @@ npx skills add openclix/openclix
 5. Run `openclix-update-campaigns` to draft campaign operation changes.
 6. Run `scripts/retention_ops_automation.sh` to generate OpenClaw/Claude Code/Codex review prompts.
 
-Continue with the full workflow at [Workflow](/getting-started/workflow).
+Continue with the [agent-based mobile app retention automation workflow](/getting-started/workflow).

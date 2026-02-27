@@ -1,13 +1,22 @@
 ---
 title: "Agent Retention Automation"
-description: "Run a repeatable retention-operations loop using OpenClix artifacts and OpenClaw/Claude Code/Codex prompts."
+description: "Run a repeatable, agent-based mobile app retention and engagement automation loop with OpenClaw, Claude Code, and Codex."
 ---
 
 Use this guide after the base workflow (`openclix-init`, `openclix-design-campaigns`, `openclix-analytics`, `openclix-update-campaigns`) is already producing artifacts.
+This is OpenClix's primary agent-based mobile app retention automation operating loop.
 
 ## Why this layer exists
 
 OpenClix already gives deterministic config + metrics artifacts. This guide adds an operations layer so teams can run a weekly or biweekly decision loop with coding agents while preserving a strict human approval gate.
+
+## Capabilities by skill/script
+
+- `openclix-init`: integration automation
+- `openclix-design-campaigns`: campaign config automation
+- `openclix-analytics`: retention/engagement measurement automation
+- `openclix-update-campaigns`: campaign action proposal automation
+- `retention_ops_automation.sh`: OpenClaw/Claude Code/Codex review prompt automation
 
 ## Operations loop
 

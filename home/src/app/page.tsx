@@ -24,7 +24,22 @@ const jsonLd = {
       applicationCategory: "DeveloperApplication",
       operatingSystem: "iOS, Android",
       description:
-        "Open-source, agent-friendly, source-distributed reference codebase for dynamic mobile engagement controlled by config JSON and executed on-device.",
+        "Open-source, local-first foundation for agent-based mobile app retention and engagement automation using config-driven, on-device messaging logic.",
+      keywords: [
+        "mobile app retention automation",
+        "mobile engagement automation",
+        "agent-driven retention ops",
+        "OpenClaw",
+        "Claude Code",
+        "Codex",
+      ],
+      featureList: [
+        "openclix-init integration automation",
+        "openclix-design-campaigns config generation",
+        "openclix-analytics impact measurement",
+        "openclix-update-campaigns recommendation drafting",
+        "retention_ops_automation multi-agent prompt generation",
+      ],
       offers: {
         "@type": "Offer",
         price: "0",
@@ -42,6 +57,8 @@ const jsonLd = {
       "@type": "WebSite",
       name: "OpenClix",
       url: "https://openclix.ai",
+      description:
+        "Documentation and workflows for agent-based mobile app retention and engagement automation with OpenClaw, Claude Code, and Codex.",
     },
     {
       "@type": "FAQPage",

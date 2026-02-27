@@ -5,29 +5,36 @@ import "./globals.css";
 const siteUrl = "https://openclix.ai";
 const siteName = "OpenClix";
 const siteDescription =
-  "Ship onboarding, habit, and re-engagement campaigns that run on the device—without FCM. No push tokens. No deliverability promises. Just deterministic, on-device control.";
+  "Open-source, local-first mobile app retention and engagement automation. OpenClix uses config-driven on-device logic, source-first integration, and agent-driven operations with OpenClaw, Claude Code, and Codex.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: `${siteName} — openclix-config.json over HTTP + On-Device Journeys`,
+    default: `${siteName} — Agent-Based Mobile App Retention & Engagement Automation`,
     template: `%s | ${siteName}`,
   },
   description: siteDescription,
   keywords: [
     "openclix-config.json",
-    "config json over http",
-    "feature flags",
-    "local notifications",
-    "on-device notifications",
-    "mobile SDK",
+    "mobile app retention automation",
+    "mobile engagement automation",
+    "agent-driven retention ops",
+    "agent-based mobile app retention automation",
+    "on-device campaign operations",
+    "config-driven mobile engagement",
+    "source-first mobile integration",
+    "openclix-init",
+    "openclix-design-campaigns",
+    "openclix-analytics",
+    "openclix-update-campaigns",
+    "retention_ops_automation",
+    "OpenClaw",
+    "Claude Code",
+    "Codex",
     "iOS",
     "Android",
-    "push notifications",
     "onboarding",
     "re-engagement",
-    "A/B testing",
-    "notification journeys",
     "OpenClix",
   ],
   authors: [{ name: siteName, url: siteUrl }],
@@ -41,7 +48,7 @@ export const metadata: Metadata = {
   manifest: "/site.webmanifest",
 
   openGraph: {
-    title: `${siteName} — openclix-config.json over HTTP + On-Device Journeys`,
+    title: `${siteName} — Agent-Based Mobile App Retention & Engagement Automation`,
     description: siteDescription,
     url: siteUrl,
     siteName,
@@ -52,14 +59,14 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: `${siteName} — openclix-config.json over HTTP + On-Device Journeys`,
+        alt: `${siteName} — Agent-Based Mobile App Retention & Engagement Automation`,
       },
     ],
   },
 
   twitter: {
     card: "summary_large_image",
-    title: `${siteName} — openclix-config.json over HTTP + On-Device Journeys`,
+    title: `${siteName} — Agent-Based Mobile App Retention & Engagement Automation`,
     description: siteDescription,
     images: ["/og-image.png"],
   },
