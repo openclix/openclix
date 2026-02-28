@@ -1,10 +1,8 @@
 import { Hero } from "@/components/sections/hero";
+import { ProductChangePreview } from "@/components/sections/product-change-preview";
 import { InstallationGuide } from "@/components/sections/installation-guide";
-import { PromptTerminalSection } from "@/components/sections/prompt-terminal";
 import { QuickStart } from "@/components/sections/quick-start";
-import { Pillars } from "@/components/sections/pillars";
 import { Features } from "@/components/sections/features";
-import { ConfigDeliveryPatterns } from "@/components/sections/config-delivery-patterns";
 import { Mission } from "@/components/sections/mission";
 import { FAQ } from "@/components/sections/faq";
 import { FinalCTA } from "@/components/sections/final-cta";
@@ -80,12 +78,10 @@ export default function Home() {
       />
       <main className="w-full">
         <Hero />
+        <ProductChangePreview />
         <InstallationGuide />
-        <PromptTerminalSection />
         <QuickStart />
-        <Pillars />
         <Features />
-        <ConfigDeliveryPatterns />
         <Mission />
         <FAQ />
         <FinalCTA />
