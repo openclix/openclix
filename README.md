@@ -121,6 +121,29 @@ Do not add dependencies without approval.
    - Confirm `.clix/analytics/impact-metrics.json` and `.clix/analytics/impact-report.md` are generated
    - Confirm `.clix/campaigns/update-recommendations.json` and `.clix/campaigns/openclix-config.next.json` are generated
 
+**Option C: Claude Code plugin marketplace**
+
+Use this when you want OpenClix installed as a Claude Code plugin marketplace entry:
+
+```bash
+claude plugin marketplace add openclix/openclix
+claude plugin marketplace update openclix
+claude plugin install openclix@openclix
+```
+
+For local pre-release testing from a checkout:
+
+```bash
+claude plugin marketplace add /absolute/path/to/openclix
+```
+
+For plugin updates:
+
+```bash
+claude plugin marketplace update openclix
+claude plugin update openclix@openclix
+```
+
 </details>
 
 <details>
@@ -128,12 +151,14 @@ Do not add dependencies without approval.
 
 ### Step-by-Step Instructions
 
-1. Install OpenClix skills with `npx skills add openclix/openclix` (repo: `https://github.com/openclix/openclix`).
-2. Run `openclix-init` on the target mobile app codebase.
-3. Run `openclix-design-campaigns` to produce `.clix/campaigns/openclix-config.json`.
-4. Run `openclix-analytics` to detect PA providers, wire event forwarding, and output pre/post impact reports under `.clix/analytics/`.
-5. Run `openclix-update-campaigns` to evaluate campaign actions and produce `.clix/campaigns/openclix-config.next.json` with confirmation gating.
-6. Keep integration minimal and do not add dependencies without approval.
+1. Register marketplace in Claude Code: `claude plugin marketplace add openclix/openclix`.
+2. Update marketplace and install plugin: `claude plugin marketplace update openclix` then `claude plugin install openclix@openclix`.
+3. Alternative direct install path: `npx skills add openclix/openclix` (repo: `https://github.com/openclix/openclix`).
+4. Run `openclix-init` on the target mobile app codebase.
+5. Run `openclix-design-campaigns` to produce `.clix/campaigns/openclix-config.json`.
+6. Run `openclix-analytics` to detect PA providers, wire event forwarding, and output pre/post impact reports under `.clix/analytics/`.
+7. Run `openclix-update-campaigns` to evaluate campaign actions and produce `.clix/campaigns/openclix-config.next.json` with confirmation gating.
+8. Keep integration minimal and do not add dependencies without approval.
 
 ### Verification
 
@@ -141,6 +166,23 @@ Do not add dependencies without approval.
 - Confirm OpenClix touchpoints and generated campaign files are present.
 
 </details>
+
+### Claude Plugin Validation
+
+Validate plugin and marketplace manifests before release:
+
+```bash
+bash scripts/validate_claude_plugin.sh
+```
+
+### Claude Plugin Release Checklist
+
+1. Bump `.claude-plugin/plugin.json` `version`.
+2. Keep `.claude-plugin/marketplace.json` `metadata.version` and `plugins[0].version` equal to plugin version.
+3. Keep `plugins[0].source` as `./` so marketplace installs from the same checked-out repository content.
+4. Run `bash scripts/validate_claude_plugin.sh`.
+5. Verify skill discovery: `npx --yes skills add . --list`.
+6. Create and push the matching Git tag.
 
 ---
 
