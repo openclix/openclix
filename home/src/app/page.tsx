@@ -1,10 +1,7 @@
 import { Hero } from "@/components/sections/hero";
+import { InstallationGuide } from "@/components/sections/installation-guide";
 import { PromptTerminalSection } from "@/components/sections/prompt-terminal";
-import { WhyOpenClix } from "@/components/sections/why-openclix";
-import { ProofSection } from "@/components/sections/proof";
-import { UseCases } from "@/components/sections/use-cases";
 import { QuickStart } from "@/components/sections/quick-start";
-import { AudienceOutcomes } from "@/components/sections/audience-outcomes";
 import { Pillars } from "@/components/sections/pillars";
 import { Features } from "@/components/sections/features";
 import { ConfigDeliveryPatterns } from "@/components/sections/config-delivery-patterns";
@@ -83,13 +80,10 @@ export default function Home() {
       />
       <main className="w-full">
         <Hero />
+        <InstallationGuide />
         <PromptTerminalSection />
-        <WhyOpenClix />
-        <ProofSection />
         <QuickStart />
-        <AudienceOutcomes />
         <Pillars />
-        <UseCases />
         <Features />
         <ConfigDeliveryPatterns />
         <Mission />
