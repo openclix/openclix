@@ -15,7 +15,7 @@ Use a local-source integration model (shadcn-style): copy, adapt, wire, verify.
 - Detect the real platform first using project files.
 - Prioritize minimal edits to existing user code.
 - Keep all OpenClix files in a dedicated namespace/directory.
-- When creating local planning/report artifacts under `.clix/**`, ensure `.clix/` is listed in `.gitignore` (add it if missing).
+- When creating local planning/report artifacts under `.openclix/**`, ensure `.openclix/` is listed in `.gitignore` (add it if missing).
 - Reuse existing dependencies whenever possible.
 - Do not add or update dependencies without explicit user approval.
 - Run a build after integration and fix only integration-caused issues.
@@ -70,18 +70,18 @@ React Native / Expo storage selection:
 - AsyncStorage project: use `AsyncStorageCampaignStateRepository`.
 - MMKV project: use `MmkvCampaignStateRepository`.
 - If both exist, prefer the project standard and copy only one storage adapter into the app.
-- Inject `campaignStateRepository` explicitly when calling `Clix.initialize(...)`.
+- Inject `campaignStateRepository` explicitly when calling `OpenClix.initialize(...)`.
 
 React Native / Expo scheduler selection:
 
 - Notifee project: create `new NotifeeScheduler(notifee)`.
 - Expo notifications project: create `new ExpoNotificationScheduler(ExpoNotifications)`.
-- Inject `messageScheduler` explicitly when calling `Clix.initialize(...)`.
+- Inject `messageScheduler` explicitly when calling `OpenClix.initialize(...)`.
 
 Platform expectations:
 
 - React Native / Expo:
-  - Do not use runtime adapter auto-detection in `Clix` core.
+  - Do not use runtime adapter auto-detection in `OpenClix` core.
   - Select storage/scheduler implementations during integration and inject dependencies explicitly.
   - If compatible implementations are unavailable, initialization must fail with clear instructions.
 - Flutter:

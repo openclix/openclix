@@ -64,8 +64,8 @@ Ignore generated/vendor folders: `.git`, `node_modules`, `.next`, `build`, `dist
 
 OpenClix is considered integrated when at least one strong signal exists in app code:
 
-- `Clix.initialize(`
-- `ClixCampaignManager`
+- `OpenClix.initialize(`
+- `OpenClixCampaignManager`
 - `ai.openclix`
 - `src/openclix/` or `lib/openclix/` namespace usage
 
@@ -90,7 +90,7 @@ If missing, stop and run `openclix-init` first.
   ],
   "openclix_detected": true,
   "openclix_evidence": [
-    "/abs/path/src/openclix/core/Clix.ts:109:Clix.initialize("
+    "/abs/path/src/openclix/core/OpenClix.ts:109:OpenClix.initialize("
   ]
 }
 ```

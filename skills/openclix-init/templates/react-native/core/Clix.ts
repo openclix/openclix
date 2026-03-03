@@ -1,8 +1,8 @@
 import type {
-  ClixConfig,
+  OpenClixConfig,
   Config,
   Event,
-  ClixLogLevel,
+  OpenClixLogLevel,
   TriggerContext,
   TriggerResult,
   MessageScheduler,
@@ -12,7 +12,7 @@ import type {
   Logger,
   JsonValue,
   SystemEventName,
-} from '../domain/ClixTypes';
+} from '../domain/OpenClixTypes';
 import { TriggerService } from '../engine/TriggerService';
 import type { TriggerServiceDependencies } from '../engine/TriggerService';
 import { loadConfig } from '../infrastructure/ConfigLoader';
@@ -20,7 +20,7 @@ import { validateConfig } from '../infrastructure/ConfigValidator';
 import { generateUUID } from '../domain/CampaignUtils';
 import { ReactNativeLifecycleStateReader } from '../infrastructure/ReactNativeLifecycleStateReader';
 
-export interface ClixDependencies {
+export interface OpenClixDependencies {
   messageScheduler: MessageScheduler;
   campaignStateRepository: CampaignStateRepositoryPort;
   clock?: Clock;
@@ -50,7 +50,7 @@ class BasicLifecycleStateReader implements LifecycleStateReader {
   }
 }
 
-const LOG_LEVEL_ORDER: Record<ClixLogLevel, number> = {
+const LOG_LEVEL_ORDER: Record<OpenClixLogLevel, number> = {
   debug: 0,
   info: 1,
   warn: 2,
@@ -61,13 +61,13 @@ const LOG_LEVEL_ORDER: Record<ClixLogLevel, number> = {
 const MAXIMUM_EVENT_LOG_SIZE = 5000;
 
 export class ReactNativeLogger implements Logger {
-  private logLevel: ClixLogLevel;
+  private logLevel: OpenClixLogLevel;
 
-  constructor(initialLogLevel: ClixLogLevel = 'warn') {
+  constructor(initialLogLevel: OpenClixLogLevel = 'warn') {
     this.logLevel = initialLogLevel;
   }
 
-  setLogLevel(level: ClixLogLevel): void {
+  setLogLevel(level: OpenClixLogLevel): void {
     this.logLevel = level;
   }
 
@@ -87,13 +87,13 @@ export class ReactNativeLogger implements Logger {
     if (this.shouldLog('error')) console.error(`[OpenClix] ${message}`, ...args);
   }
 
-  private shouldLog(targetLevel: ClixLogLevel): boolean {
+  private shouldLog(targetLevel: OpenClixLogLevel): boolean {
     return LOG_LEVEL_ORDER[targetLevel] >= LOG_LEVEL_ORDER[this.logLevel];
   }
 }
 
-export class Clix {
-  private static config: ClixConfig | null = null;
+export class OpenClix {
+  private static config: OpenClixConfig | null = null;
   private static triggerService: TriggerService | null = null;
   private static initialized = false;
   private static campaignStateRepository: CampaignStateRepositoryPort | null = null;
@@ -101,35 +101,35 @@ export class Clix {
   private static clock: Clock | null = null;
   private static lifecycleStateReader: LifecycleStateReader | null = null;
   private static logger: Logger | null = null;
-  private static dependencies: ClixDependencies | null = null;
+  private static dependencies: OpenClixDependencies | null = null;
 
   private constructor() {}
 
   static async initialize(
-    config: ClixConfig,
-    dependencies: ClixDependencies,
+    config: OpenClixConfig,
+    dependencies: OpenClixDependencies,
   ): Promise<void> {
-    if (Clix.initialized) {
+    if (OpenClix.initialized) {
       throw new Error(
-        'Clix is already initialized. Call Clix.reset() before re-initializing.',
+        'OpenClix is already initialized. Call OpenClix.reset() before re-initializing.',
       );
     }
 
-    Clix.config = config;
-    Clix.dependencies = dependencies;
-    Clix.clock = dependencies.clock ?? new ReactNativeClock();
-    Clix.lifecycleStateReader =
+    OpenClix.config = config;
+    OpenClix.dependencies = dependencies;
+    OpenClix.clock = dependencies.clock ?? new ReactNativeClock();
+    OpenClix.lifecycleStateReader =
       dependencies.lifecycleStateReader ??
       (typeof globalThis === 'object' && 'navigator' in globalThis
         ? new ReactNativeLifecycleStateReader()
         : new BasicLifecycleStateReader());
-    Clix.logger = dependencies.logger ?? new ReactNativeLogger(config.logLevel ?? 'warn');
-    Clix.logger.setLogLevel?.(config.logLevel ?? 'warn');
-    Clix.campaignStateRepository = dependencies.campaignStateRepository;
-    Clix.messageScheduler = dependencies.messageScheduler;
-    Clix.triggerService = new TriggerService(Clix.createTriggerServiceDependencies());
+    OpenClix.logger = dependencies.logger ?? new ReactNativeLogger(config.logLevel ?? 'warn');
+    OpenClix.logger.setLogLevel?.(config.logLevel ?? 'warn');
+    OpenClix.campaignStateRepository = dependencies.campaignStateRepository;
+    OpenClix.messageScheduler = dependencies.messageScheduler;
+    OpenClix.triggerService = new TriggerService(OpenClix.createTriggerServiceDependencies());
 
-    const logger = Clix.logger;
+    const logger = OpenClix.logger;
     logger?.info('Initializing OpenClix SDK...');
 
     if (isRemoteEndpoint(config.endpoint)) {
@@ -155,9 +155,9 @@ export class Clix {
             logger?.warn(`Config validation warning [${warning.code}]: ${warning.message}`);
           }
 
-          Clix.triggerService.replaceConfig(loadedConfig);
+          OpenClix.triggerService.replaceConfig(loadedConfig);
           try {
-            await Clix.evaluate('app_boot');
+            await OpenClix.evaluate('app_boot');
           } catch (evaluationError) {
             logger?.warn(
               'Initial app_boot evaluation failed:',
@@ -179,17 +179,17 @@ export class Clix {
       } catch (loadError) {
         logger?.warn(
           'Failed to load config from endpoint. SDK initialized without campaign config. ' +
-            'Use ClixCampaignManager.replaceConfig() to set config manually.',
+            'Use OpenClixCampaignManager.replaceConfig() to set config manually.',
           loadError instanceof Error ? loadError.message : String(loadError),
         );
       }
     } else {
       logger?.info(
-        'Non-HTTP endpoint provided. Use ClixCampaignManager.replaceConfig() to set campaign config.',
+        'Non-HTTP endpoint provided. Use OpenClixCampaignManager.replaceConfig() to set campaign config.',
       );
     }
 
-    Clix.initialized = true;
+    OpenClix.initialized = true;
     logger?.info('OpenClix SDK initialized successfully.');
   }
 
@@ -197,23 +197,23 @@ export class Clix {
     name: string,
     properties?: Record<string, JsonValue>,
   ): Promise<void> {
-    Clix.assertInitialized();
+    OpenClix.assertInitialized();
 
     const event: Event = {
       id: generateUUID(),
       name,
       source_type: 'app',
       properties,
-      created_at: Clix.clock!.now(),
+      created_at: OpenClix.clock!.now(),
     };
 
-    await Clix.persistEvent(event);
-    Clix.logger?.debug(`Event tracked: ${name}`);
+    await OpenClix.persistEvent(event);
+    OpenClix.logger?.debug(`Event tracked: ${name}`);
 
     try {
-      await Clix.evaluate('event_tracked', event);
+      await OpenClix.evaluate('event_tracked', event);
     } catch (evaluationError) {
-      Clix.logger?.warn(
+      OpenClix.logger?.warn(
         `Evaluation after event '${name}' failed:`,
         evaluationError instanceof Error
           ? evaluationError.message
@@ -226,35 +226,35 @@ export class Clix {
     name: SystemEventName,
     properties?: Record<string, JsonValue>,
   ): Promise<void> {
-    Clix.assertInitialized();
+    OpenClix.assertInitialized();
 
     const event: Event = {
       id: generateUUID(),
       name,
       source_type: 'system',
       properties,
-      created_at: Clix.clock!.now(),
+      created_at: OpenClix.clock!.now(),
     };
 
-    await Clix.persistEvent(event);
+    await OpenClix.persistEvent(event);
   }
 
   static async handleNotificationDelivered(
     payload: Record<string, unknown>,
   ): Promise<void> {
-    Clix.assertInitialized();
+    OpenClix.assertInitialized();
 
-    await Clix.trackSystemEvent(
-      'clix.message.delivered',
-      Clix.compactProperties({
-        campaign_id: Clix.extractString(payload, 'campaignId', 'campaign_id'),
-        queued_message_id: Clix.extractString(
+    await OpenClix.trackSystemEvent(
+      'openclix.message.delivered',
+      OpenClix.compactProperties({
+        campaign_id: OpenClix.extractString(payload, 'campaignId', 'campaign_id'),
+        queued_message_id: OpenClix.extractString(
           payload,
           'queuedMessageId',
           'queued_message_id',
         ),
         channel_type:
-          Clix.extractString(payload, 'channelType', 'channel_type') ?? 'app_push',
+          OpenClix.extractString(payload, 'channelType', 'channel_type') ?? 'app_push',
       }),
     );
   }
@@ -262,20 +262,20 @@ export class Clix {
   static async handleNotificationOpened(
     payload: Record<string, unknown>,
   ): Promise<string | undefined> {
-    Clix.assertInitialized();
+    OpenClix.assertInitialized();
 
-    const landingUrl = Clix.extractString(payload, 'landingUrl', 'landing_url');
-    await Clix.trackSystemEvent(
-      'clix.message.opened',
-      Clix.compactProperties({
-        campaign_id: Clix.extractString(payload, 'campaignId', 'campaign_id'),
-        queued_message_id: Clix.extractString(
+    const landingUrl = OpenClix.extractString(payload, 'landingUrl', 'landing_url');
+    await OpenClix.trackSystemEvent(
+      'openclix.message.opened',
+      OpenClix.compactProperties({
+        campaign_id: OpenClix.extractString(payload, 'campaignId', 'campaign_id'),
+        queued_message_id: OpenClix.extractString(
           payload,
           'queuedMessageId',
           'queued_message_id',
         ),
         channel_type:
-          Clix.extractString(payload, 'channelType', 'channel_type') ?? 'app_push',
+          OpenClix.extractString(payload, 'channelType', 'channel_type') ?? 'app_push',
         landing_url: landingUrl,
       }),
     );
@@ -284,11 +284,11 @@ export class Clix {
   }
 
   static async reset(): Promise<void> {
-    const logger = Clix.logger;
+    const logger = OpenClix.logger;
 
-    if (Clix.campaignStateRepository) {
+    if (OpenClix.campaignStateRepository) {
       try {
-        await Clix.campaignStateRepository.clearCampaignState();
+        await OpenClix.campaignStateRepository.clearCampaignState();
       } catch (error) {
         logger?.warn(
           'Failed to clear campaign state during reset:',
@@ -296,9 +296,9 @@ export class Clix {
         );
       }
 
-      if (Clix.campaignStateRepository.clearEvents) {
+      if (OpenClix.campaignStateRepository.clearEvents) {
         try {
-          await Clix.campaignStateRepository.clearEvents();
+          await OpenClix.campaignStateRepository.clearEvents();
         } catch (error) {
           logger?.warn(
             'Failed to clear event log during reset:',
@@ -308,11 +308,11 @@ export class Clix {
       }
     }
 
-    if (Clix.messageScheduler) {
+    if (OpenClix.messageScheduler) {
       try {
-        const pendingMessages = await Clix.messageScheduler.listPending();
+        const pendingMessages = await OpenClix.messageScheduler.listPending();
         await Promise.all(
-          pendingMessages.map((message) => Clix.messageScheduler!.cancel(message.id)),
+          pendingMessages.map((message) => OpenClix.messageScheduler!.cancel(message.id)),
         );
       } catch (error) {
         logger?.warn(
@@ -323,7 +323,7 @@ export class Clix {
     }
 
     try {
-      Clix.lifecycleStateReader?.dispose?.();
+      OpenClix.lifecycleStateReader?.dispose?.();
     } catch (error) {
       logger?.warn(
         'Failed to dispose lifecycle state reader during reset:',
@@ -331,31 +331,31 @@ export class Clix {
       );
     }
 
-    Clix.config = null;
-    Clix.triggerService = null;
-    Clix.initialized = false;
-    Clix.campaignStateRepository = null;
-    Clix.messageScheduler = null;
-    Clix.clock = null;
-    Clix.lifecycleStateReader = null;
-    Clix.logger = null;
-    Clix.dependencies = null;
+    OpenClix.config = null;
+    OpenClix.triggerService = null;
+    OpenClix.initialized = false;
+    OpenClix.campaignStateRepository = null;
+    OpenClix.messageScheduler = null;
+    OpenClix.clock = null;
+    OpenClix.lifecycleStateReader = null;
+    OpenClix.logger = null;
+    OpenClix.dependencies = null;
 
     logger?.info('OpenClix SDK reset complete.');
   }
 
-  static setLogLevel(level: ClixLogLevel): void {
-    Clix.logger?.setLogLevel?.(level);
+  static setLogLevel(level: OpenClixLogLevel): void {
+    OpenClix.logger?.setLogLevel?.(level);
   }
 
   static handleAppForeground(): void {
-    if (!Clix.initialized) return;
+    if (!OpenClix.initialized) return;
 
-    Clix.lifecycleStateReader?.setAppState?.('foreground');
-    Clix.logger?.debug('App entered foreground');
+    OpenClix.lifecycleStateReader?.setAppState?.('foreground');
+    OpenClix.logger?.debug('App entered foreground');
 
-    Clix.evaluate('app_foreground').catch((error) => {
-      Clix.logger?.warn(
+    OpenClix.evaluate('app_foreground').catch((error) => {
+      OpenClix.logger?.warn(
         'app_foreground evaluation failed:',
         error instanceof Error ? error.message : String(error),
       );
@@ -363,61 +363,61 @@ export class Clix {
   }
 
   static getTriggerServiceInternal(): TriggerService | null {
-    return Clix.triggerService;
+    return OpenClix.triggerService;
   }
 
   static getClockInternal(): Clock | null {
-    return Clix.clock;
+    return OpenClix.clock;
   }
 
   static getLoggerInternal(): Logger | null {
-    return Clix.logger;
+    return OpenClix.logger;
   }
 
   static getCampaignStateRepositoryInternal(): CampaignStateRepositoryPort | null {
-    return Clix.campaignStateRepository;
+    return OpenClix.campaignStateRepository;
   }
 
   static getMessageSchedulerInternal(): MessageScheduler | null {
-    return Clix.messageScheduler;
+    return OpenClix.messageScheduler;
   }
 
   static isInitializedInternal(): boolean {
-    return Clix.initialized;
+    return OpenClix.initialized;
   }
 
   private static assertInitialized(): void {
-    if (!Clix.initialized) {
+    if (!OpenClix.initialized) {
       throw new Error(
-        'Clix is not initialized. Call Clix.initialize() before using the SDK.',
+        'OpenClix is not initialized. Call OpenClix.initialize() before using the SDK.',
       );
     }
   }
 
   private static createTriggerServiceDependencies(): TriggerServiceDependencies {
     return {
-      campaignStateRepository: Clix.campaignStateRepository!,
-      messageScheduler: Clix.messageScheduler!,
-      clock: Clix.clock!,
-      logger: Clix.logger!,
+      campaignStateRepository: OpenClix.campaignStateRepository!,
+      messageScheduler: OpenClix.messageScheduler!,
+      clock: OpenClix.clock!,
+      logger: OpenClix.logger!,
       recordEvent: async (event: Event) => {
-        await Clix.persistEvent(event);
+        await OpenClix.persistEvent(event);
       },
     };
   }
 
   private static async persistEvent(event: Event): Promise<void> {
-    if (!Clix.campaignStateRepository?.appendEvents) {
-      Clix.logger?.debug(
+    if (!OpenClix.campaignStateRepository?.appendEvents) {
+      OpenClix.logger?.debug(
         `Event store is not available; skipping persistence for event '${event.name}'.`,
       );
       return;
     }
 
     try {
-      await Clix.campaignStateRepository.appendEvents([event], MAXIMUM_EVENT_LOG_SIZE);
+      await OpenClix.campaignStateRepository.appendEvents([event], MAXIMUM_EVENT_LOG_SIZE);
     } catch (error) {
-      Clix.logger?.warn(
+      OpenClix.logger?.warn(
         `Failed to persist event '${event.name}':`,
         error instanceof Error ? error.message : String(error),
       );
@@ -453,12 +453,12 @@ export class Clix {
     trigger: TriggerContext['trigger'],
     event?: Event,
   ): Promise<TriggerResult | null> {
-    if (!Clix.triggerService) return null;
+    if (!OpenClix.triggerService) return null;
 
-    return Clix.triggerService.trigger({
+    return OpenClix.triggerService.trigger({
       trigger,
       event,
-      now: Clix.clock?.now(),
+      now: OpenClix.clock?.now(),
     });
   }
 }

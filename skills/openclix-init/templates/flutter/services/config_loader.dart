@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import '../models/clix_types.dart';
+import '../models/openclix_types.dart';
 
 class ConfigLoaderOptions {
   final int? timeoutMs;

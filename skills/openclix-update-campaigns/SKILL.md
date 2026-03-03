@@ -12,39 +12,39 @@ This skill consumes `openclix-analytics` outputs and generates safe, reviewable 
 
 1. Read campaign performance signals from PA metrics.
 2. Propose campaign actions per campaign ID.
-3. Generate `.clix/campaigns/openclix-config.next.json` without mutating the active config.
+3. Generate `.openclix/campaigns/openclix-config.next.json` without mutating the active config.
 4. Apply changes only after user confirmation.
 5. Choose update procedure based on detected delivery mode (bundle vs hosted HTTP).
 
 ## Hard Rules
 
 - Keep default mode as `propose_then_apply`.
-- Never mutate `.clix/campaigns/openclix-config.json` before user confirmation.
+- Never mutate `.openclix/campaigns/openclix-config.json` before user confirmation.
 - Use campaign-level decisions (`openclix_campaign_id`) with conservative sampling.
 - Follow pause-first policy for deletion:
   - no immediate delete from running state
   - delete only when already long-paused and repeatedly underperforming
 - Inherit config delivery/runtime constraints from `openclix-design-campaigns`.
-- Before writing outputs under `.clix/**`, ensure `.clix/` exists in `.gitignore`.
+- Before writing outputs under `.openclix/**`, ensure `.openclix/` exists in `.gitignore`.
 
 ## Inputs
 
 Required:
 
-- `.clix/analytics/impact-metrics.json`
-- `.clix/campaigns/openclix-config.json`
+- `.openclix/analytics/impact-metrics.json`
+- `.openclix/campaigns/openclix-config.json`
 
 Optional:
 
-- `.clix/analytics/campaign-metrics.json`
-- `.clix/campaigns/app-profile.json`
-- `.clix/campaigns/update-history.json`
+- `.openclix/analytics/campaign-metrics.json`
+- `.openclix/campaigns/app-profile.json`
+- `.openclix/campaigns/update-history.json`
 
 ## Outputs
 
-- `.clix/campaigns/update-recommendations.json`
-- `.clix/campaigns/openclix-config.next.json`
-- `.clix/campaigns/update-history.json`
+- `.openclix/campaigns/update-recommendations.json`
+- `.openclix/campaigns/openclix-config.next.json`
+- `.openclix/campaigns/update-history.json`
 
 ## Workflow
 
@@ -52,7 +52,7 @@ Optional:
 
 1. Confirm OpenClix integration exists in the app repository.
 2. Confirm required input artifacts are present.
-3. Ensure `.clix/` is ignored by git when `.clix/**` outputs are created.
+3. Ensure `.openclix/` is ignored by git when `.openclix/**` outputs are created.
 
 ### 2) Detect delivery mode
 
@@ -78,7 +78,7 @@ If mode is `unknown`, stop and ask the user to choose bundle or hosted HTTP.
 
 ### 3) Ensure campaign metrics
 
-If `.clix/analytics/campaign-metrics.json` is missing:
+If `.openclix/analytics/campaign-metrics.json` is missing:
 
 1. Generate a stub file with `status: insufficient_data`.
 2. Point to provider query recipes for campaign-level extraction.
@@ -116,7 +116,7 @@ Do not apply to active config until confirmation.
 
 ### 7) Apply by delivery mode (after confirmation)
 
-- `bundle`: sync updated source config to bundled runtime resource path and verify local load + `ClixCampaignManager.replaceConfig(...)` path.
+- `bundle`: sync updated source config to bundled runtime resource path and verify local load + `OpenClixCampaignManager.replaceConfig(...)` path.
 - `hosted_http`: publish updated config to user-owned HTTPS host and verify URL health.
 - `dual`: update both hosted primary and local fallback paths consistently.
 
@@ -144,10 +144,10 @@ bash scripts/retention_ops_automation.sh \
 
 The helper executes delivery mode detection + evaluator orchestration and writes:
 
-- `.clix/automation/run-summary.json`
-- `.clix/automation/prompts/openclaw.md`
-- `.clix/automation/prompts/claude-code.md`
-- `.clix/automation/prompts/codex.md`
+- `.openclix/automation/run-summary.json`
+- `.openclix/automation/prompts/openclaw.md`
+- `.openclix/automation/prompts/claude-code.md`
+- `.openclix/automation/prompts/codex.md`
 
 Failure codes from helper script:
 

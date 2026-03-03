@@ -23,7 +23,7 @@ Follow these phases in order.
 
 Repository hygiene rule:
 
-- Before writing outputs under `.clix/**`, ensure `.clix/` is listed in `.gitignore` (add it if missing).
+- Before writing outputs under `.openclix/**`, ensure `.openclix/` is listed in `.gitignore` (add it if missing).
 
 ## 1) Collect Campaign Context
 
@@ -46,7 +46,7 @@ Before authoring campaigns:
 
 - Read `references/json-schemas.md`.
 - Read `references/schemas/app-profile.schema.json`.
-- Create or update `.clix/campaigns/app-profile.json`.
+- Create or update `.openclix/campaigns/app-profile.json`.
 - Capture goals, event taxonomy, personalization variables, existing campaigns, and constraints.
 - Present the JSON and confirm accuracy before proceeding.
 
@@ -90,7 +90,7 @@ Before writing config:
 Write updates in this order:
 
 1. Update the user-specified config path if provided.
-2. Otherwise write `.clix/campaigns/openclix-config.json`.
+2. Otherwise write `.openclix/campaigns/openclix-config.json`.
 
 Remote delivery note:
 
@@ -159,7 +159,7 @@ Decision gate (mandatory unless user already specified mode):
 When the user chooses bundle mode:
 
 1. Use platform/startup/resource information discovered from existing code and `openclix-init` outputs.
-2. Copy `.clix/campaigns/openclix-config.json` into the app resource location used by that project:
+2. Copy `.openclix/campaigns/openclix-config.json` into the app resource location used by that project:
    - React Native / Expo: existing `assets/` or project resource pattern.
    - Flutter: existing asset path and `pubspec.yaml` convention.
    - iOS: existing app target bundle resource location.
@@ -174,7 +174,7 @@ When the user chooses bundle mode:
 When the user chooses HTTP mode:
 
 1. Confirm user-owned hosting target and deploy access method (for example Vercel, Netlify, S3/CloudFront, object storage + CDN, or custom backend API).
-2. Upload/deploy `.clix/campaigns/openclix-config.json` to that environment.
+2. Upload/deploy `.openclix/campaigns/openclix-config.json` to that environment.
 3. Verify the deployed config is reachable at a stable HTTPS URL.
 4. Set `ClixConfig.endpoint` to the deployed HTTPS URL.
 5. Keep local bundled fallback only if the user explicitly requests dual-path operation.

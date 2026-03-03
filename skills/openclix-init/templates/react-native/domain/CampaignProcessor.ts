@@ -10,7 +10,7 @@ import type {
   Logger,
   DayOfWeek,
   RecurringTriggerConfig,
-} from './ClixTypes';
+} from './OpenClixTypes';
 import {
   EventConditionProcessor,
   ScheduleCalculator,

@@ -6,12 +6,12 @@ import kotlinx.coroutines.launch
 import ai.openclix.engine.TriggerService
 import ai.openclix.engine.TriggerServiceDependencies
 import ai.openclix.models.CampaignStateRepository
-import ai.openclix.models.ClixClock
-import ai.openclix.models.ClixConfig
-import ai.openclix.models.ClixLifecycleStateReader
-import ai.openclix.models.ClixLocalMessageScheduler
-import ai.openclix.models.ClixLogLevel
-import ai.openclix.models.ClixLogger
+import ai.openclix.models.OpenClixClock
+import ai.openclix.models.OpenClixConfig
+import ai.openclix.models.OpenClixLifecycleStateReader
+import ai.openclix.models.OpenClixLocalMessageScheduler
+import ai.openclix.models.OpenClixLogLevel
+import ai.openclix.models.OpenClixLogger
 import ai.openclix.models.Event
 import ai.openclix.models.EventSourceType
 import ai.openclix.models.SystemEventName
@@ -24,31 +24,31 @@ import java.util.UUID
 private const val DEFAULT_CONFIG_TIMEOUT_MILLISECONDS = 10_000
 private const val MAXIMUM_EVENT_LOG_SIZE = 5_000
 
-object Clix {
+object OpenClix {
 
-    private var config: ClixConfig? = null
+    private var config: OpenClixConfig? = null
     private var triggerService: TriggerService? = null
 
     @Volatile
     private var initialized: Boolean = false
 
     private var campaignStateRepository: CampaignStateRepository? = null
-    private var messageScheduler: ClixLocalMessageScheduler? = null
-    private var clock: ClixClock? = null
+    private var messageScheduler: OpenClixLocalMessageScheduler? = null
+    private var clock: OpenClixClock? = null
     private var lifecycleStateReader: MutableLifecycleStateReader? = null
     private var logger: DefaultLogger? = null
 
     @JvmStatic
     suspend fun initialize(
-        config: ClixConfig,
+        config: OpenClixConfig,
         campaignStateRepository: CampaignStateRepository,
-        messageScheduler: ClixLocalMessageScheduler,
-        clock: ClixClock? = null,
-        logger: ClixLogger? = null
+        messageScheduler: OpenClixLocalMessageScheduler,
+        clock: OpenClixClock? = null,
+        logger: OpenClixLogger? = null
     ) {
         if (initialized) {
             throw IllegalStateException(
-                "Clix is already initialized. Call Clix.reset() before re-initializing."
+                "OpenClix is already initialized. Call OpenClix.reset() before re-initializing."
             )
         }
 
@@ -121,13 +121,13 @@ object Clix {
             } catch (loadError: Exception) {
                 defaultLogger.warn(
                     "Failed to load config from endpoint. SDK initialized without campaign config. " +
-                            "Use ClixCampaignManager.replaceConfig() to set config manually.",
+                            "Use OpenClixCampaignManager.replaceConfig() to set config manually.",
                     loadError.message ?: loadError.toString()
                 )
             }
         } else {
             defaultLogger.info(
-                "Non-HTTP endpoint provided. Use ClixCampaignManager.replaceConfig() to set campaign config."
+                "Non-HTTP endpoint provided. Use OpenClixCampaignManager.replaceConfig() to set campaign config."
             )
         }
 
@@ -265,7 +265,7 @@ object Clix {
     }
 
     @JvmStatic
-    fun setLogLevel(level: ClixLogLevel) {
+    fun setLogLevel(level: OpenClixLogLevel) {
         logger?.level = level
     }
 
@@ -291,20 +291,20 @@ object Clix {
 
     internal fun getTriggerServiceInternal(): TriggerService? = triggerService
 
-    internal fun getClockInternal(): ClixClock? = clock
+    internal fun getClockInternal(): OpenClixClock? = clock
 
-    internal fun getLoggerInternal(): ClixLogger? = logger
+    internal fun getLoggerInternal(): OpenClixLogger? = logger
 
     internal fun getCampaignStateRepositoryInternal(): CampaignStateRepository? = campaignStateRepository
 
-    internal fun getMessageSchedulerInternal(): ClixLocalMessageScheduler? = messageScheduler
+    internal fun getMessageSchedulerInternal(): OpenClixLocalMessageScheduler? = messageScheduler
 
     internal fun isInitializedInternal(): Boolean = initialized
 
     private fun assertInitialized() {
         if (!initialized) {
             throw IllegalStateException(
-                "Clix is not initialized. Call Clix.initialize() before using the SDK."
+                "OpenClix is not initialized. Call OpenClix.initialize() before using the SDK."
             )
         }
     }
@@ -378,7 +378,7 @@ object Clix {
     }
 }
 
-private class DefaultClock : ClixClock {
+private class DefaultClock : OpenClixClock {
     override fun now(): String {
         val formatter = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US)
         formatter.timeZone = java.util.TimeZone.getTimeZone("UTC")
@@ -386,7 +386,7 @@ private class DefaultClock : ClixClock {
     }
 }
 
-internal class MutableLifecycleStateReader : ClixLifecycleStateReader {
+internal class MutableLifecycleStateReader : OpenClixLifecycleStateReader {
     @Volatile
     private var appState: String = "foreground"
 
@@ -398,32 +398,32 @@ internal class MutableLifecycleStateReader : ClixLifecycleStateReader {
 }
 
 internal class DefaultLogger(
-    @Volatile var level: ClixLogLevel
-) : ClixLogger {
-    var delegate: ClixLogger? = null
+    @Volatile var level: OpenClixLogLevel
+) : OpenClixLogger {
+    var delegate: OpenClixLogger? = null
 
     private val logTag = "OpenClix"
 
     override fun debug(msg: String, vararg args: Any?) {
-        if (level.priority <= ClixLogLevel.DEBUG.priority) {
+        if (level.priority <= OpenClixLogLevel.DEBUG.priority) {
             delegate?.debug(msg, *args) ?: android.util.Log.d(logTag, formatMessage(msg, args))
         }
     }
 
     override fun info(msg: String, vararg args: Any?) {
-        if (level.priority <= ClixLogLevel.INFO.priority) {
+        if (level.priority <= OpenClixLogLevel.INFO.priority) {
             delegate?.info(msg, *args) ?: android.util.Log.i(logTag, formatMessage(msg, args))
         }
     }
 
     override fun warn(msg: String, vararg args: Any?) {
-        if (level.priority <= ClixLogLevel.WARN.priority) {
+        if (level.priority <= OpenClixLogLevel.WARN.priority) {
             delegate?.warn(msg, *args) ?: android.util.Log.w(logTag, formatMessage(msg, args))
         }
     }
 
     override fun error(msg: String, vararg args: Any?) {
-        if (level.priority <= ClixLogLevel.ERROR.priority) {
+        if (level.priority <= OpenClixLogLevel.ERROR.priority) {
             delegate?.error(msg, *args) ?: android.util.Log.e(logTag, formatMessage(msg, args))
         }
     }

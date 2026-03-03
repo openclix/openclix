@@ -1,5 +1,5 @@
 import { AppState as ReactNativeAppState } from 'react-native';
-import type { LifecycleStateReader } from '../domain/ClixTypes';
+import type { LifecycleStateReader } from '../domain/OpenClixTypes';
 
 export class ReactNativeLifecycleStateReader implements LifecycleStateReader {
   private currentAppState: 'foreground' | 'background' = 'foreground';

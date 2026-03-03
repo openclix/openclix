@@ -31,13 +31,13 @@ while [[ $# -gt 0 ]]; do
 done
 
 ROOT="$(cd "$ROOT" && pwd)"
-IMPACT_FILE="${IMPACT_FILE:-$ROOT/.clix/analytics/impact-metrics.json}"
-CAMPAIGN_METRICS_FILE="${CAMPAIGN_METRICS_FILE:-$ROOT/.clix/analytics/campaign-metrics.json}"
-CONFIG_FILE="${CONFIG_FILE:-$ROOT/.clix/campaigns/openclix-config.json}"
-APP_PROFILE_FILE="${APP_PROFILE_FILE:-$ROOT/.clix/campaigns/app-profile.json}"
-HISTORY_FILE="${HISTORY_FILE:-$ROOT/.clix/campaigns/update-history.json}"
-RECOMMENDATIONS_FILE="${RECOMMENDATIONS_FILE:-$ROOT/.clix/campaigns/update-recommendations.json}"
-NEXT_CONFIG_FILE="${NEXT_CONFIG_FILE:-$ROOT/.clix/campaigns/openclix-config.next.json}"
+IMPACT_FILE="${IMPACT_FILE:-$ROOT/.openclix/analytics/impact-metrics.json}"
+CAMPAIGN_METRICS_FILE="${CAMPAIGN_METRICS_FILE:-$ROOT/.openclix/analytics/campaign-metrics.json}"
+CONFIG_FILE="${CONFIG_FILE:-$ROOT/.openclix/campaigns/openclix-config.json}"
+APP_PROFILE_FILE="${APP_PROFILE_FILE:-$ROOT/.openclix/campaigns/app-profile.json}"
+HISTORY_FILE="${HISTORY_FILE:-$ROOT/.openclix/campaigns/update-history.json}"
+RECOMMENDATIONS_FILE="${RECOMMENDATIONS_FILE:-$ROOT/.openclix/campaigns/update-recommendations.json}"
+NEXT_CONFIG_FILE="${NEXT_CONFIG_FILE:-$ROOT/.openclix/campaigns/openclix-config.next.json}"
 
 if ! command -v jq >/dev/null 2>&1; then
   echo "jq is required" >&2

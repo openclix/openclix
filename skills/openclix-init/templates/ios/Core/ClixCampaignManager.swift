@@ -16,16 +16,16 @@ private func currentIsoTime() -> String {
     return formatter.string(from: Date())
 }
 
-public final class ClixCampaignManager {
+public final class OpenClixCampaignManager {
 
     private init() {}
 
     public static func replaceConfig(_ config: Config) async -> TriggerResult? {
-        let coordinator = Clix.coordinator
+        let coordinator = OpenClix.coordinator
 
         guard await coordinator.isInitialized() else {
             assertionFailure(
-                "Clix is not initialized. Call Clix.initialize() before using ClixCampaignManager."
+                "OpenClix is not initialized. Call OpenClix.initialize() before using OpenClixCampaignManager."
             )
             return nil
         }
@@ -67,7 +67,7 @@ public final class ClixCampaignManager {
     }
 
     public static func getConfig() async -> Config? {
-        let coordinator = Clix.coordinator
+        let coordinator = OpenClix.coordinator
 
         guard await coordinator.isInitialized() else { return nil }
         guard let triggerService = await coordinator.getTriggerService() else { return nil }
@@ -76,7 +76,7 @@ public final class ClixCampaignManager {
     }
 
     public static func getSnapshot() async -> CampaignStateSnapshot {
-        let coordinator = Clix.coordinator
+        let coordinator = OpenClix.coordinator
         let now = currentIsoTime()
 
         guard await coordinator.isInitialized() else {
@@ -99,7 +99,7 @@ public final class ClixCampaignManager {
     public static func getScheduledMessages(
         filter: ScheduledMessageFilter? = nil
     ) async -> [QueuedMessage] {
-        let coordinator = Clix.coordinator
+        let coordinator = OpenClix.coordinator
 
         guard await coordinator.isInitialized() else { return [] }
         guard let messageScheduler = await coordinator.getMessageScheduler() else { return [] }
@@ -129,7 +129,7 @@ public final class ClixCampaignManager {
     }
 
     public static func getEventLog(limit: Int? = nil) async -> [Event] {
-        let coordinator = Clix.coordinator
+        let coordinator = OpenClix.coordinator
 
         guard await coordinator.isInitialized() else { return [] }
         guard let campaignStateRepository = await coordinator.getCampaignStateRepository() else {

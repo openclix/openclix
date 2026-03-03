@@ -1,4 +1,4 @@
-import '../models/clix_types.dart';
+import '../models/openclix_types.dart';
 import '../services/utils.dart';
 import 'campaign_processor.dart';
 import 'campaign_state_service.dart';
@@ -7,9 +7,9 @@ import 'schedule_calculator.dart';
 
 class TriggerServiceDependencies {
   final CampaignStateRepositoryPort campaignStateRepository;
-  final ClixLocalMessageScheduler messageScheduler;
-  final ClixClock clock;
-  final ClixLogger logger;
+  final OpenClixLocalMessageScheduler messageScheduler;
+  final OpenClixClock clock;
+  final OpenClixLogger logger;
   final Future<void> Function(Event event)? recordEvent;
   final CampaignStateService? campaignStateService;
 
@@ -203,7 +203,7 @@ class TriggerService {
 
   Future<void> reconcileQueuedMessages(
     CampaignStateSnapshot snapshot,
-    ClixLogger logger,
+    OpenClixLogger logger,
   ) async {
     List<QueuedMessage> pendingMessagesFromScheduler = const [];
 
@@ -232,7 +232,7 @@ class TriggerService {
     Event event,
     CampaignStateSnapshot snapshot,
     String now,
-    ClixLogger logger,
+    OpenClixLogger logger,
   ) async {
     final traces = <DecisionTrace>[];
     final pendingMessages = List<CampaignQueuedMessage>.from(

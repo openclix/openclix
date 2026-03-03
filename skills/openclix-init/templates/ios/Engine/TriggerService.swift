@@ -1,17 +1,17 @@
 import Foundation
 
 public struct TriggerServiceDependencies {
-    public let campaignStateRepository: ClixCampaignStateRepository
-    public let messageScheduler: ClixMessageScheduler
-    public let clock: ClixClock
-    public let logger: ClixLogger
+    public let campaignStateRepository: OpenClixCampaignStateRepository
+    public let messageScheduler: OpenClixMessageScheduler
+    public let clock: OpenClixClock
+    public let logger: OpenClixLogger
     public let recordEvent: ((Event) async -> Void)?
 
     public init(
-        campaignStateRepository: ClixCampaignStateRepository,
-        messageScheduler: ClixMessageScheduler,
-        clock: ClixClock,
-        logger: ClixLogger,
+        campaignStateRepository: OpenClixCampaignStateRepository,
+        messageScheduler: OpenClixMessageScheduler,
+        clock: OpenClixClock,
+        logger: OpenClixLogger,
         recordEvent: ((Event) async -> Void)? = nil
     ) {
         self.campaignStateRepository = campaignStateRepository
@@ -130,7 +130,7 @@ public actor TriggerService {
                 try await dependencies.messageScheduler.schedule(queuedMessage)
             } catch {
                 await emitSystemEvent(
-                    name: .clixMessageFailed,
+                    name: .openClixMessageFailed,
                     properties: [
                         "campaign_id": .string(campaignId),
                         "queued_message_id": .string(queuedMessage.id),
@@ -159,7 +159,7 @@ public actor TriggerService {
             )
 
             await emitSystemEvent(
-                name: .clixMessageScheduled,
+                name: .openClixMessageScheduled,
                 properties: [
                     "campaign_id": .string(campaignId),
                     "queued_message_id": .string(queuedMessage.id),
@@ -283,7 +283,7 @@ public actor TriggerService {
                 )
 
                 await emitSystemEvent(
-                    name: .clixMessageCancelled,
+                    name: .openClixMessageCancelled,
                     properties: [
                         "campaign_id": .string(pendingMessage.campaign_id),
                         "queued_message_id": .string(pendingMessage.message_id),
@@ -297,7 +297,7 @@ public actor TriggerService {
                 )
             } catch {
                 await emitSystemEvent(
-                    name: .clixMessageFailed,
+                    name: .openClixMessageFailed,
                     properties: [
                         "campaign_id": .string(pendingMessage.campaign_id),
                         "queued_message_id": .string(pendingMessage.message_id),

@@ -1,5 +1,5 @@
 import { MMKV } from 'react-native-mmkv';
-import type { CampaignStateRepositoryPort } from '../domain/ClixTypes';
+import type { CampaignStateRepositoryPort } from '../domain/OpenClixTypes';
 import {
   CampaignStateRepository,
   type StorageEngine,

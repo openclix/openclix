@@ -113,7 +113,7 @@ if command -v rg >/dev/null 2>&1; then
   while IFS= read -r line; do
     openclix_evidence+=("$line")
   done < <(
-    rg -n -S "Clix\.initialize\(|ClixCampaignManager|ai\.openclix|src/openclix/|lib/openclix/" "$ROOT" \
+    rg -n -S "OpenClix\.initialize\(|OpenClixCampaignManager|ai\.openclix|src/openclix/|lib/openclix/" "$ROOT" \
       --glob '!**/.git/**' \
       --glob '!**/node_modules/**' \
       --glob '!**/.next/**' \

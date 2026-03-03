@@ -187,11 +187,11 @@ export interface QueuedMessage {
 export type EventSourceType = 'app' | 'system';
 
 export type SystemEventName =
-  | 'clix.message.scheduled'
-  | 'clix.message.delivered'
-  | 'clix.message.opened'
-  | 'clix.message.cancelled'
-  | 'clix.message.failed';
+  | 'openclix.message.scheduled'
+  | 'openclix.message.delivered'
+  | 'openclix.message.opened'
+  | 'openclix.message.cancelled'
+  | 'openclix.message.failed';
 
 export interface Event {
   id: string;
@@ -206,7 +206,7 @@ export interface Event {
 // SDK Campaign state types
 // ---------------------------------------------------------------------------
 
-export type ClixLogLevel = 'debug' | 'info' | 'warn' | 'error' | 'none';
+export type OpenClixLogLevel = 'debug' | 'info' | 'warn' | 'error' | 'none';
 
 export interface TriggerContext {
   event?: Event;
@@ -269,7 +269,7 @@ export interface CampaignTriggerHistory {
 // SDK configuration and dependency interfaces
 // ---------------------------------------------------------------------------
 
-export interface ClixConfig {
+export interface OpenClixConfig {
   /** Campaign config URL (HTTP) or local resource path. */
   endpoint: string;
   /** Optional project identifier added to config fetch headers. */
@@ -277,7 +277,7 @@ export interface ClixConfig {
   /** Optional API key added to config fetch headers. */
   apiKey?: string;
   /** Default: 'warn'. */
-  logLevel?: ClixLogLevel;
+  logLevel?: OpenClixLogLevel;
   extraHeaders?: Record<string, string>;
   /** Optional config fetch timeout override in milliseconds. */
   sessionTimeoutMs?: number;
@@ -298,7 +298,7 @@ export interface Logger {
   info(msg: string, ...args: unknown[]): void;
   warn(msg: string, ...args: unknown[]): void;
   error(msg: string, ...args: unknown[]): void;
-  setLogLevel?(level: ClixLogLevel): void;
+  setLogLevel?(level: OpenClixLogLevel): void;
 }
 
 export interface MessageScheduler {

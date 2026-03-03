@@ -18,21 +18,21 @@ private fun createDefaultSnapshot(): CampaignStateSnapshot {
 }
 
 private fun assertInitialized() {
-    if (!Clix.isInitializedInternal()) {
+    if (!OpenClix.isInitializedInternal()) {
         throw IllegalStateException(
-            "Clix is not initialized. Call Clix.initialize() before using ClixCampaignManager."
+            "OpenClix is not initialized. Call OpenClix.initialize() before using OpenClixCampaignManager."
         )
     }
 }
 
-object ClixCampaignManager {
+object OpenClixCampaignManager {
 
     @JvmStatic
     suspend fun replaceConfig(config: Config): TriggerResult? {
         assertInitialized()
 
-        val logger = Clix.getLoggerInternal()
-        val triggerService = Clix.getTriggerServiceInternal()
+        val logger = OpenClix.getLoggerInternal()
+        val triggerService = OpenClix.getTriggerServiceInternal()
 
         if (triggerService == null) {
             logger?.error("Cannot replace config: trigger service is not available.")
@@ -57,7 +57,7 @@ object ClixCampaignManager {
 
         val triggerContext = TriggerContext(
             trigger = "config_replaced",
-            now = Clix.getClockInternal()?.now()
+            now = OpenClix.getClockInternal()?.now()
         )
 
         return try {
@@ -74,14 +74,14 @@ object ClixCampaignManager {
     @JvmStatic
     fun getConfig(): Config? {
         assertInitialized()
-        return Clix.getTriggerServiceInternal()?.getConfig()
+        return OpenClix.getTriggerServiceInternal()?.getConfig()
     }
 
     @JvmStatic
     suspend fun getSnapshot(): CampaignStateSnapshot {
         assertInitialized()
 
-        val repository = Clix.getCampaignStateRepositoryInternal() ?: return createDefaultSnapshot()
+        val repository = OpenClix.getCampaignStateRepositoryInternal() ?: return createDefaultSnapshot()
 
         return try {
             repository.loadSnapshot(
@@ -90,7 +90,7 @@ object ClixCampaignManager {
                 }.format(java.util.Date())
             )
         } catch (error: Exception) {
-            Clix.getLoggerInternal()?.warn(
+            OpenClix.getLoggerInternal()?.warn(
                 "Failed to load campaign state snapshot:",
                 error.message ?: error.toString()
             )
@@ -105,12 +105,12 @@ object ClixCampaignManager {
     ): List<QueuedMessage> {
         assertInitialized()
 
-        val scheduler = Clix.getMessageSchedulerInternal() ?: return emptyList()
+        val scheduler = OpenClix.getMessageSchedulerInternal() ?: return emptyList()
 
         val pendingMessages = try {
             scheduler.listPending()
         } catch (error: Exception) {
-            Clix.getLoggerInternal()?.error(
+            OpenClix.getLoggerInternal()?.error(
                 "Failed to list pending messages:",
                 error.message ?: error.toString()
             )
@@ -128,12 +128,12 @@ object ClixCampaignManager {
     suspend fun getEventLog(limit: Int? = null): List<Event> {
         assertInitialized()
 
-        val repository = Clix.getCampaignStateRepositoryInternal() ?: return emptyList()
+        val repository = OpenClix.getCampaignStateRepositoryInternal() ?: return emptyList()
 
         return try {
             repository.loadEvents(limit)
         } catch (error: Exception) {
-            Clix.getLoggerInternal()?.error(
+            OpenClix.getLoggerInternal()?.error(
                 "Failed to load event log:",
                 error.message ?: error.toString()
             )

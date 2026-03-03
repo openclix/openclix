@@ -56,7 +56,7 @@ mapfile -t HTTP_ENDPOINT_EVIDENCE < <(
 )
 
 mapfile -t REPLACE_CONFIG_EVIDENCE < <(
-  rg -n -S "ClixCampaignManager\.replaceConfig\(" "$ROOT" \
+  rg -n -S "OpenClixCampaignManager\.replaceConfig\(" "$ROOT" \
     --glob '!**/.git/**' \
     --glob '!**/node_modules/**' \
     --glob '!**/.next/**' \
