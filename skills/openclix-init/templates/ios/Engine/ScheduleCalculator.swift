@@ -46,7 +46,7 @@ public final class ScheduleCalculator {
 
     public init() {}
 
-    private func parseISO8601(_ value: String) -> Date? {
+    private func parseIsoDate(_ value: String) -> Date? {
         let fractional = ISO8601DateFormatter()
         fractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         if let parsed = fractional.date(from: value) {
@@ -59,9 +59,9 @@ public final class ScheduleCalculator {
         var executeAtDate: Date
 
         if let executeAt = input.execute_at,
-           let parsedDate = parseISO8601(executeAt) {
+           let parsedDate = parseIsoDate(executeAt) {
             executeAtDate = parsedDate
-        } else if let parsedDate = parseISO8601(input.now) {
+        } else if let parsedDate = parseIsoDate(input.now) {
             executeAtDate = parsedDate
             if input.execute_at == nil,
                let delaySeconds = input.delay_seconds,
@@ -92,6 +92,8 @@ public final class ScheduleCalculator {
 
 private extension Date {
     func formattedISO8601() -> String {
-        return ISO8601DateFormatter().string(from: self)
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter.string(from: self)
     }
 }
