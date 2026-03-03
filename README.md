@@ -41,12 +41,6 @@ Use openclix-init to detect platform, copy templates into the dedicated OpenClix
 wire initialization/event/lifecycle touchpoints, and run build verification.
 Then use openclix-design-campaigns to create .clix/campaigns/app-profile.json
 and generate .clix/campaigns/openclix-config.json.
-Then use openclix-analytics to detect installed Firebase/PostHog/Mixpanel/Amplitude,
-forward OpenClix events with openclix tags, and produce a pre/post impact report
-for D7 retention and engagement metrics.
-Then use openclix-update-campaigns to propose pause/resume/add/delete/update
-actions from campaign metrics and produce openclix-config.next.json before
-applying any change to the active config.
 Do not add dependencies without approval.
 ```
 
@@ -54,9 +48,27 @@ Do not add dependencies without approval.
 
 Follow the full guide: [Install and integrate OpenClix](./docs/getting-started/installation.mdx)
 
-**Option C: Claude Code plugin marketplace**
+### Option C: Claude Code plugin marketplace
 
 Follow the guide here: [Add Claude Code Plugin](./docs/getting-started/installation.mdx#option-c-claude-code-plugin-marketplace)
+
+### Advanced setup
+
+** If you wnat to integrate with your PA tools **
+
+```text
+Use openclix-analytics to detect installed Firebase/PostHog/Mixpanel/Amplitude,
+forward OpenClix events with openclix tags, and produce a pre/post impact report
+for D7 retention and engagement metrics.
+```
+
+** To update campaigns **
+
+```text
+Use openclix-update-campaigns to propose pause/resume/add/delete/update
+actions from campaign metrics and produce openclix-config.next.json before
+applying any change to the active config.
+```
 
 </details>
 
