@@ -1,0 +1,20 @@
+{
+  "name": "openclix",
+  "version": "0.1.0",
+  "description": "OpenClix agent skills for local-first mobile retention and engagement automation.",
+  "author": {
+    "name": "OpenClix",
+    "url": "https://openclix.ai"
+  },
+  "homepage": "https://openclix.ai",
+  "repository": "https://github.com/openclix/openclix",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "mobile",
+    "retention",
+    "engagement",
+    "skills",
+    "openclix"
+  ]
+}

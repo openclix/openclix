@@ -1,0 +1,42 @@
+name: Validate Claude Plugin
+
+on:
+  pull_request:
+    paths:
+      - ".claude-plugin/**"
+      - "scripts/validate_claude_plugin.sh"
+      - "skills/**"
+      - "README.md"
+      - "docs/getting-started/installation.mdx"
+      - "docs/getting-started/workflow.mdx"
+      - ".github/workflows/validate-plugin.yml"
+  workflow_dispatch:
+
+jobs:
+  validate-plugin:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Validate plugin and marketplace manifests
+        run: bash scripts/validate_claude_plugin.sh --skip-claude-validate
+
+      - name: Verify skill discovery remains intact
+        run: |
+          SKILLS_OUTPUT="$(npx --yes skills add . --list)"
+          printf '%s\n' "$SKILLS_OUTPUT"
+
+          for SKILL in \
+            openclix-init \
+            openclix-design-campaigns \
+            openclix-analytics \
+            openclix-update-campaigns; do
+            printf '%s\n' "$SKILLS_OUTPUT" | grep -q "$SKILL"
+          done

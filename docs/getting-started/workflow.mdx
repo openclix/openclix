@@ -73,4 +73,26 @@ Expected output:
 - `.clix/automation/prompts/claude-code.md`
 - `.clix/automation/prompts/codex.md`
 
+## 6. Maintain Claude plugin registration
+
+Keep Claude Code marketplace metadata current as OpenClix evolves:
+
+```bash
+claude plugin marketplace update openclix
+claude plugin update openclix@openclix
+```
+
+Validate plugin manifests before cutting a release:
+
+```bash
+bash scripts/validate_claude_plugin.sh
+```
+
+Release rule:
+
+- Keep `.claude-plugin/plugin.json` `version`,
+  `.claude-plugin/marketplace.json` `metadata.version`,
+  and `.claude-plugin/marketplace.json` `plugins[0].version` aligned.
+- Keep `.claude-plugin/marketplace.json` `plugins[0].source` as `./` so plugin installs resolve from the same marketplace checkout.
+
 Next: [Agent-based mobile app retention automation guide](/guides/agent-retention-automation)

@@ -39,4 +39,33 @@ npx skills add openclix/openclix
 5. Run `openclix-update-campaigns` to draft campaign operation changes.
 6. Run `scripts/retention_ops_automation.sh` to generate OpenClaw/Claude Code/Codex review prompts.
 
+## Option C: Claude Code plugin marketplace
+
+Use Claude Code marketplace registration when you want managed plugin updates:
+
+```bash
+claude plugin marketplace add openclix/openclix
+claude plugin marketplace update openclix
+claude plugin install openclix@openclix
+```
+
+For local pre-release validation from a checkout:
+
+```bash
+claude plugin marketplace add /absolute/path/to/openclix
+```
+
+To pull marketplace/plugin updates later:
+
+```bash
+claude plugin marketplace update openclix
+claude plugin update openclix@openclix
+```
+
+Validate plugin manifests locally before publishing:
+
+```bash
+bash scripts/validate_claude_plugin.sh
+```
+
 Continue with the [agent-based mobile app retention automation workflow](/getting-started/workflow).
