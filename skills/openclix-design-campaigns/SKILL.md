@@ -18,7 +18,7 @@ Follow these phases in order.
 3. Design campaign set.
 4. Generate or update OpenClix config.
 5. Validate artifact outputs.
-6. Inspect existing Clix integration and choose delivery mode.
+6. Inspect existing OpenClix integration and choose delivery mode.
 7. Execute selected delivery path and hand off.
 
 Repository hygiene rule:
@@ -34,7 +34,7 @@ Gather only missing facts needed for design decisions:
 - event taxonomy: event names + available property keys
 - current campaign config path (if existing)
 - existing app resource/file management convention for JSON assets
-- startup location where Clix is currently initialized (or should be initialized)
+- startup location where OpenClix is currently initialized (or should be initialized)
 - user-owned HTTP server/deployment target for hosted config (if remote serving is expected)
 - global constraints: quiet hours, frequency cap expectations, locale/timezone assumptions
 
@@ -126,15 +126,22 @@ This runs JSON syntax, ajv-cli schema validation (`--spec=draft2020`), and struc
 Fallback path (outside the repo or when the script is unavailable):
 
 1. `jq . <config-file>` — verify JSON syntax.
-2. `npx --yes -p ajv-cli -p ajv-formats ajv validate --spec=draft2020 -c ajv-formats -s references/schemas/openclix.schema.json -d <config-file>` — validate against the canonical schema.
+2. Validate against the canonical schema with `ajv`:
+   - If you are inside the `openclix` repo (schema checked out locally):
+     `npx --yes -p ajv-cli@5.0.0 -p ajv-formats@3.0.1 ajv validate --spec=draft2020 -c ajv-formats -s ./references/schemas/openclix.schema.json -d <config-file>`
+   - If you are outside the repo (no local schema), use the published canonical schema URL:
+     `npx --yes -p ajv-cli@5.0.0 -p ajv-formats@3.0.1 ajv validate --spec=draft2020 -c ajv-formats -s https://openclix.ai/schemas/openclix.schema.json -d <config-file>`
 3. Manually verify: `$schema` is `https://openclix.ai/schemas/openclix.schema.json`, `schema_version` is `openclix/config/v1`, campaign keys are kebab-case, every campaign has `type: "campaign"`, and each `trigger.type` value has its matching sub-object key.
 
 ### App Profile Validation
 
-Validate app profile artifacts against:
+Validate app profile artifacts against either the local or published schema:
 
-- `references/schemas/app-profile.schema.json`
-- Command: `npx --yes -p ajv-cli -p ajv-formats ajv validate --spec=draft2020 -c ajv-formats -s references/schemas/app-profile.schema.json -d <app-profile-file>`
+- Local (inside the `openclix` repo): `references/schemas/app-profile.schema.json`
+- Published: `https://openclix.ai/schemas/app-profile.schema.json`
+- Command (choose one based on availability):
+  - Local schema: `npx --yes -p ajv-cli@5.0.0 -p ajv-formats@3.0.1 ajv validate --spec=draft2020 -c ajv-formats -s ./references/schemas/app-profile.schema.json -d <app-profile-file>`
+  - Published schema: `npx --yes -p ajv-cli@5.0.0 -p ajv-formats@3.0.1 ajv validate --spec=draft2020 -c ajv-formats -s https://openclix.ai/schemas/app-profile.schema.json -d <app-profile-file>`
 
 ### Handoff Report
 
@@ -147,16 +154,16 @@ Report at handoff:
 - key assumptions
 - unresolved gaps requiring user input
 
-## 6) Inspect Existing Clix Integration And Choose Delivery Mode
+## 6) Inspect Existing OpenClix Integration And Choose Delivery Mode
 
-After generating config JSON, inspect existing Clix integration code before delivery decisions.
+After generating config JSON, inspect existing OpenClix integration code before delivery decisions.
 
 Inspection checklist:
 
-- Locate `Clix.initialize(...)` call sites and current `ClixConfig.endpoint` usage.
-- Locate any existing `ClixCampaignManager.replaceConfig(...)` usage.
+- Locate `OpenClix.initialize(...)` call sites and current `OpenClixConfig.endpoint` usage.
+- Locate any existing `OpenClixCampaignManager.replaceConfig(...)` usage.
 - Confirm project resource conventions used by current startup wiring.
-- If Clix client integration is missing, run `openclix-init` first and use its detected platform/startup/resource conventions.
+- If OpenClix client integration is missing, run `openclix-init` first and use its detected platform/startup/resource conventions.
 
 Decision gate (mandatory unless user already specified mode):
 
@@ -178,8 +185,8 @@ When the user chooses bundle mode:
    - iOS: existing app target bundle resource location.
    - Android: existing `assets/` or `res/raw` pattern.
 3. Keep filename stable unless project convention requires a different name.
-4. Set `ClixConfig.endpoint` to the bundled config path identifier used by the project.
-5. Update startup code to load JSON from that same bundled path, parse `Config`, then call `ClixCampaignManager.replaceConfig(...)` after initialization.
+4. Set `OpenClixConfig.endpoint` to the bundled config path identifier used by the project.
+5. Update startup code to load JSON from that same bundled path, parse `Config`, then call `OpenClixCampaignManager.replaceConfig(...)` after initialization.
 6. Run platform build/analysis checks after wiring.
 
 ### B) Hosted HTTP Delivery (User-Owned Server)
@@ -189,21 +196,21 @@ When the user chooses HTTP mode:
 1. Confirm user-owned hosting target and deploy access method (for example Vercel, Netlify, S3/CloudFront, object storage + CDN, or custom backend API).
 2. Upload/deploy `.clix/campaigns/openclix-config.json` to that environment.
 3. Verify the deployed config is reachable at a stable HTTPS URL.
-4. Set `ClixConfig.endpoint` to the deployed HTTPS URL.
+4. Set `OpenClixConfig.endpoint` to the deployed HTTPS URL.
 5. Keep local bundled fallback only if the user explicitly requests dual-path operation.
 6. Run platform build/analysis checks after wiring.
 
 Critical runtime note:
 
-- `Clix.initialize(...)` auto-fetches config only for HTTP(S) endpoints.
-- For in-app resource JSON, always load and apply config explicitly via `ClixCampaignManager.replaceConfig(...)` after initialization.
+- `OpenClix.initialize(...)` auto-fetches config only for HTTP(S) endpoints.
+- For in-app resource JSON, always load and apply config explicitly via `OpenClixCampaignManager.replaceConfig(...)` after initialization.
 - For hosted delivery, always use HTTPS and verify the URL is accessible.
 
 Completion requirements for implementation tasks:
 
 - selected delivery mode reported
 - source config path and applied runtime config path/URL reported
-- `ClixConfig.endpoint` value/location updated and reported
+- `OpenClixConfig.endpoint` value/location updated and reported
 - resource file path reported for bundle mode
 - modified startup/init file paths reported
 - confirmation that local resource config is applied at runtime
@@ -216,11 +223,11 @@ Completion requirements for implementation tasks:
 - Default to `connector: "and"`; use `or` only with explicit rationale.
 - Include `weekly_rule.days_of_week` whenever recurrence type is `weekly`.
 - Use global quiet-hour controls before introducing ad-hoc per-campaign windows.
-- After config generation, inspect existing Clix wiring and ask the user to choose bundle vs hosted delivery if not already specified.
+- After config generation, inspect existing OpenClix wiring and ask the user to choose bundle vs hosted delivery if not already specified.
 - Reuse project facts discovered by `openclix-init` when selecting resource path and startup patch points.
-- Do not rely on non-HTTP endpoints being auto-loaded by `Clix.initialize(...)`.
-- For local JSON delivery, always set `ClixConfig.endpoint` to the chosen bundled path and wire explicit resource load + `ClixCampaignManager.replaceConfig(...)`.
-- For remote JSON delivery, set `ClixConfig.endpoint` to HTTPS URL and keep the payload schema-compatible with `openclix/config/v1`.
+- Do not rely on non-HTTP endpoints being auto-loaded by `OpenClix.initialize(...)`.
+- For local JSON delivery, always set `OpenClixConfig.endpoint` to the chosen bundled path and wire explicit resource load + `OpenClixCampaignManager.replaceConfig(...)`.
+- For remote JSON delivery, set `OpenClixConfig.endpoint` to HTTPS URL and keep the payload schema-compatible with `openclix/config/v1`.
 - When asked, provide environment-specific upload guidance rather than generic hosting advice.
 - Keep integration edits minimal and aligned with existing project structure.
 
