@@ -174,6 +174,103 @@ Minimal valid example:
 }
 ```
 
+### Scheduled Trigger Example
+
+Complete config with a one-time scheduled trigger:
+
+```json
+{
+  "$schema": "https://openclix.ai/schemas/openclix.schema.json",
+  "schema_version": "openclix/config/v1",
+  "config_version": "rev-2026-03-01-a",
+  "settings": {
+    "frequency_cap": {
+      "max_count": 3,
+      "window_seconds": 86400
+    },
+    "do_not_disturb": {
+      "start_hour": 22,
+      "end_hour": 8
+    }
+  },
+  "campaigns": {
+    "flash-sale-launch": {
+      "name": "Flash Sale Launch",
+      "type": "campaign",
+      "description": "Announce the weekend flash sale at a specific date and time.",
+      "status": "running",
+      "trigger": {
+        "type": "scheduled",
+        "scheduled": {
+          "execute_at": "2026-03-15T10:00:00Z"
+        }
+      },
+      "message": {
+        "channel_type": "app_push",
+        "content": {
+          "title": "Flash Sale is LIVE",
+          "body": "Up to 50% off select items. Ends Sunday midnight."
+        }
+      }
+    }
+  }
+}
+```
+
+### Recurring Trigger Example
+
+Complete config with a weekly recurring trigger:
+
+```json
+{
+  "$schema": "https://openclix.ai/schemas/openclix.schema.json",
+  "schema_version": "openclix/config/v1",
+  "config_version": "rev-2026-03-01-b",
+  "settings": {
+    "frequency_cap": {
+      "max_count": 5,
+      "window_seconds": 86400
+    },
+    "do_not_disturb": {
+      "start_hour": 22,
+      "end_hour": 8
+    }
+  },
+  "campaigns": {
+    "weekly-progress-digest": {
+      "name": "Weekly Progress Digest",
+      "type": "campaign",
+      "description": "Send a weekly summary nudge every Monday and Thursday morning.",
+      "status": "running",
+      "trigger": {
+        "type": "recurring",
+        "recurring": {
+          "start_at": "2026-03-03T09:00:00Z",
+          "rule": {
+            "type": "weekly",
+            "interval": 1,
+            "weekly_rule": {
+              "days_of_week": ["monday", "thursday"]
+            },
+            "time_of_day": {
+              "hour": 9,
+              "minute": 0
+            }
+          }
+        }
+      },
+      "message": {
+        "channel_type": "app_push",
+        "content": {
+          "title": "Your weekly progress",
+          "body": "Check in to see how your week is shaping up."
+        }
+      }
+    }
+  }
+}
+```
+
 ## Design-To-Schema Mapping
 
 | Design intent | Schema path |
