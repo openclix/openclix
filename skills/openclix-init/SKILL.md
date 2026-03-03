@@ -91,6 +91,37 @@ Platform expectations:
   - Use platform-native implementations by default
   - Do not introduce in-memory/no-op fallback as the default runtime behavior
 
+## Notification Permission and Foreground Setup
+
+Notification permission must be requested before campaign triggers fire. Each platform template includes a permission utility; the integration agent must wire it at the appropriate location in the host app.
+
+### React Native / Expo — Permission
+
+- **Notifee projects:** Import `requestNotifeePermission` from `infrastructure/NotifeeNotificationSetup`. Call it at app startup (e.g. in `App.tsx` or a startup hook) passing the Notifee adapter. No foreground handler is needed — Notifee handles foreground display natively via `presentationOptions`.
+- **Expo projects:** Import `requestExpoPermission` and `setupExpoForegroundHandler` from `infrastructure/ExpoNotificationSetup`. Call `setupExpoForegroundHandler` once during initialization, then call `requestExpoPermission` at app startup.
+
+### iOS — Permission and Foreground Display
+
+1. **Permission:** Call `await NotificationPermission.request()` at app startup (e.g. in `application(_:didFinishLaunchingWithOptions:)` or a SwiftUI `.task` modifier). This calls `UNUserNotificationCenter.requestAuthorization`.
+2. **Foreground display:** iOS suppresses notification banners when the app is active. The template provides `ForegroundNotificationHandler.handleWillPresent(notification:completionHandler:)` as a static method.
+   - **Critical:** iOS allows only ONE `UNUserNotificationCenterDelegate` per app. Do NOT assign `ForegroundNotificationHandler` as the delegate. Instead, set the app's existing delegate (usually `AppDelegate`) as `UNUserNotificationCenter.current().delegate = self`, and call the static method from the delegate's `willPresent` implementation.
+
+### Android — Permission
+
+1. **Manifest:** Add `<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />` to `AndroidManifest.xml`.
+2. **Runtime request:** On API 33+ (Android 13), call `NotificationPermission.shouldRequestPermission(context)` at startup. If it returns `true`, use the Activity's `requestPermissions()` or `ActivityResultLauncher` to request `NotificationPermission.getPermissionString()`.
+3. Android does NOT need foreground display setup — `NotificationManager.notify()` always displays regardless of app state.
+
+### Flutter — Permission and Foreground Display
+
+The `NotificationPermission` class in `notification/notification_permission.dart` accepts callbacks. Wire the host app's notification plugin:
+
+1. Provide a `requestPermission` callback that calls the plugin's permission request API.
+2. Provide a `checkPermissionStatus` callback that checks current status.
+3. Optionally provide a `setupForegroundHandler` callback to configure foreground display (required for iOS, not needed for Android).
+4. Call `permission.request()` at app startup before campaign triggers fire.
+5. Call `permission.setupForeground()` during initialization if the handler is provided.
+
 ## Directory and Namespace Policy
 
 OpenClix files must stay grouped in a dedicated location:
