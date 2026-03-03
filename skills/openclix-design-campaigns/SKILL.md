@@ -113,24 +113,37 @@ When editing existing config, keep diffs minimal and preserve unrelated campaign
 
 ## 5) Validate Artifact Outputs
 
-Run structural checks on each output JSON file:
+Validation is mandatory. Fix all failures before proceeding to delivery.
 
-- `jq . <file>`
+### Config Validation
 
-When a JSON Schema validator is available, validate against:
+Primary path (inside the openclix repo):
 
-- `references/schemas/app-profile.schema.json` for app profiles
-- `references/schemas/openclix.schema.json` for config files
-- `https://openclix.ai/schemas/openclix.schema.json` as the canonical published config schema URL
+- `./scripts/validate_config.sh <config-file>`
 
-Preferred command for config validation:
+This runs JSON syntax, ajv-cli schema validation (`--spec=draft2020`), and structural spot-checks in one pass. All checks must pass.
 
-- `npx --yes ajv-cli validate -s https://openclix.ai/schemas/openclix.schema.json -d <config-file>`
+Fallback path (outside the repo or when the script is unavailable):
+
+1. `jq . <config-file>` — verify JSON syntax.
+2. `npx --yes -p ajv-cli -p ajv-formats ajv validate --spec=draft2020 -c ajv-formats -s references/schemas/openclix.schema.json -d <config-file>` — validate against the canonical schema.
+3. Manually verify: `$schema` is `https://openclix.ai/schemas/openclix.schema.json`, `schema_version` is `openclix/config/v1`, campaign keys are kebab-case, every campaign has `type: "campaign"`, and each `trigger.type` value has its matching sub-object key.
+
+### App Profile Validation
+
+Validate app profile artifacts against:
+
+- `references/schemas/app-profile.schema.json`
+- Command: `npx --yes -p ajv-cli -p ajv-formats ajv validate --spec=draft2020 -c ajv-formats -s references/schemas/app-profile.schema.json -d <app-profile-file>`
+
+### Handoff Report
 
 Report at handoff:
 
 - output file paths
 - campaign IDs and intent
+- config validation result: pass or fail (with details)
+- app profile validation result: pass or fail (with details)
 - key assumptions
 - unresolved gaps requiring user input
 
