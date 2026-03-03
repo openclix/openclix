@@ -54,7 +54,7 @@ Follow the guide here: [Add Claude Code Plugin](./docs/getting-started/installat
 
 ### Advanced setup
 
-** If you wnat to integrate with your PA tools **
+**If you wnat to integrate with your PA tools**
 
 ```text
 Use openclix-analytics to detect installed Firebase/PostHog/Mixpanel/Amplitude,
@@ -62,7 +62,7 @@ forward OpenClix events with openclix tags, and produce a pre/post impact report
 for D7 retention and engagement metrics.
 ```
 
-** To update campaigns **
+**To update campaigns**
 
 ```text
 Use openclix-update-campaigns to propose pause/resume/add/delete/update
