@@ -141,13 +141,13 @@ Before presenting output:
 
 When the task includes app implementation, complete these steps after config generation.
 
-### A) Inspect Current Clix Wiring And Ask For Delivery Mode
+### A) Inspect Current OpenClix Wiring And Ask For Delivery Mode
 
 Before code changes:
 
-1. Find existing `Clix.initialize(...)` call sites and current `ClixConfig.endpoint`.
-2. Find any existing `ClixCampaignManager.replaceConfig(...)` usage.
-3. If Clix integration is missing, run `openclix-init` first.
+1. Find existing `OpenClix.initialize(...)` call sites and current `OpenClixConfig.endpoint`.
+2. Find any existing `OpenClixCampaignManager.replaceConfig(...)` usage.
+3. If OpenClix integration is missing, run `openclix-init` first.
 4. Ask the user to choose delivery mode unless already specified:
    - Bundle config in app package
    - Host config on user's HTTP server (HTTPS)
@@ -162,10 +162,10 @@ If user chooses bundle mode:
    - iOS: existing app target bundle resource groups
    - Android: existing `app/src/main/assets` or `res/raw` usage
 2. Copy generated config JSON into that resource path.
-3. Set `ClixConfig.endpoint` to the bundled config path identifier used by the app.
-4. Initialize Clix, then read JSON from the same bundled path, parse into `Config`, and call `ClixCampaignManager.replaceConfig(parsedConfig)`.
+3. Set `OpenClixConfig.endpoint` to the bundled config path identifier used by the app.
+4. Initialize OpenClix, then read JSON from the same bundled path, parse into `Config`, and call `OpenClixCampaignManager.replaceConfig(parsedConfig)`.
 
-Reason: `Clix.initialize(...)` auto-loads only HTTP(S) endpoints; non-HTTP endpoints require explicit config replacement.
+Reason: `OpenClix.initialize(...)` auto-loads only HTTP(S) endpoints; non-HTTP endpoints require explicit config replacement.
 
 ### C) Hosted HTTP Mode
 
@@ -173,7 +173,7 @@ If user chooses hosted mode:
 
 1. Confirm target hosting environment and deploy access method from the user.
 2. Upload generated config JSON and publish through HTTPS.
-3. Set `ClixConfig.endpoint` to the deployed HTTPS URL.
+3. Set `OpenClixConfig.endpoint` to the deployed HTTPS URL.
 4. Keep local fallback only when user explicitly requests dual-path behavior.
 
 ### D) Minimize Integration Diff

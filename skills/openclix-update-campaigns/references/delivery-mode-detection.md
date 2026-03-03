@@ -4,8 +4,8 @@ Detect how campaign config is delivered at runtime.
 
 ## Modes
 
-- `bundle`: config is loaded from in-app resource and applied via `ClixCampaignManager.replaceConfig(...)`.
-- `hosted_http`: `ClixConfig.endpoint` points to HTTPS URL and runtime fetches remotely.
+- `bundle`: config is loaded from in-app resource and applied via `OpenClixCampaignManager.replaceConfig(...)`.
+- `hosted_http`: `OpenClixConfig.endpoint` points to HTTPS URL and runtime fetches remotely.
 - `dual`: hosted endpoint exists with local fallback/load path also present.
 - `unknown`: insufficient evidence; require explicit user choice.
 
@@ -24,7 +24,7 @@ Look for these signals:
    - `openclix-config.json` resource load
    - asset/raw/bundle references
 3. Replace-config evidence:
-   - `ClixCampaignManager.replaceConfig(...)`
+   - `OpenClixCampaignManager.replaceConfig(...)`
 
 ## Decision
 
@@ -44,7 +44,7 @@ Look for these signals:
   "detection_source": "auto",
   "evidence": {
     "http_endpoint": [],
-    "replace_config": ["/abs/path/src/openclix/core/Clix.ts:120:ClixCampaignManager.replaceConfig(...)"],
+    "replace_config": ["/abs/path/src/openclix/core/OpenClix.ts:120:OpenClixCampaignManager.replaceConfig(...)"],
     "local_config": ["/abs/path/assets/openclix-config.json"]
   }
 }

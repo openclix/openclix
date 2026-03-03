@@ -11,7 +11,7 @@ import type {
   Clock,
   Logger,
   JsonValue,
-} from '../domain/ClixTypes';
+} from '../domain/OpenClixTypes';
 import {
   EventConditionProcessor,
   ScheduleCalculator,
@@ -139,7 +139,7 @@ export class TriggerService {
           await messageScheduler.schedule(queuedMessage);
         } catch (scheduleError) {
           await this.emitSystemEvent(
-            'clix.message.failed',
+            'openclix.message.failed',
             {
               campaign_id: campaignId,
               queued_message_id: queuedMessage.id,
@@ -168,7 +168,7 @@ export class TriggerService {
           max_trigger_history: MAXIMUM_TRIGGER_HISTORY_SIZE,
         });
         await this.emitSystemEvent(
-          'clix.message.scheduled',
+          'openclix.message.scheduled',
           {
             campaign_id: campaignId,
             queued_message_id: queuedMessage.id,
@@ -273,7 +273,7 @@ export class TriggerService {
             `because event '${event.name}' matched cancel_event`,
         });
         await this.emitSystemEvent(
-          'clix.message.cancelled',
+          'openclix.message.cancelled',
           {
             campaign_id: pendingMessage.campaign_id,
             queued_message_id: pendingMessage.message_id,
@@ -286,7 +286,7 @@ export class TriggerService {
         );
       } catch (error) {
         await this.emitSystemEvent(
-          'clix.message.failed',
+          'openclix.message.failed',
           {
             campaign_id: pendingMessage.campaign_id,
             queued_message_id: pendingMessage.message_id,

@@ -430,11 +430,11 @@ public enum EventSourceType: String, Codable, Equatable {
 }
 
 public enum SystemEventName: String, Codable, Equatable {
-    case clixMessageScheduled = "clix.message.scheduled"
-    case clixMessageDelivered = "clix.message.delivered"
-    case clixMessageOpened = "clix.message.opened"
-    case clixMessageCancelled = "clix.message.cancelled"
-    case clixMessageFailed = "clix.message.failed"
+    case openClixMessageScheduled = "openclix.message.scheduled"
+    case openClixMessageDelivered = "openclix.message.delivered"
+    case openClixMessageOpened = "openclix.message.opened"
+    case openClixMessageCancelled = "openclix.message.cancelled"
+    case openClixMessageFailed = "openclix.message.failed"
 }
 
 public struct Event: Codable, Equatable {
@@ -461,7 +461,7 @@ public struct Event: Codable, Equatable {
 
 // MARK: - Runtime Types
 
-public enum ClixLogLevel: String, Codable, Equatable {
+public enum OpenClixLogLevel: String, Codable, Equatable {
     case debug
     case info
     case warn
@@ -615,11 +615,11 @@ public struct CampaignTriggerHistory: Codable, Equatable {
 
 // MARK: - SDK Configuration
 
-public struct ClixConfig {
+public struct OpenClixConfig {
     public let endpoint: String
     public var projectId: String?
     public var apiKey: String?
-    public var logLevel: ClixLogLevel
+    public var logLevel: OpenClixLogLevel
     public var extraHeaders: [String: String]?
     public var sessionTimeoutMs: Int?
 
@@ -627,7 +627,7 @@ public struct ClixConfig {
         endpoint: String,
         projectId: String? = nil,
         apiKey: String? = nil,
-        logLevel: ClixLogLevel = .warn,
+        logLevel: OpenClixLogLevel = .warn,
         extraHeaders: [String: String]? = nil,
         sessionTimeoutMs: Int? = nil
     ) {
@@ -642,30 +642,30 @@ public struct ClixConfig {
 
 // MARK: - Dependency Protocols
 
-public protocol ClixClock {
+public protocol OpenClixClock {
     func now() -> String
 }
 
-public protocol ClixLifecycleStateReader {
+public protocol OpenClixLifecycleStateReader {
     func getAppState() -> String
     func setAppState(_ newState: String)
 }
 
-public protocol ClixLogger {
+public protocol OpenClixLogger {
     func debug(_ message: String, _ args: Any...)
     func info(_ message: String, _ args: Any...)
     func warn(_ message: String, _ args: Any...)
     func error(_ message: String, _ args: Any...)
-    func setLogLevel(_ level: ClixLogLevel)
+    func setLogLevel(_ level: OpenClixLogLevel)
 }
 
-public protocol ClixMessageScheduler {
+public protocol OpenClixMessageScheduler {
     func schedule(_ record: QueuedMessage) async throws
     func cancel(_ id: String) async throws
     func listPending() async throws -> [QueuedMessage]
 }
 
-public protocol ClixCampaignStateRepository {
+public protocol OpenClixCampaignStateRepository {
     func loadSnapshot(now: String) async throws -> CampaignStateSnapshot
     func saveSnapshot(_ snapshot: CampaignStateSnapshot) async throws
     func clearCampaignState() async throws

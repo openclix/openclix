@@ -4,7 +4,7 @@ import type {
   CampaignQueuedMessage,
   TriggerType,
   QueuedMessage,
-} from './ClixTypes';
+} from './OpenClixTypes';
 
 export interface ApplyQueuedMessageParams {
   snapshot: CampaignStateSnapshot;

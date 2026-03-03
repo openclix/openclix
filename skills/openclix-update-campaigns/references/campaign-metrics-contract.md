@@ -1,6 +1,6 @@
 # Campaign Metrics Contract
 
-This file defines `.clix/analytics/campaign-metrics.json` consumed by
+This file defines `.openclix/analytics/campaign-metrics.json` consumed by
 `evaluate_campaigns.sh`.
 
 ## Required fields

@@ -1,4 +1,4 @@
-import '../models/clix_types.dart';
+import '../models/openclix_types.dart';
 import '../services/utils.dart';
 import 'event_condition_processor.dart';
 import 'schedule_calculator.dart';
@@ -20,7 +20,7 @@ class CampaignDecision {
 class CampaignProcessorDependencies {
   final EventConditionProcessor eventConditionProcessor;
   final ScheduleCalculator scheduleCalculator;
-  final ClixLogger logger;
+  final OpenClixLogger logger;
   final Settings? settings;
 
   CampaignProcessorDependencies({

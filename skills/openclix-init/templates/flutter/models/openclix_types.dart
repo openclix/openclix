@@ -781,11 +781,11 @@ enum EventSourceType {
 }
 
 enum SystemEventName {
-  messageScheduled('clix.message.scheduled'),
-  messageDelivered('clix.message.delivered'),
-  messageOpened('clix.message.opened'),
-  messageCancelled('clix.message.cancelled'),
-  messageFailed('clix.message.failed');
+  messageScheduled('openclix.message.scheduled'),
+  messageDelivered('openclix.message.delivered'),
+  messageOpened('openclix.message.opened'),
+  messageCancelled('openclix.message.cancelled'),
+  messageFailed('openclix.message.failed');
 
   const SystemEventName(this.value);
   final String value;
@@ -839,20 +839,20 @@ class Event {
   }
 }
 
-enum ClixLogLevel {
+enum OpenClixLogLevel {
   debug('debug'),
   info('info'),
   warn('warn'),
   error('error'),
   none('none');
 
-  const ClixLogLevel(this.value);
+  const OpenClixLogLevel(this.value);
   final String value;
 
-  static ClixLogLevel fromJson(String? raw) {
-    return ClixLogLevel.values.firstWhere(
+  static OpenClixLogLevel fromJson(String? raw) {
+    return OpenClixLogLevel.values.firstWhere(
       (value) => value.value == raw,
-      orElse: () => ClixLogLevel.warn,
+      orElse: () => OpenClixLogLevel.warn,
     );
   }
 
@@ -1093,29 +1093,29 @@ class CampaignTriggerHistory {
   }
 }
 
-class ClixConfig {
+class OpenClixConfig {
   final String endpoint;
   final String? projectId;
   final String? apiKey;
-  final ClixLogLevel logLevel;
+  final OpenClixLogLevel logLevel;
   final Map<String, String>? extraHeaders;
   final int? sessionTimeoutMs;
 
-  ClixConfig({
+  OpenClixConfig({
     required this.endpoint,
     this.projectId,
     this.apiKey,
-    this.logLevel = ClixLogLevel.warn,
+    this.logLevel = OpenClixLogLevel.warn,
     this.extraHeaders,
     this.sessionTimeoutMs,
   });
 }
 
-abstract class ClixClock {
+abstract class OpenClixClock {
   String now();
 }
 
-abstract class ClixLifecycleStateReader {
+abstract class OpenClixLifecycleStateReader {
   String getAppState();
 
   void setAppState(String state) {}
@@ -1123,7 +1123,7 @@ abstract class ClixLifecycleStateReader {
   void dispose() {}
 }
 
-abstract class ClixLogger {
+abstract class OpenClixLogger {
   void debug(String message, [Object? argument]);
 
   void info(String message, [Object? argument]);
@@ -1132,10 +1132,10 @@ abstract class ClixLogger {
 
   void error(String message, [Object? argument]);
 
-  void setLogLevel(ClixLogLevel level) {}
+  void setLogLevel(OpenClixLogLevel level) {}
 }
 
-abstract class ClixLocalMessageScheduler {
+abstract class OpenClixLocalMessageScheduler {
   Future<void> schedule(QueuedMessage record);
 
   Future<void> cancel(String id);

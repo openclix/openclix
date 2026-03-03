@@ -2,8 +2,8 @@
 
 This skill uses two artifacts:
 
-- `.clix/campaigns/app-profile.json` for planning context
-- `.clix/campaigns/openclix-config.json` (or user target path) for executable OpenClix config
+- `.openclix/campaigns/app-profile.json` for planning context
+- `.openclix/campaigns/openclix-config.json` (or user target path) for executable OpenClix config
 
 For implementation tasks, this skill also produces one integration artifact:
 
@@ -287,7 +287,7 @@ Complete config with a weekly recurring trigger:
 
 When the user requests code integration, produce both:
 
-1. Authoring artifact: `.clix/campaigns/openclix-config.json` (or user-specified target)
+1. Authoring artifact: `.openclix/campaigns/openclix-config.json` (or user-specified target)
 2. Runtime artifact: app resource JSON copied into the project's existing resource location
 
-Then wire startup logic to load the runtime artifact and apply it through `ClixCampaignManager.replaceConfig(...)`.
+Then wire startup logic to load the runtime artifact and apply it through `OpenClixCampaignManager.replaceConfig(...)`.

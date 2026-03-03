@@ -7,9 +7,9 @@ import ai.openclix.models.CampaignStateRecord
 import ai.openclix.models.CampaignStateRepository
 import ai.openclix.models.CampaignStateSnapshot
 import ai.openclix.models.CampaignTriggerHistory
-import ai.openclix.models.ClixClock
-import ai.openclix.models.ClixLocalMessageScheduler
-import ai.openclix.models.ClixLogger
+import ai.openclix.models.OpenClixClock
+import ai.openclix.models.OpenClixLocalMessageScheduler
+import ai.openclix.models.OpenClixLogger
 import ai.openclix.models.Config
 import ai.openclix.models.DecisionTrace
 import ai.openclix.models.Event
@@ -23,9 +23,9 @@ import java.util.UUID
 
 data class TriggerServiceDependencies(
     val campaignStateRepository: CampaignStateRepository,
-    val scheduler: ClixLocalMessageScheduler,
-    val clock: ClixClock,
-    val logger: ClixLogger,
+    val scheduler: OpenClixLocalMessageScheduler,
+    val clock: OpenClixClock,
+    val logger: OpenClixLogger,
     val recordEvent: (suspend (Event) -> Unit)? = null
 )
 
@@ -187,7 +187,7 @@ class TriggerService(
 
     private suspend fun reconcileQueuedMessages(
         snapshot: CampaignStateSnapshot,
-        logger: ClixLogger
+        logger: OpenClixLogger
     ) {
         val pendingMessagesFromScheduler = try {
             dependencies.scheduler.listPending()
@@ -234,7 +234,7 @@ class TriggerService(
         event: Event,
         snapshot: CampaignStateSnapshot,
         now: String,
-        logger: ClixLogger
+        logger: OpenClixLogger
     ): List<DecisionTrace> {
         val traces = mutableListOf<DecisionTrace>()
         val pendingMessages = snapshot.queued_messages.toList()

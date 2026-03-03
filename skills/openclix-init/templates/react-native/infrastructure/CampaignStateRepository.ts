@@ -5,7 +5,7 @@ import type {
   CampaignQueuedMessage,
   CampaignTriggerHistory,
   Event,
-} from '../domain/ClixTypes';
+} from '../domain/OpenClixTypes';
 import {
   CAMPAIGN_STATE_KEYS,
   isNonEmptyString,

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import '../models/clix_types.dart';
+import '../models/openclix_types.dart';
 
 const int defaultMaxEventLogSize = 5000;
 

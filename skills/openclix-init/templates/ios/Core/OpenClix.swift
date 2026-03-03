@@ -1,6 +1,6 @@
 import Foundation
 
-private final class DefaultClock: ClixClock {
+private final class DefaultClock: OpenClixClock {
     func now() -> String {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
@@ -8,15 +8,15 @@ private final class DefaultClock: ClixClock {
     }
 }
 
-private final class DefaultLifecycleReader: ClixLifecycleStateReader {
+private final class DefaultLifecycleReader: OpenClixLifecycleStateReader {
     private var appState: String = "foreground"
 
     func getAppState() -> String { return appState }
     func setAppState(_ newState: String) { appState = newState }
 }
 
-private final class DefaultLogger: ClixLogger {
-    private static let logLevelOrder: [ClixLogLevel: Int] = [
+private final class DefaultLogger: OpenClixLogger {
+    private static let logLevelOrder: [OpenClixLogLevel: Int] = [
         .debug: 0,
         .info: 1,
         .warn: 2,
@@ -24,13 +24,13 @@ private final class DefaultLogger: ClixLogger {
         .none: 4,
     ]
 
-    private var level: ClixLogLevel
+    private var level: OpenClixLogLevel
 
-    init(level: ClixLogLevel) {
+    init(level: OpenClixLogLevel) {
         self.level = level
     }
 
-    func setLogLevel(_ level: ClixLogLevel) {
+    func setLogLevel(_ level: OpenClixLogLevel) {
         self.level = level
     }
 
@@ -54,7 +54,7 @@ private final class DefaultLogger: ClixLogger {
         print("[OpenClix:ERROR] \(message)", args.isEmpty ? "" : " \(args)")
     }
 
-    private func shouldLog(_ targetLevel: ClixLogLevel) -> Bool {
+    private func shouldLog(_ targetLevel: OpenClixLogLevel) -> Bool {
         let currentOrder = DefaultLogger.logLevelOrder[level] ?? 4
         let targetOrder = DefaultLogger.logLevelOrder[targetLevel] ?? 0
         return targetOrder >= currentOrder
@@ -67,22 +67,22 @@ private func isRemoteEndpoint(_ endpoint: String) -> Bool {
 
 private let maximumEventLogSize = 5_000
 
-public final class Clix {
+public final class OpenClix {
 
     actor Coordinator {
-        private var config: ClixConfig?
+        private var config: OpenClixConfig?
         private var triggerService: TriggerService?
         private var initialized = false
 
-        private var campaignStateRepository: ClixCampaignStateRepository?
-        private var messageScheduler: ClixMessageScheduler?
-        private var clock: ClixClock?
+        private var campaignStateRepository: OpenClixCampaignStateRepository?
+        private var messageScheduler: OpenClixMessageScheduler?
+        private var clock: OpenClixClock?
         private var lifecycleReader: DefaultLifecycleReader?
         private var logger: DefaultLogger?
 
-        func initialize(config: ClixConfig) async {
+        func initialize(config: OpenClixConfig) async {
             guard !initialized else {
-                logger?.warn("Clix is already initialized. Call Clix.reset() before re-initializing.")
+                logger?.warn("OpenClix is already initialized. Call OpenClix.reset() before re-initializing.")
                 return
             }
 
@@ -177,13 +177,13 @@ public final class Clix {
                 } catch {
                     logger.warn(
                         "Failed to load config from endpoint. SDK initialized without campaign config. "
-                        + "Use ClixCampaignManager.replaceConfig() to set config manually. "
+                        + "Use OpenClixCampaignManager.replaceConfig() to set config manually. "
                         + "Error: \(error.localizedDescription)"
                     )
                 }
             } else {
                 logger.info(
-                    "Non-HTTP endpoint provided. Use ClixCampaignManager.replaceConfig() to set campaign config."
+                    "Non-HTTP endpoint provided. Use OpenClixCampaignManager.replaceConfig() to set campaign config."
                 )
             }
 
@@ -247,7 +247,7 @@ public final class Clix {
                 ?? ChannelType.app_push.rawValue
 
             await trackSystemEvent(
-                .clixMessageDelivered,
+                .openClixMessageDelivered,
                 properties: compactProperties(
                     [
                         "campaign_id": campaignId.map { JsonValue.string($0) },
@@ -272,7 +272,7 @@ public final class Clix {
             let landingUrl = extractString(from: payload, keys: "landingUrl", "landing_url")
 
             await trackSystemEvent(
-                .clixMessageOpened,
+                .openClixMessageOpened,
                 properties: compactProperties(
                     [
                         "campaign_id": campaignId.map { JsonValue.string($0) },
@@ -332,7 +332,7 @@ public final class Clix {
             previousLogger?.info("OpenClix SDK reset complete.")
         }
 
-        func setLogLevel(_ level: ClixLogLevel) {
+        func setLogLevel(_ level: OpenClixLogLevel) {
             logger?.setLogLevel(level)
         }
 
@@ -354,12 +354,12 @@ public final class Clix {
         }
 
         func getTriggerService() -> TriggerService? { return triggerService }
-        func getClock() -> ClixClock? { return clock }
-        func getLogger() -> ClixLogger? { return logger }
-        func getCampaignStateRepository() -> ClixCampaignStateRepository? {
+        func getClock() -> OpenClixClock? { return clock }
+        func getLogger() -> OpenClixLogger? { return logger }
+        func getCampaignStateRepository() -> OpenClixCampaignStateRepository? {
             return campaignStateRepository
         }
-        func getMessageScheduler() -> ClixMessageScheduler? { return messageScheduler }
+        func getMessageScheduler() -> OpenClixMessageScheduler? { return messageScheduler }
         func isInitialized() -> Bool { return initialized }
 
         private func persistEvent(_ event: Event) async {
@@ -407,7 +407,7 @@ public final class Clix {
         private func assertInitialized() {
             precondition(
                 initialized,
-                "Clix is not initialized. Call Clix.initialize() before using the SDK."
+                "OpenClix is not initialized. Call OpenClix.initialize() before using the SDK."
             )
         }
     }
@@ -416,7 +416,7 @@ public final class Clix {
 
     private init() {}
 
-    public static func initialize(config: ClixConfig) async {
+    public static func initialize(config: OpenClixConfig) async {
         await coordinator.initialize(config: config)
     }
 
@@ -446,7 +446,7 @@ public final class Clix {
         await coordinator.reset()
     }
 
-    public static func setLogLevel(_ level: ClixLogLevel) {
+    public static func setLogLevel(_ level: OpenClixLogLevel) {
         Task {
             await coordinator.setLogLevel(level)
         }

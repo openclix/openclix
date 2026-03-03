@@ -1,4 +1,4 @@
-import '../models/clix_types.dart';
+import '../models/openclix_types.dart';
 
 typedef ScheduleNotificationCallback = Future<void> Function(
   QueuedMessage queuedMessage,
@@ -6,7 +6,7 @@ typedef ScheduleNotificationCallback = Future<void> Function(
 typedef CancelNotificationCallback = Future<void> Function(String messageId);
 typedef ListPendingNotificationCallback = Future<List<QueuedMessage>> Function();
 
-class LocalNotificationScheduler implements ClixLocalMessageScheduler {
+class LocalNotificationScheduler implements OpenClixLocalMessageScheduler {
   final ScheduleNotificationCallback scheduleNotification;
   final CancelNotificationCallback cancelNotification;
   final ListPendingNotificationCallback listPendingNotifications;

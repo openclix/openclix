@@ -1,24 +1,24 @@
-import '../models/clix_types.dart';
+import '../models/openclix_types.dart';
 import '../services/config_validator.dart';
 import '../store/campaign_state_repository.dart';
-import 'clix.dart';
+import 'openclix.dart';
 
-void assertClixInitialized() {
-  if (!Clix.isInitializedInternal()) {
+void assertOpenClixInitialized() {
+  if (!OpenClix.isInitializedInternal()) {
     throw StateError(
-      'Clix is not initialized. Call Clix.initialize() before using ClixCampaignManager.',
+      'OpenClix is not initialized. Call OpenClix.initialize() before using OpenClixCampaignManager.',
     );
   }
 }
 
-class ClixCampaignManager {
-  ClixCampaignManager._();
+class OpenClixCampaignManager {
+  OpenClixCampaignManager._();
 
   static Future<TriggerResult?> replaceConfig(Config config) async {
-    assertClixInitialized();
+    assertOpenClixInitialized();
 
-    final logger = Clix.getLoggerInternal();
-    final triggerService = Clix.getTriggerServiceInternal();
+    final logger = OpenClix.getLoggerInternal();
+    final triggerService = OpenClix.getTriggerServiceInternal();
 
     if (triggerService == null) {
       logger?.error('Cannot replace config: trigger service is not available.');
@@ -54,7 +54,7 @@ class ClixCampaignManager {
       return await triggerService.trigger(
         TriggerContext(
           trigger: 'config_replaced',
-          now: Clix.getClockInternal()?.now(),
+          now: OpenClix.getClockInternal()?.now(),
         ),
       );
     } catch (error) {
@@ -64,14 +64,14 @@ class ClixCampaignManager {
   }
 
   static Config? getConfig() {
-    assertClixInitialized();
-    return Clix.getTriggerServiceInternal()?.getConfig();
+    assertOpenClixInitialized();
+    return OpenClix.getTriggerServiceInternal()?.getConfig();
   }
 
   static Future<CampaignStateSnapshot> getSnapshot() async {
-    assertClixInitialized();
+    assertOpenClixInitialized();
 
-    final campaignStateRepository = Clix.getCampaignStateRepositoryInternal();
+    final campaignStateRepository = OpenClix.getCampaignStateRepositoryInternal();
     if (campaignStateRepository == null) {
       return createDefaultCampaignStateSnapshot(
         DateTime.now().toUtc().toIso8601String(),
@@ -83,7 +83,7 @@ class ClixCampaignManager {
         DateTime.now().toUtc().toIso8601String(),
       );
     } catch (error) {
-      Clix.getLoggerInternal()?.warn(
+      OpenClix.getLoggerInternal()?.warn(
         'Failed to load campaign state snapshot:',
         error,
       );
@@ -98,9 +98,9 @@ class ClixCampaignManager {
     String? campaignId,
     String? status,
   }) async {
-    assertClixInitialized();
+    assertOpenClixInitialized();
 
-    final messageScheduler = Clix.getMessageSchedulerInternal();
+    final messageScheduler = OpenClix.getMessageSchedulerInternal();
     if (messageScheduler == null) {
       return const [];
     }
@@ -109,7 +109,7 @@ class ClixCampaignManager {
     try {
       pendingMessages = await messageScheduler.listPending();
     } catch (error) {
-      Clix.getLoggerInternal()?.error(
+      OpenClix.getLoggerInternal()?.error(
         'Failed to list pending messages:',
         error,
       );
@@ -132,9 +132,9 @@ class ClixCampaignManager {
   }
 
   static Future<List<Event>> getEventLog([int? limit]) async {
-    assertClixInitialized();
+    assertOpenClixInitialized();
 
-    final campaignStateRepository = Clix.getCampaignStateRepositoryInternal();
+    final campaignStateRepository = OpenClix.getCampaignStateRepositoryInternal();
     if (campaignStateRepository == null) {
       return const [];
     }
@@ -142,7 +142,7 @@ class ClixCampaignManager {
     try {
       return campaignStateRepository.loadEvents(limit);
     } catch (error) {
-      Clix.getLoggerInternal()?.error('Failed to load event log:', error);
+      OpenClix.getLoggerInternal()?.error('Failed to load event log:', error);
       return const [];
     }
   }

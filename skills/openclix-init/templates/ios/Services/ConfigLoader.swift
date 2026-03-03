@@ -11,7 +11,7 @@ public enum ConfigLoaderError: LocalizedError {
         switch self {
         case .invalidEndpoint(let endpoint):
             return "Local file paths are not supported by ConfigLoader on iOS. "
-                + "Use ClixCampaignManager.replaceConfig() with a bundled config object instead. "
+                + "Use OpenClixCampaignManager.replaceConfig() with a bundled config object instead. "
                 + "Received endpoint: \"\(endpoint)\""
         case .timeout(let endpoint, let timeoutMs):
             return "Config fetch timed out after \(timeoutMs)ms for endpoint: \"\(endpoint)\""

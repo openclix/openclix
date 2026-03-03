@@ -5,7 +5,7 @@ import type {
   Event,
   DoNotDisturb,
   SkipReason,
-} from './ClixTypes';
+} from './OpenClixTypes';
 
 /** Simple UUID v4 generator (no crypto dependency). */
 export function generateUUID(): string {

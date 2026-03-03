@@ -873,7 +873,7 @@
           "examples": [
             "cart_abandon",
             "purchase_completed",
-            "clix.message.delivered"
+            "openclix.message.delivered"
           ]
         },
         "source_type": {
@@ -899,13 +899,13 @@
     "system_event_name": {
       "type": "string",
       "enum": [
-        "clix.message.scheduled",
-        "clix.message.delivered",
-        "clix.message.opened",
-        "clix.message.cancelled",
-        "clix.message.failed"
+        "openclix.message.scheduled",
+        "openclix.message.delivered",
+        "openclix.message.opened",
+        "openclix.message.cancelled",
+        "openclix.message.failed"
       ],
-      "description": "System event names emitted by the OpenClix engine. Naming convention: clix.message.<action>. 'clix.message.scheduled' = campaign triggered and message added to delivery queue (properties: campaign_id, queued_message_id, channel_type, execute_at). 'clix.message.delivered' = in-app message presented or local notification handed off to OS (properties: campaign_id, queued_message_id, channel_type). 'clix.message.opened' = user tapped the notification (properties: campaign_id, queued_message_id, channel_type). 'clix.message.cancelled' = message cancelled before delivery (properties: campaign_id, queued_message_id, skip_reason). 'clix.message.failed' = message delivery failed (properties: campaign_id, queued_message_id, channel_type, failure_reason)."
+      "description": "System event names emitted by the OpenClix engine. Naming convention: openclix.message.<action>. 'openclix.message.scheduled' = campaign triggered and message added to delivery queue (properties: campaign_id, queued_message_id, channel_type, execute_at). 'openclix.message.delivered' = in-app message presented or local notification handed off to OS (properties: campaign_id, queued_message_id, channel_type). 'openclix.message.opened' = user tapped the notification (properties: campaign_id, queued_message_id, channel_type). 'openclix.message.cancelled' = message cancelled before delivery (properties: campaign_id, queued_message_id, skip_reason). 'openclix.message.failed' = message delivery failed (properties: campaign_id, queued_message_id, channel_type, failure_reason)."
     }
   }
 }

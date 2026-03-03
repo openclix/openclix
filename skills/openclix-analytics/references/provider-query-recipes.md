@@ -1,6 +1,6 @@
 # Provider Query Recipes
 
-Use these templates to extract metrics and fill `.clix/analytics/impact-metrics.json`.
+Use these templates to extract metrics and fill `.openclix/analytics/impact-metrics.json`.
 
 ## Shared prerequisites
 
@@ -40,8 +40,8 @@ SELECT * FROM base;
 ### Metric extraction guidance
 
 - `notification_open_rate_*`:
-  - delivered: `openclix_event_name = 'clix.message.delivered'`
-  - opened: `openclix_event_name = 'clix.message.opened'`
+  - delivered: `openclix_event_name = 'openclix.message.delivered'`
+  - opened: `openclix_event_name = 'openclix.message.opened'`
 - `sessions_per_user_*`:
   - sessions: `event_name = 'session_start'`
   - active users: distinct `user_pseudo_id`
@@ -88,8 +88,8 @@ Use Insights/Retention reports and export CSV for deterministic calculation.
    - Return criteria: `session_start` at day 7
    - Export pre and post cohorts.
 3. Insights report:
-   - `clix.message.delivered`
-   - `clix.message.opened`
+   - `openclix.message.delivered`
+   - `openclix.message.opened`
    - `session_start`
 4. Compute formulas offline and populate JSON contract.
 
@@ -107,8 +107,8 @@ Use Event Segmentation + Retention charts, then export.
    - Interval: day 7
    - Run for pre and post windows.
 2. Event Segmentation:
-   - `clix.message.delivered`
-   - `clix.message.opened`
+   - `openclix.message.delivered`
+   - `openclix.message.opened`
    - `session_start`
 3. Export counts and compute metrics from `impact-metrics-spec.md`.
 
@@ -118,8 +118,8 @@ Use Event Segmentation + Retention charts, then export.
 
 After queries:
 
-1. Write `.clix/analytics/impact-metrics.json` with exact contract keys.
-2. Write `.clix/analytics/impact-report.md` including:
+1. Write `.openclix/analytics/impact-metrics.json` with exact contract keys.
+2. Write `.openclix/analytics/impact-report.md` including:
    - period boundaries
    - all required metrics
    - sample sizes

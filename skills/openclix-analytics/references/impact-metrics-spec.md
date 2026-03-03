@@ -37,8 +37,8 @@ For each period:
 
 For each period:
 
-- Opened count: `clix.message.opened` events.
-- Delivered count: `clix.message.delivered` events.
+- Opened count: `openclix.message.opened` events.
+- Delivered count: `openclix.message.delivered` events.
 - Formula:
   - `notification_open_rate = opened_count / delivered_count`
 
@@ -73,8 +73,8 @@ When insufficient:
 
 Write both files under target project:
 
-- `.clix/analytics/impact-metrics.json`
-- `.clix/analytics/impact-report.md`
+- `.openclix/analytics/impact-metrics.json`
+- `.openclix/analytics/impact-report.md`
 
 ### impact-metrics.json shape
 

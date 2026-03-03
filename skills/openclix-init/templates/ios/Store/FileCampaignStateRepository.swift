@@ -15,7 +15,7 @@ private struct CampaignStateMetaRow: Codable {
 
 private let defaultMaxEventLogSize = 5_000
 
-public actor FileCampaignStateRepository: ClixCampaignStateRepository {
+public actor FileCampaignStateRepository: OpenClixCampaignStateRepository {
 
     private let campaignStatesURL: URL
     private let queuedMessagesURL: URL

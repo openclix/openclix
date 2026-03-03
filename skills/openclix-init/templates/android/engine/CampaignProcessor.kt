@@ -13,7 +13,7 @@ import ai.openclix.models.Settings
 import ai.openclix.models.SkipReason
 import ai.openclix.models.TriggerContext
 import ai.openclix.models.TriggerType
-import ai.openclix.models.ClixLogger
+import ai.openclix.models.OpenClixLogger
 import ai.openclix.services.renderTemplate
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -32,7 +32,7 @@ data class CampaignDecision(
 data class CampaignProcessorDependencies(
     val eventConditionProcessor: EventConditionProcessor,
     val scheduleCalculator: ScheduleCalculator,
-    val logger: ClixLogger,
+    val logger: OpenClixLogger,
     val settings: Settings? = null
 )
 

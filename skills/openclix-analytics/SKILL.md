@@ -20,8 +20,8 @@ This skill is for proving impact, not only sending events.
 - Do not install or update dependencies without explicit approval.
 - Use one provider only, even when multiple are installed.
 - Provider selection priority is fixed: `firebase > posthog > mixpanel > amplitude`.
-- Keep OpenClix canonical event names (`clix.message.*`, app event names).
-- Before writing outputs under `.clix/**`, ensure `.clix/` is listed in `.gitignore` (add it if missing).
+- Keep OpenClix canonical event names (`openclix.message.*`, app event names).
+- Before writing outputs under `.openclix/**`, ensure `.openclix/` is listed in `.gitignore` (add it if missing).
 - Always include required OpenClix analytics properties from `references/event-contract.md`.
 - Use pre/post defaults from `references/impact-metrics-spec.md`:
   - pre: 28 days before campaign go-live
@@ -84,10 +84,10 @@ If at least one provider exists:
    - app events: `trackEvent(...)`
    - system events: `trackSystemEvent(...)`
    - default patch points when using `openclix-init` output:
-     - React Native / Expo: `src/openclix/core/Clix.ts`
-     - Flutter: `lib/openclix/core/clix.dart`
-     - iOS: `OpenClix/Core/Clix.swift` or `Sources/OpenClix/Core/Clix.swift`
-     - Android: `app/src/main/kotlin/ai/openclix/core/Clix.kt`
+     - React Native / Expo: `src/openclix/core/OpenClix.ts`
+     - Flutter: `lib/openclix/core/openclix.dart`
+     - iOS: `OpenClix/Core/OpenClix.swift` or `Sources/OpenClix/Core/OpenClix.swift`
+     - Android: `app/src/main/kotlin/ai/openclix/core/OpenClix.kt`
 6. Keep canonical event names; apply provider-level normalization only when required (Firebase).
 
 Template emitters are in `assets/<platform>/...` with namespace-ready paths.
@@ -107,8 +107,8 @@ Then verify that forwarding is wired in both event paths.
 
 After event flow is active, generate:
 
-- `.clix/analytics/impact-metrics.json`
-- `.clix/analytics/impact-report.md`
+- `.openclix/analytics/impact-metrics.json`
+- `.openclix/analytics/impact-report.md`
 
 Use:
 
@@ -139,7 +139,7 @@ bash scripts/retention_ops_automation.sh \
   --dry-run
 ```
 
-This helper consumes analytics/config artifacts, runs campaign evaluation, and generates agent-specific review prompts under `.clix/automation/prompts/`.
+This helper consumes analytics/config artifacts, runs campaign evaluation, and generates agent-specific review prompts under `.openclix/automation/prompts/`.
 
 Failure codes from helper script:
 

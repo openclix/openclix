@@ -6,12 +6,12 @@ This contract defines what must be forwarded to the selected PA provider.
 
 - Keep canonical OpenClix event names.
 - System events:
-  - `clix.message.scheduled`
-  - `clix.message.delivered`
-  - `clix.message.opened`
-  - `clix.message.cancelled`
-  - `clix.message.failed`
-- App events: use original app event name from `Clix.trackEvent(name, ...)`.
+  - `openclix.message.scheduled`
+  - `openclix.message.delivered`
+  - `openclix.message.opened`
+  - `openclix.message.cancelled`
+  - `openclix.message.failed`
+- App events: use original app event name from `OpenClix.trackEvent(name, ...)`.
 
 ## Required properties
 
@@ -56,13 +56,13 @@ Do not wire only one path.
 
 ```json
 {
-  "event_name": "clix.message.opened",
+  "event_name": "openclix.message.opened",
   "properties": {
     "campaign_id": "onboarding-step-1",
     "queued_message_id": "5ef3f3b2-9bb2-4fbe-95f3-2901f4fba0f2",
     "channel_type": "app_push",
     "openclix_source": "openclix",
-    "openclix_event_name": "clix.message.opened",
+    "openclix_event_name": "openclix.message.opened",
     "openclix_source_type": "system",
     "openclix_platform": "react-native",
     "openclix_campaign_id": "onboarding-step-1",

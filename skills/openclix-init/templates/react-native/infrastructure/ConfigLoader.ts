@@ -1,4 +1,4 @@
-import type { Config } from '../domain/ClixTypes';
+import type { Config } from '../domain/OpenClixTypes';
 
 export interface ConfigLoaderOptions {
   /** Default: 10_000 (10 seconds). */

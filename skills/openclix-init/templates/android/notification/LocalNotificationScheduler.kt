@@ -10,7 +10,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import ai.openclix.engine.parseIso8601
-import ai.openclix.models.ClixLocalMessageScheduler
+import ai.openclix.models.OpenClixLocalMessageScheduler
 import ai.openclix.models.QueuedMessage
 import ai.openclix.models.QueuedMessageStatus
 import org.json.JSONArray
@@ -142,7 +142,7 @@ private fun removePendingRecord(context: Context, id: String) {
 
 class LocalNotificationScheduler(
     private val context: Context
-) : ClixLocalMessageScheduler {
+) : OpenClixLocalMessageScheduler {
 
     init {
         createNotificationChannel(context)

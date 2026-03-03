@@ -1,4 +1,4 @@
-import type { MessageScheduler, QueuedMessage } from '../domain/ClixTypes';
+import type { MessageScheduler, QueuedMessage } from '../domain/OpenClixTypes';
 import { toIsoStringOrCurrentTime } from './StorageUtils';
 
 interface NotifeeTriggerTypes {

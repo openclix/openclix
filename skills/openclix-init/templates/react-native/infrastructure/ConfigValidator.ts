@@ -5,7 +5,7 @@ import type {
   TriggerType,
   RecurrenceType,
   DayOfWeek,
-} from '../domain/ClixTypes';
+} from '../domain/OpenClixTypes';
 
 export interface ValidationIssue {
   path: string;

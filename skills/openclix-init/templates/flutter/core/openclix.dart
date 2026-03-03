@@ -1,17 +1,17 @@
 import '../engine/trigger_service.dart';
-import '../models/clix_types.dart';
+import '../models/openclix_types.dart';
 import '../services/config_loader.dart';
 import '../services/config_validator.dart';
 import '../services/utils.dart';
 
-class ClixDependencies {
-  final ClixLocalMessageScheduler messageScheduler;
+class OpenClixDependencies {
+  final OpenClixLocalMessageScheduler messageScheduler;
   final CampaignStateRepositoryPort campaignStateRepository;
-  final ClixClock? clock;
-  final ClixLifecycleStateReader? lifecycleStateReader;
-  final ClixLogger? logger;
+  final OpenClixClock? clock;
+  final OpenClixLifecycleStateReader? lifecycleStateReader;
+  final OpenClixLogger? logger;
 
-  const ClixDependencies({
+  const OpenClixDependencies({
     required this.messageScheduler,
     required this.campaignStateRepository,
     this.clock,
@@ -20,12 +20,12 @@ class ClixDependencies {
   });
 }
 
-class DefaultClock implements ClixClock {
+class DefaultClock implements OpenClixClock {
   @override
   String now() => DateTime.now().toUtc().toIso8601String();
 }
 
-class DefaultLifecycleStateReader implements ClixLifecycleStateReader {
+class DefaultLifecycleStateReader implements OpenClixLifecycleStateReader {
   String currentAppState = 'foreground';
 
   @override
@@ -40,27 +40,27 @@ class DefaultLifecycleStateReader implements ClixLifecycleStateReader {
   void dispose() {}
 }
 
-class DefaultLogger implements ClixLogger {
-  ClixLogLevel logLevel;
+class DefaultLogger implements OpenClixLogger {
+  OpenClixLogLevel logLevel;
 
-  static const Map<ClixLogLevel, int> logLevelOrder = {
-    ClixLogLevel.debug: 0,
-    ClixLogLevel.info: 1,
-    ClixLogLevel.warn: 2,
-    ClixLogLevel.error: 3,
-    ClixLogLevel.none: 4,
+  static const Map<OpenClixLogLevel, int> logLevelOrder = {
+    OpenClixLogLevel.debug: 0,
+    OpenClixLogLevel.info: 1,
+    OpenClixLogLevel.warn: 2,
+    OpenClixLogLevel.error: 3,
+    OpenClixLogLevel.none: 4,
   };
 
   DefaultLogger(this.logLevel);
 
   @override
-  void setLogLevel(ClixLogLevel level) {
+  void setLogLevel(OpenClixLogLevel level) {
     logLevel = level;
   }
 
   @override
   void debug(String message, [Object? argument]) {
-    if (shouldLog(ClixLogLevel.debug)) {
+    if (shouldLog(OpenClixLogLevel.debug)) {
       print(
         '[OpenClix] DEBUG: $message${argument != null ? ' $argument' : ''}',
       );
@@ -69,28 +69,28 @@ class DefaultLogger implements ClixLogger {
 
   @override
   void info(String message, [Object? argument]) {
-    if (shouldLog(ClixLogLevel.info)) {
+    if (shouldLog(OpenClixLogLevel.info)) {
       print('[OpenClix] INFO: $message${argument != null ? ' $argument' : ''}');
     }
   }
 
   @override
   void warn(String message, [Object? argument]) {
-    if (shouldLog(ClixLogLevel.warn)) {
+    if (shouldLog(OpenClixLogLevel.warn)) {
       print('[OpenClix] WARN: $message${argument != null ? ' $argument' : ''}');
     }
   }
 
   @override
   void error(String message, [Object? argument]) {
-    if (shouldLog(ClixLogLevel.error)) {
+    if (shouldLog(OpenClixLogLevel.error)) {
       print(
         '[OpenClix] ERROR: $message${argument != null ? ' $argument' : ''}',
       );
     }
   }
 
-  bool shouldLog(ClixLogLevel targetLevel) {
+  bool shouldLog(OpenClixLogLevel targetLevel) {
     return logLevelOrder[targetLevel]! >= logLevelOrder[logLevel]!;
   }
 }
@@ -101,31 +101,31 @@ bool isRemoteEndpoint(String endpoint) {
 
 const int maximumEventLogSize = 5000;
 
-class Clix {
-  static ClixConfig? config;
+class OpenClix {
+  static OpenClixConfig? config;
   static TriggerService? triggerService;
   static bool initialized = false;
   static CampaignStateRepositoryPort? campaignStateRepository;
-  static ClixLocalMessageScheduler? messageScheduler;
-  static ClixClock? clock;
-  static ClixLifecycleStateReader? lifecycleStateReader;
-  static ClixLogger? logger;
-  static ClixDependencies? dependencies;
+  static OpenClixLocalMessageScheduler? messageScheduler;
+  static OpenClixClock? clock;
+  static OpenClixLifecycleStateReader? lifecycleStateReader;
+  static OpenClixLogger? logger;
+  static OpenClixDependencies? dependencies;
 
-  Clix._();
+  OpenClix._();
 
   static Future<void> initialize(
-    ClixConfig config,
-    ClixDependencies dependencies,
+    OpenClixConfig config,
+    OpenClixDependencies dependencies,
   ) async {
     if (initialized) {
       throw StateError(
-        'Clix is already initialized. Call Clix.reset() before re-initializing.',
+        'OpenClix is already initialized. Call OpenClix.reset() before re-initializing.',
       );
     }
 
-    Clix.config = config;
-    Clix.dependencies = dependencies;
+    OpenClix.config = config;
+    OpenClix.dependencies = dependencies;
     messageScheduler = dependencies.messageScheduler;
     campaignStateRepository = dependencies.campaignStateRepository;
     clock = dependencies.clock ?? DefaultClock();
@@ -198,14 +198,14 @@ class Clix {
       } catch (loadError) {
         logger?.warn(
           'Failed to load config from endpoint. SDK initialized without campaign config. '
-          'Use ClixCampaignManager.replaceConfig() to set config manually.',
+          'Use OpenClixCampaignManager.replaceConfig() to set config manually.',
           loadError,
         );
       }
     } else {
       logger?.info(
         'Non-HTTP endpoint provided. '
-        'Use ClixCampaignManager.replaceConfig() to set campaign config.',
+        'Use OpenClixCampaignManager.replaceConfig() to set campaign config.',
       );
     }
 
@@ -367,7 +367,7 @@ class Clix {
     loggerAtResetStart?.info('OpenClix SDK reset complete.');
   }
 
-  static void setLogLevel(ClixLogLevel level) {
+  static void setLogLevel(OpenClixLogLevel level) {
     logger?.setLogLevel(level);
   }
 
@@ -385,15 +385,15 @@ class Clix {
 
   static TriggerService? getTriggerServiceInternal() => triggerService;
 
-  static ClixClock? getClockInternal() => clock;
+  static OpenClixClock? getClockInternal() => clock;
 
-  static ClixLogger? getLoggerInternal() => logger;
+  static OpenClixLogger? getLoggerInternal() => logger;
 
   static CampaignStateRepositoryPort? getCampaignStateRepositoryInternal() {
     return campaignStateRepository;
   }
 
-  static ClixLocalMessageScheduler? getMessageSchedulerInternal() {
+  static OpenClixLocalMessageScheduler? getMessageSchedulerInternal() {
     return messageScheduler;
   }
 
@@ -402,7 +402,7 @@ class Clix {
   static void assertInitialized() {
     if (!initialized) {
       throw StateError(
-        'Clix is not initialized. Call Clix.initialize() before using the SDK.',
+        'OpenClix is not initialized. Call OpenClix.initialize() before using the SDK.',
       );
     }
   }

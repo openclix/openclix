@@ -521,11 +521,11 @@ enum class EventSourceType(val value: String) {
 }
 
 enum class SystemEventName(val value: String) {
-    MESSAGE_SCHEDULED("clix.message.scheduled"),
-    MESSAGE_DELIVERED("clix.message.delivered"),
-    MESSAGE_OPENED("clix.message.opened"),
-    MESSAGE_CANCELLED("clix.message.cancelled"),
-    MESSAGE_FAILED("clix.message.failed");
+    MESSAGE_SCHEDULED("openclix.message.scheduled"),
+    MESSAGE_DELIVERED("openclix.message.delivered"),
+    MESSAGE_OPENED("openclix.message.opened"),
+    MESSAGE_CANCELLED("openclix.message.cancelled"),
+    MESSAGE_FAILED("openclix.message.failed");
 
     companion object {
         fun fromValue(value: String): SystemEventName =
@@ -568,7 +568,7 @@ data class Event(
 // SDK Campaign state types
 // ---------------------------------------------------------------------------
 
-enum class ClixLogLevel(val value: String, val priority: Int) {
+enum class OpenClixLogLevel(val value: String, val priority: Int) {
     DEBUG("debug", 0),
     INFO("info", 1),
     WARN("warn", 2),
@@ -576,9 +576,9 @@ enum class ClixLogLevel(val value: String, val priority: Int) {
     NONE("none", 4);
 
     companion object {
-        fun fromValue(value: String): ClixLogLevel =
+        fun fromValue(value: String): OpenClixLogLevel =
             entries.firstOrNull { it.value == value }
-                ?: throw IllegalArgumentException("Unknown ClixLogLevel: $value")
+                ?: throw IllegalArgumentException("Unknown OpenClixLogLevel: $value")
     }
 }
 
@@ -762,31 +762,31 @@ data class CampaignTriggerHistory(
 // SDK configuration and dependency interfaces
 // ---------------------------------------------------------------------------
 
-data class ClixConfig(
+data class OpenClixConfig(
     val endpoint: String,
     val projectId: String? = null,
     val apiKey: String? = null,
-    val logLevel: ClixLogLevel = ClixLogLevel.WARN,
+    val logLevel: OpenClixLogLevel = OpenClixLogLevel.WARN,
     val extraHeaders: Map<String, String>? = null,
     val sessionTimeoutMs: Int? = null
 )
 
-interface ClixClock {
+interface OpenClixClock {
     fun now(): String
 }
 
-interface ClixLifecycleStateReader {
+interface OpenClixLifecycleStateReader {
     fun getAppState(): String
 }
 
-interface ClixLogger {
+interface OpenClixLogger {
     fun debug(msg: String, vararg args: Any?)
     fun info(msg: String, vararg args: Any?)
     fun warn(msg: String, vararg args: Any?)
     fun error(msg: String, vararg args: Any?)
 }
 
-interface ClixLocalMessageScheduler {
+interface OpenClixLocalMessageScheduler {
     suspend fun schedule(record: QueuedMessage)
     suspend fun cancel(id: String)
     suspend fun listPending(): List<QueuedMessage>

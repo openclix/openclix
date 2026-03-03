@@ -27,13 +27,13 @@ public enum CampaignAction {
 public struct CampaignProcessorDependencies {
     public let eventConditionProcessor: EventConditionProcessor
     public let scheduleCalculator: ScheduleCalculator
-    public let logger: ClixLogger
+    public let logger: OpenClixLogger
     public let settings: Settings?
 
     public init(
         eventConditionProcessor: EventConditionProcessor,
         scheduleCalculator: ScheduleCalculator,
-        logger: ClixLogger,
+        logger: OpenClixLogger,
         settings: Settings? = nil
     ) {
         self.eventConditionProcessor = eventConditionProcessor
