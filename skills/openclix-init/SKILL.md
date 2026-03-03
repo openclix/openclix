@@ -81,8 +81,8 @@ React Native / Expo scheduler selection:
 Platform expectations:
 
 - React Native / Expo:
-  - Do not use runtime adapter auto-detection in `OpenClix` core.
-  - Select storage/scheduler implementations during integration and inject dependencies explicitly.
+  - Do not use runtime adapter auto-detection in `OpenClix` core for storage and scheduler adapters; select these at integration time.
+  - Select storage/scheduler implementations during integration and inject their dependencies explicitly; lifecycle helpers (e.g., `lifecycleStateReader`) may be chosen by the template core based on the runtime environment when no project-specific implementation is required.
   - If compatible implementations are unavailable, initialization must fail with clear instructions.
 - Flutter:
   - Use callback-based scheduler adapter for existing notification plugin
