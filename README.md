@@ -56,26 +56,7 @@ Follow the full guide: [Install and integrate OpenClix](./docs/getting-started/i
 
 **Option C: Claude Code plugin marketplace**
 
-Use this when you want OpenClix installed as a Claude Code plugin marketplace entry:
-
-```bash
-claude plugin marketplace add openclix/openclix
-claude plugin marketplace update openclix
-claude plugin install openclix@openclix
-```
-
-For local pre-release testing from a checkout:
-
-```bash
-claude plugin marketplace add /absolute/path/to/openclix
-```
-
-For plugin updates:
-
-```bash
-claude plugin marketplace update openclix
-claude plugin update openclix@openclix
-```
+Follow the guide here: [Add Claude Code Plugin](./docs/getting-started/installation.mdx#option-c-claude-code-plugin-marketplace)
 
 </details>
 
