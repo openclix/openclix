@@ -1,6 +1,6 @@
 import Foundation
 
-public struct TriggerServiceDependencies {
+public struct TriggerServiceDependencies: Sendable {
     public let campaignStateRepository: OpenClixCampaignStateRepository
     public let messageScheduler: OpenClixMessageScheduler
     public let clock: OpenClixClock
