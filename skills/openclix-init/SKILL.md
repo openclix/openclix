@@ -20,6 +20,8 @@ Use a local-source integration model (shadcn-style): copy, adapt, wire, verify.
 - Do not add or update dependencies without explicit user approval.
 - Run a build after integration and fix only integration-caused issues.
 - Do not use in-memory fallback in production integration paths.
+- For bundled JSON config delivery, keep runtime loader path and copied file path identical (same directory + same case-sensitive filename).
+- Use `openclix-config.json` as the default filename; do not invent case variants such as `OpenClix-config.json`.
 
 ## Platform Detection
 
@@ -131,6 +133,23 @@ OpenClix files must stay grouped in a dedicated location:
 - iOS: `OpenClix/` or `Sources/OpenClix/`
 - Android: `app/src/main/kotlin/ai/openclix/` with `ai.openclix.*` packages
 
+## Bundled Config Path Contract
+
+When integration includes bundled config delivery (non-HTTP endpoint), enforce this contract:
+
+1. Detect the exact runtime load path from current startup code first.
+2. Copy `openclix-config.json` to that exact path.
+3. If no runtime load path exists yet, use these defaults:
+   - React Native / Expo: `assets/openclix/openclix-config.json`
+   - Flutter: `assets/openclix/openclix-config.json` and add it to `pubspec.yaml`
+   - iOS: `<app-target>/OpenClix/openclix-config.json` and include in "Copy Bundle Resources"
+   - Android: `app/src/main/assets/openclix/openclix-config.json`
+4. Ensure any bundled-path identifier (`OpenClixConfig.endpoint`, asset key, bundle filename) matches the copied file path exactly.
+5. Run a final path parity check before handoff and report:
+   - source config file path
+   - bundled runtime file path
+   - runtime loader reference location(s)
+
 ## Dependency Policy
 
 Before changing dependencies:
@@ -163,5 +182,6 @@ If build fails, apply minimal targeted fixes and retry. Stop only on hard blocke
 - Existing app code changes are minimal and localized.
 - No unapproved dependency additions or upgrades.
 - Adapter wiring prefers existing dependencies and fails fast when unavailable.
+- Bundled config path/filename parity verified when using local resource delivery.
 - Build verification executed.
 - Any remaining blockers clearly reported.
