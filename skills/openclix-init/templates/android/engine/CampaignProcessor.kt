@@ -156,18 +156,31 @@ class CampaignProcessor {
             return createSkipDecision(campaignId, reason)
         }
 
-        if (campaign.trigger.type != TriggerType.RECURRING && campaignState?.triggered == true) {
-            val reason = "Campaign already triggered"
-            logger.debug("[CampaignProcessor] Campaign $campaignId skipped: $reason")
-            return createSkipDecision(campaignId, reason)
-        }
-
         if (settings?.frequency_cap != null) {
             val frequencyCap = settings.frequency_cap
             val windowStartEpoch = parseIso8601(now) - frequencyCap.window_seconds * 1000L
             val windowStart = toIso8601(windowStartEpoch)
             val countInWindow = snapshot.trigger_history.count { historyRow ->
                 historyRow.triggered_at >= windowStart
+            }
+
+            if (countInWindow >= frequencyCap.max_count) {
+                val reason = "Frequency cap exceeded ($countInWindow/${frequencyCap.max_count} within ${frequencyCap.window_seconds}s)"
+                logger.debug("[CampaignProcessor] Campaign $campaignId skipped: $reason")
+                return createSkipDecision(
+                    campaignId,
+                    reason,
+                    SkipReason.CAMPAIGN_FREQUENCY_CAP_EXCEEDED
+                )
+            }
+        }
+
+        if (campaign.frequency_cap != null) {
+            val frequencyCap = campaign.frequency_cap
+            val windowStartEpoch = parseIso8601(now) - frequencyCap.window_seconds * 1000L
+            val windowStart = toIso8601(windowStartEpoch)
+            val countInWindow = snapshot.trigger_history.count { historyRow ->
+                historyRow.campaign_id == campaignId && historyRow.triggered_at >= windowStart
             }
 
             if (countInWindow >= frequencyCap.max_count) {

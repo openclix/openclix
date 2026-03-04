@@ -130,6 +130,7 @@ public struct Campaign: Codable, Equatable {
     public let description: String
     public let status: CampaignStatus
     public let trigger: CampaignTrigger
+    public let frequency_cap: FrequencyCap?
     public let message: Message
 
     public init(
@@ -138,6 +139,7 @@ public struct Campaign: Codable, Equatable {
         description: String,
         status: CampaignStatus,
         trigger: CampaignTrigger,
+        frequency_cap: FrequencyCap? = nil,
         message: Message
     ) {
         self.name = name
@@ -145,6 +147,7 @@ public struct Campaign: Codable, Equatable {
         self.description = description
         self.status = status
         self.trigger = trigger
+        self.frequency_cap = frequency_cap
         self.message = message
     }
 }

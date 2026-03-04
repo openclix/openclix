@@ -65,7 +65,7 @@
       "properties": {
         "frequency_cap": {
           "$ref": "#/$defs/frequency_cap",
-          "description": "Limits the maximum number of messages a user can receive within a rolling time window."
+          "description": "Global frequency cap. Limits the maximum number of messages a user can receive across all campaigns within a rolling time window."
         },
         "do_not_disturb": {
           "$ref": "#/$defs/do_not_disturb",
@@ -169,6 +169,10 @@
         "trigger": {
           "$ref": "#/$defs/campaign_trigger",
           "description": "Defines how and when this campaign is triggered."
+        },
+        "frequency_cap": {
+          "$ref": "#/$defs/frequency_cap",
+          "description": "Campaign-level frequency cap. Limits the maximum number of messages this specific campaign can deliver within a rolling time window. If settings.frequency_cap is also set, both caps are enforced."
         },
         "message": {
           "$ref": "#/$defs/message",
@@ -725,7 +729,7 @@
         "trigger_event_not_matched",
         "trigger_cancel_event_matched"
       ],
-      "description": "Reason why a campaign was not triggered or a queued message was cancelled. 'campaign_not_running' = campaign status is not 'running'. 'campaign_frequency_cap_exceeded' = settings.frequency_cap limit exceeded. 'campaign_do_not_disturb_blocked' = message execute_at falls within settings.do_not_disturb window. 'trigger_event_not_matched' = trigger.event.trigger_event conditions did not match. 'trigger_cancel_event_matched' = trigger.event.cancel_event matched during the delay period."
+      "description": "Reason why a campaign was not triggered or a queued message was cancelled. 'campaign_not_running' = campaign status is not 'running'. 'campaign_frequency_cap_exceeded' = global and/or campaign frequency_cap limit exceeded. 'campaign_do_not_disturb_blocked' = message execute_at falls within settings.do_not_disturb window. 'trigger_event_not_matched' = trigger.event.trigger_event conditions did not match. 'trigger_cancel_event_matched' = trigger.event.cancel_event matched during the delay period."
     },
     "campaign_state_snapshot": {
       "type": "object",

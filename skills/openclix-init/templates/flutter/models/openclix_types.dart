@@ -191,6 +191,7 @@ class Campaign {
   final String description;
   final CampaignStatus status;
   final CampaignTrigger trigger;
+  final FrequencyCap? frequencyCap;
   final Message message;
 
   Campaign({
@@ -199,6 +200,7 @@ class Campaign {
     required this.description,
     required this.status,
     required this.trigger,
+    this.frequencyCap,
     required this.message,
   });
 
@@ -211,6 +213,13 @@ class Campaign {
       trigger: CampaignTrigger.fromJson(
         Map<String, dynamic>.from(json['trigger'] as Map? ?? const {}),
       ),
+      frequencyCap: json['frequency_cap'] is Map<String, dynamic>
+          ? FrequencyCap.fromJson(json['frequency_cap'] as Map<String, dynamic>)
+          : json['frequency_cap'] is Map
+          ? FrequencyCap.fromJson(
+              Map<String, dynamic>.from(json['frequency_cap'] as Map),
+            )
+          : null,
       message: Message.fromJson(
         Map<String, dynamic>.from(json['message'] as Map? ?? const {}),
       ),
@@ -224,6 +233,7 @@ class Campaign {
       'description': description,
       'status': status.toJson(),
       'trigger': trigger.toJson(),
+      if (frequencyCap != null) 'frequency_cap': frequencyCap!.toJson(),
       'message': message.toJson(),
     };
   }

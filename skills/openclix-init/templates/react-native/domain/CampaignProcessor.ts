@@ -126,13 +126,6 @@ export class CampaignProcessor {
       );
     }
 
-    if (
-      campaign.trigger.type !== 'recurring' &&
-      campaignState?.triggered === true
-    ) {
-      return createSkipDecision(campaignId, 'Campaign already triggered');
-    }
-
     // Global frequency cap: count all triggered campaigns in the rolling window.
     if (settings?.frequency_cap) {
       const { max_count, window_seconds } = settings.frequency_cap;
@@ -143,6 +136,24 @@ export class CampaignProcessor {
         (row) => row.triggered_at >= windowStart,
       );
       const countInWindow = recent.length;
+      if (countInWindow >= max_count) {
+        return createSkipDecision(
+          campaignId,
+          `Frequency cap exceeded (${countInWindow}/${max_count} within ${window_seconds}s)`,
+          'campaign_frequency_cap_exceeded',
+        );
+      }
+    }
+
+    // Campaign frequency cap: count triggers for this campaign only in the rolling window.
+    if (campaign.frequency_cap) {
+      const { max_count, window_seconds } = campaign.frequency_cap;
+      const windowStart = new Date(
+        new Date(now).getTime() - window_seconds * 1000,
+      ).toISOString();
+      const countInWindow = (snapshot.trigger_history ?? []).filter(
+        (row) => row.campaign_id === campaignId && row.triggered_at >= windowStart,
+      ).length;
       if (countInWindow >= max_count) {
         return createSkipDecision(
           campaignId,
