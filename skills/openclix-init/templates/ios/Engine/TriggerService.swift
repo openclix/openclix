@@ -5,24 +5,22 @@ public struct TriggerServiceDependencies: Sendable {
     public let messageScheduler: OpenClixMessageScheduler
     public let clock: OpenClixClock
     public let logger: OpenClixLogger
-    public let recordEvent: (@Sendable (Event) async -> Void)?
 
     public init(
         campaignStateRepository: OpenClixCampaignStateRepository,
         messageScheduler: OpenClixMessageScheduler,
         clock: OpenClixClock,
-        logger: OpenClixLogger,
-        recordEvent: (@Sendable (Event) async -> Void)? = nil
+        logger: OpenClixLogger
     ) {
         self.campaignStateRepository = campaignStateRepository
         self.messageScheduler = messageScheduler
         self.clock = clock
         self.logger = logger
-        self.recordEvent = recordEvent
     }
 }
 
 private let maximumTriggerHistorySize = 5_000
+private let maximumEventLogSize = 5_000
 
 public actor TriggerService {
 
@@ -43,6 +41,10 @@ public actor TriggerService {
         self.scheduleCalculator = ScheduleCalculator()
         self.campaignProcessor = CampaignProcessor()
         self.campaignStateService = campaignStateService
+    }
+
+    public func setLogLevel(_ level: OpenClixLogLevel) {
+        dependencies.logger.setLogLevel(level)
     }
 
     public func replaceConfig(_ config: Config) {
@@ -349,8 +351,6 @@ public actor TriggerService {
         properties: [String: JsonValue?],
         createdAt: String
     ) async {
-        guard let recordEvent = dependencies.recordEvent else { return }
-
         var normalizedProperties: [String: JsonValue] = [:]
         for (key, value) in properties {
             if let value {
@@ -358,14 +358,24 @@ public actor TriggerService {
             }
         }
 
-        await recordEvent(
-            Event(
-                id: generateUUID(),
-                name: name.rawValue,
-                source_type: .system,
-                properties: normalizedProperties,
-                created_at: createdAt
-            )
+        let event = Event(
+            id: generateUUID(),
+            name: name.rawValue,
+            source_type: .system,
+            properties: normalizedProperties,
+            created_at: createdAt
         )
+
+        do {
+            try await dependencies.campaignStateRepository.appendEvents(
+                [event],
+                maxEntries: maximumEventLogSize
+            )
+        } catch {
+            dependencies.logger.warn(
+                "[TriggerService] Failed to persist system event \(name.rawValue):",
+                error.localizedDescription
+            )
+        }
     }
 }

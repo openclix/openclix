@@ -124,19 +124,7 @@ public final class OpenClix {
                     campaignStateRepository: campaignStateRepository,
                     messageScheduler: messageScheduler,
                     clock: clock,
-                    logger: logger,
-                    recordEvent: { event in
-                        do {
-                            try await campaignStateRepository.appendEvents(
-                                [event],
-                                maxEntries: maximumEventLogSize
-                            )
-                        } catch {
-                            logger.warn(
-                                "Failed to persist event '\(event.name)': \(error.localizedDescription)"
-                            )
-                        }
-                    }
+                    logger: logger
                 )
             )
             self.triggerService = triggerService
@@ -349,8 +337,9 @@ public final class OpenClix {
             previousLogger?.info("OpenClix SDK reset complete.")
         }
 
-        func setLogLevel(_ level: OpenClixLogLevel) {
+        func setLogLevel(_ level: OpenClixLogLevel) async {
             logger?.setLogLevel(level)
+            await triggerService?.setLogLevel(level)
         }
 
         func handleAppForeground() async {
