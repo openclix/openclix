@@ -5,14 +5,14 @@ public struct TriggerServiceDependencies {
     public let messageScheduler: OpenClixMessageScheduler
     public let clock: OpenClixClock
     public let logger: OpenClixLogger
-    public let recordEvent: ((Event) async -> Void)?
+    public let recordEvent: (@Sendable (Event) async -> Void)?
 
     public init(
         campaignStateRepository: OpenClixCampaignStateRepository,
         messageScheduler: OpenClixMessageScheduler,
         clock: OpenClixClock,
         logger: OpenClixLogger,
-        recordEvent: ((Event) async -> Void)? = nil
+        recordEvent: (@Sendable (Event) async -> Void)? = nil
     ) {
         self.campaignStateRepository = campaignStateRepository
         self.messageScheduler = messageScheduler

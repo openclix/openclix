@@ -1,7 +1,7 @@
 import Foundation
 import UserNotifications
 
-public final class LocalNotificationScheduler: OpenClixMessageScheduler {
+public final class LocalNotificationScheduler: OpenClixMessageScheduler, Sendable {
 
     private static let campaignIdKey = "openclix_campaign_id"
     private static let identifierKey = "openclix_id"

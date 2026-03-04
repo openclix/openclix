@@ -1,6 +1,6 @@
 import Foundation
 
-private final class DefaultClock: OpenClixClock {
+private final class DefaultClock: OpenClixClock, Sendable {
     func now() -> String {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
@@ -8,14 +8,14 @@ private final class DefaultClock: OpenClixClock {
     }
 }
 
-private final class DefaultLifecycleReader: OpenClixLifecycleStateReader {
+private final class DefaultLifecycleReader: OpenClixLifecycleStateReader, @unchecked Sendable {
     private var appState: String = "foreground"
 
     func getAppState() -> String { return appState }
     func setAppState(_ newState: String) { appState = newState }
 }
 
-private final class DefaultLogger: OpenClixLogger {
+private final class DefaultLogger: OpenClixLogger, @unchecked Sendable {
     private static let logLevelOrder: [OpenClixLogLevel: Int] = [
         .debug: 0,
         .info: 1,
@@ -24,6 +24,7 @@ private final class DefaultLogger: OpenClixLogger {
         .none: 4,
     ]
 
+    private let lock = NSLock()
     private var level: OpenClixLogLevel
 
     init(level: OpenClixLogLevel) {
@@ -31,6 +32,8 @@ private final class DefaultLogger: OpenClixLogger {
     }
 
     func setLogLevel(_ level: OpenClixLogLevel) {
+        lock.lock()
+        defer { lock.unlock() }
         self.level = level
     }
 
@@ -55,7 +58,10 @@ private final class DefaultLogger: OpenClixLogger {
     }
 
     private func shouldLog(_ targetLevel: OpenClixLogLevel) -> Bool {
-        let currentOrder = DefaultLogger.logLevelOrder[level] ?? 4
+        lock.lock()
+        let currentLevel = level
+        lock.unlock()
+        let currentOrder = DefaultLogger.logLevelOrder[currentLevel] ?? 4
         let targetOrder = DefaultLogger.logLevelOrder[targetLevel] ?? 0
         return targetOrder >= currentOrder
     }
