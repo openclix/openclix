@@ -71,6 +71,8 @@ Before adding many campaigns, define:
 
 Avoid duplicating these protections per campaign.
 
+Also evaluate campaign-level `frequency_cap` for high-volume triggers.
+
 ## 6) Keep Copy Personal But Controlled
 
 Message templates support `{{key}}` placeholders resolved from event payloads.
@@ -85,6 +87,11 @@ Hard schema limits:
 
 - title <= 120
 - body <= 500
+
+Also evaluate optional message fields when relevant:
+
+- `image_url` for rich-notification visuals
+- `landing_url` for deep-link routing
 
 ## 7) Recurring Pattern Templates
 
@@ -127,7 +134,19 @@ Hard schema limits:
 }
 ```
 
-## 8) Final Pre-Handoff Checks
+## 8) Feature Coverage Pass (Mandatory For New Campaigns)
+
+Before finalizing config, explicitly evaluate all configurable levers in schema:
+
+- global: `settings.frequency_cap`, `settings.do_not_disturb`
+- campaign: `frequency_cap`
+- event triggers: `delay_seconds`, `cancel_event`
+- recurring triggers: `start_at`, `end_at`, `rule.interval`, `weekly_rule.days_of_week`, `time_of_day`
+- message: `image_url`, `landing_url`, verified `{{key}}` placeholders
+
+Use all relevant levers. If you skip a lever, document why.
+
+## 9) Final Pre-Handoff Checks
 
 Before presenting output:
 
@@ -137,7 +156,7 @@ Before presenting output:
 - verify unknown fields are absent
 - verify every campaign message has both title and body
 
-## 9) Delivery Mode Decision And Runtime Wiring
+## 10) Delivery Mode Decision And Runtime Wiring
 
 When the task includes app implementation, complete these steps after config generation.
 
@@ -156,14 +175,18 @@ Before code changes:
 
 If user chooses bundle mode:
 
-1. Pick resource path from existing project conventions (prefer `openclix-init` findings):
-   - React Native / Expo: existing `assets/` or app-level resource folder
-   - Flutter: existing asset folder pattern and `pubspec.yaml` declaration style
-   - iOS: existing app target bundle resource groups
-   - Android: existing `app/src/main/assets` or `res/raw` usage
-2. Copy generated config JSON into that resource path.
-3. Set `OpenClixConfig.endpoint` to the bundled config path identifier used by the app.
-4. Initialize OpenClix, then read JSON from the same bundled path, parse into `Config`, and call `OpenClixCampaignManager.replaceConfig(parsedConfig)`.
+1. Resolve the runtime path in this order:
+   - existing loader path in code (preferred)
+   - fallback defaults when loader path does not exist yet:
+     - React Native / Expo: `assets/openclix/openclix-config.json`
+     - Flutter: `assets/openclix/openclix-config.json` + `pubspec.yaml` registration
+     - iOS: `<app-target>/OpenClix/openclix-config.json` + Copy Bundle Resources entry
+     - Android: `app/src/main/assets/openclix/openclix-config.json`
+2. Copy generated config JSON to that exact path.
+3. Keep filename lowercase `openclix-config.json` unless existing code already references a different filename.
+4. Set `OpenClixConfig.endpoint` to the same bundled-path identifier used by the app.
+5. Initialize OpenClix, then read JSON from that exact bundled path, parse into `Config`, and call `OpenClixCampaignManager.replaceConfig(parsedConfig)`.
+6. Verify path parity: copied path, loader reference, and endpoint identifier all match.
 
 Reason: `OpenClix.initialize(...)` auto-loads only HTTP(S) endpoints; non-HTTP endpoints require explicit config replacement.
 

@@ -35,6 +35,7 @@ Gather only missing facts needed for design decisions:
 - current campaign config path (if existing)
 - existing app resource/file management convention for JSON assets
 - startup location where OpenClix is currently initialized (or should be initialized)
+- exact runtime bundled-config load path and filename currently referenced in code (case-sensitive)
 - user-owned HTTP server/deployment target for hosted config (if remote serving is expected)
 - global constraints: quiet hours, frequency cap expectations, locale/timezone assumptions
 
@@ -81,6 +82,16 @@ Content rule:
 - Keep schema-safe limits: title <= 120, body <= 500.
 - Prefer concise UX copy (title <= 45, body <= 140) unless user needs longer copy.
 
+Feature coverage rule (mandatory when adding a new campaign):
+
+- Run a feature pass against `references/schemas/openclix.schema.json` and explicitly evaluate each configurable lever:
+  - global: `settings.frequency_cap`, `settings.do_not_disturb`
+  - campaign: `frequency_cap`
+  - event trigger: `delay_seconds`, `cancel_event`
+  - recurring trigger: `start_at`, `end_at`, `rule.interval`, `weekly_rule.days_of_week`, `time_of_day`
+  - message content: `image_url`, `landing_url`, personalization placeholders
+- Apply every lever that is relevant to the campaign goal; if a lever is not used, state why in handoff assumptions.
+
 ## 4) Generate Or Update OpenClix Config
 
 Before writing config:
@@ -107,6 +118,7 @@ Guarantee these invariants:
 - Campaign `type` is `campaign`.
 - Campaign `status` is `running` or `paused`.
 - Trigger-specific required fields are present.
+- Optional but available fields are intentionally evaluated (not ignored by default), especially frequency caps and suppression controls.
 - No unknown fields are introduced.
 
 When editing existing config, keep diffs minimal and preserve unrelated campaigns.
@@ -179,15 +191,19 @@ Decision gate (mandatory unless user already specified mode):
 When the user chooses bundle mode:
 
 1. Use platform/startup/resource information discovered from existing code and `openclix-init` outputs.
-2. Copy `.openclix/campaigns/openclix-config.json` into the app resource location used by that project:
-   - React Native / Expo: existing `assets/` or project resource pattern.
-   - Flutter: existing asset path and `pubspec.yaml` convention.
-   - iOS: existing app target bundle resource location.
-   - Android: existing `assets/` or `res/raw` pattern.
-3. Keep filename stable unless project convention requires a different name.
-4. Set `OpenClixConfig.endpoint` to the bundled config path identifier used by the project.
-5. Update startup code to load JSON from that same bundled path, parse `Config`, then call `OpenClixCampaignManager.replaceConfig(...)` after initialization.
-6. Run platform build/analysis checks after wiring.
+2. Resolve the runtime bundle target path in this order:
+   - Use the exact existing load path already referenced in code.
+   - If no load path exists yet, use a fallback default:
+     - React Native / Expo: `assets/openclix/openclix-config.json`
+     - Flutter: `assets/openclix/openclix-config.json` (and register it in `pubspec.yaml`)
+     - iOS: `<app-target>/OpenClix/openclix-config.json` (add to Copy Bundle Resources)
+     - Android: `app/src/main/assets/openclix/openclix-config.json`
+3. Copy `.openclix/campaigns/openclix-config.json` to that resolved runtime path.
+4. Keep filename as lowercase `openclix-config.json` unless the project already has a different runtime filename and loader reference.
+5. Set `OpenClixConfig.endpoint` to the same bundled path identifier used by the runtime loader.
+6. Update startup code to load JSON from that exact bundled path, parse `Config`, then call `OpenClixCampaignManager.replaceConfig(...)` after initialization.
+7. Run platform build/analysis checks after wiring.
+8. Perform a parity check: copied file path, loader path reference, and `OpenClixConfig.endpoint` identifier must all match.
 
 ### B) Hosted HTTP Delivery (User-Owned Server)
 
@@ -210,6 +226,7 @@ Completion requirements for implementation tasks:
 
 - selected delivery mode reported
 - source config path and applied runtime config path/URL reported
+- for bundle mode: case-sensitive filename and path parity check result reported
 - `OpenClixConfig.endpoint` value/location updated and reported
 - resource file path reported for bundle mode
 - modified startup/init file paths reported
@@ -225,6 +242,8 @@ Completion requirements for implementation tasks:
 - Use global quiet-hour controls before introducing ad-hoc per-campaign windows.
 - After config generation, inspect existing OpenClix wiring and ask the user to choose bundle vs hosted delivery if not already specified.
 - Reuse project facts discovered by `openclix-init` when selecting resource path and startup patch points.
+- For bundle delivery, never guess a new directory when code already points to a concrete path.
+- Use lowercase `openclix-config.json` unless an existing runtime loader already requires another exact filename.
 - Do not rely on non-HTTP endpoints being auto-loaded by `OpenClix.initialize(...)`.
 - For local JSON delivery, always set `OpenClixConfig.endpoint` to the chosen bundled path and wire explicit resource load + `OpenClixCampaignManager.replaceConfig(...)`.
 - For remote JSON delivery, set `OpenClixConfig.endpoint` to HTTPS URL and keep the payload schema-compatible with `openclix/config/v1`.
