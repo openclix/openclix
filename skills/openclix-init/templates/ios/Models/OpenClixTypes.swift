@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - JSON Value
 
-public enum JsonValue: Codable, Equatable {
+public enum JsonValue: Codable, Equatable, Sendable {
     case string(String)
     case number(Double)
     case bool(Bool)
@@ -424,7 +424,7 @@ public struct QueuedMessageContent: Codable, Equatable {
 
 // MARK: - Event
 
-public enum EventSourceType: String, Codable, Equatable {
+public enum EventSourceType: String, Codable, Equatable, Sendable {
     case app
     case system
 }
@@ -437,7 +437,7 @@ public enum SystemEventName: String, Codable, Equatable {
     case openClixMessageFailed = "openclix.message.failed"
 }
 
-public struct Event: Codable, Equatable {
+public struct Event: Codable, Equatable, Sendable {
     public let id: String
     public let name: String
     public let source_type: EventSourceType
@@ -642,7 +642,7 @@ public struct OpenClixConfig {
 
 // MARK: - Dependency Protocols
 
-public protocol OpenClixClock {
+public protocol OpenClixClock: Sendable {
     func now() -> String
 }
 
@@ -651,7 +651,7 @@ public protocol OpenClixLifecycleStateReader {
     func setAppState(_ newState: String)
 }
 
-public protocol OpenClixLogger {
+public protocol OpenClixLogger: Sendable {
     func debug(_ message: String, _ args: Any...)
     func info(_ message: String, _ args: Any...)
     func warn(_ message: String, _ args: Any...)
@@ -659,13 +659,13 @@ public protocol OpenClixLogger {
     func setLogLevel(_ level: OpenClixLogLevel)
 }
 
-public protocol OpenClixMessageScheduler {
+public protocol OpenClixMessageScheduler: Sendable {
     func schedule(_ record: QueuedMessage) async throws
     func cancel(_ id: String) async throws
     func listPending() async throws -> [QueuedMessage]
 }
 
-public protocol OpenClixCampaignStateRepository {
+public protocol OpenClixCampaignStateRepository: Sendable {
     func loadSnapshot(now: String) async throws -> CampaignStateSnapshot
     func saveSnapshot(_ snapshot: CampaignStateSnapshot) async throws
     func clearCampaignState() async throws
