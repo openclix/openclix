@@ -123,11 +123,8 @@ public final class OpenClix {
                 dependencies: TriggerServiceDependencies(
                     campaignStateRepository: campaignStateRepository,
                     messageScheduler: messageScheduler,
-                    clock: DefaultClock(),
-                    logger: DefaultLogger(level: config.logLevel),
-                    recordEvent: { [coordinator = self] event in
-                        await coordinator.persistEvent(event)
-                    }
+                    clock: clock,
+                    logger: logger
                 )
             )
             self.triggerService = triggerService
