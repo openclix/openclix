@@ -9,10 +9,21 @@ private final class DefaultClock: OpenClixClock, Sendable {
 }
 
 private final class DefaultLifecycleReader: OpenClixLifecycleStateReader, @unchecked Sendable {
+    private let lock = NSLock()
     private var appState: String = "foreground"
 
-    func getAppState() -> String { return appState }
-    func setAppState(_ newState: String) { appState = newState }
+    func getAppState() -> String {
+        lock.lock()
+        let state = appState
+        lock.unlock()
+        return state
+    }
+
+    func setAppState(_ newState: String) {
+        lock.lock()
+        appState = newState
+        lock.unlock()
+    }
 }
 
 private final class DefaultLogger: OpenClixLogger, @unchecked Sendable {
@@ -59,8 +70,8 @@ private final class DefaultLogger: OpenClixLogger, @unchecked Sendable {
 
     private func shouldLog(_ targetLevel: OpenClixLogLevel) -> Bool {
         lock.lock()
+        defer { lock.unlock() }
         let currentLevel = level
-        lock.unlock()
         let currentOrder = DefaultLogger.logLevelOrder[currentLevel] ?? 4
         let targetOrder = DefaultLogger.logLevelOrder[targetLevel] ?? 0
         return targetOrder >= currentOrder
