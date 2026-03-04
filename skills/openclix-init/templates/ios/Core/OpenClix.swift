@@ -1,6 +1,6 @@
 import Foundation
 
-private final class DefaultClock: OpenClixClock {
+private final class DefaultClock: OpenClixClock, Sendable {
     func now() -> String {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
@@ -8,14 +8,25 @@ private final class DefaultClock: OpenClixClock {
     }
 }
 
-private final class DefaultLifecycleReader: OpenClixLifecycleStateReader {
+private final class DefaultLifecycleReader: OpenClixLifecycleStateReader, @unchecked Sendable {
+    private let lock = NSLock()
     private var appState: String = "foreground"
 
-    func getAppState() -> String { return appState }
-    func setAppState(_ newState: String) { appState = newState }
+    func getAppState() -> String {
+        lock.lock()
+        let state = appState
+        lock.unlock()
+        return state
+    }
+
+    func setAppState(_ newState: String) {
+        lock.lock()
+        appState = newState
+        lock.unlock()
+    }
 }
 
-private final class DefaultLogger: OpenClixLogger {
+private final class DefaultLogger: OpenClixLogger, @unchecked Sendable {
     private static let logLevelOrder: [OpenClixLogLevel: Int] = [
         .debug: 0,
         .info: 1,
@@ -24,6 +35,7 @@ private final class DefaultLogger: OpenClixLogger {
         .none: 4,
     ]
 
+    private let lock = NSLock()
     private var level: OpenClixLogLevel
 
     init(level: OpenClixLogLevel) {
@@ -31,6 +43,8 @@ private final class DefaultLogger: OpenClixLogger {
     }
 
     func setLogLevel(_ level: OpenClixLogLevel) {
+        lock.lock()
+        defer { lock.unlock() }
         self.level = level
     }
 
@@ -55,7 +69,10 @@ private final class DefaultLogger: OpenClixLogger {
     }
 
     private func shouldLog(_ targetLevel: OpenClixLogLevel) -> Bool {
-        let currentOrder = DefaultLogger.logLevelOrder[level] ?? 4
+        lock.lock()
+        defer { lock.unlock() }
+        let currentLevel = level
+        let currentOrder = DefaultLogger.logLevelOrder[currentLevel] ?? 4
         let targetOrder = DefaultLogger.logLevelOrder[targetLevel] ?? 0
         return targetOrder >= currentOrder
     }
