@@ -45,6 +45,10 @@ public actor TriggerService {
         self.campaignStateService = campaignStateService
     }
 
+    public func setLogLevel(_ level: OpenClixLogLevel) {
+        dependencies.logger.setLogLevel(level)
+    }
+
     public func replaceConfig(_ config: Config) {
         self.config = config
         dependencies.logger.info(
