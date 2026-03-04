@@ -337,6 +337,29 @@ ValidationResult validateConfig(Config config) {
       );
     }
 
+    final campaignFrequencyCap = campaign.frequencyCap;
+    if (campaignFrequencyCap != null) {
+      if (campaignFrequencyCap.maxCount < 1) {
+        errors.add(
+          ValidationIssue(
+            path: '$basePath.frequency_cap.max_count',
+            code: 'INVALID_FREQUENCY_CAP',
+            message: 'frequency_cap.max_count must be an integer >= 1',
+          ),
+        );
+      }
+
+      if (campaignFrequencyCap.windowSeconds < 1) {
+        errors.add(
+          ValidationIssue(
+            path: '$basePath.frequency_cap.window_seconds',
+            code: 'INVALID_FREQUENCY_CAP',
+            message: 'frequency_cap.window_seconds must be an integer >= 1',
+          ),
+        );
+      }
+    }
+
     if (!validTriggerTypes.contains(campaign.trigger.type.value)) {
       errors.add(
         ValidationIssue(

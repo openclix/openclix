@@ -148,11 +148,6 @@ class CampaignProcessor {
       );
     }
 
-    if (campaign.trigger.type != TriggerType.recurring &&
-        campaignState?.triggered == true) {
-      return createSkipDecision(campaignId, 'Campaign already triggered');
-    }
-
     if (settings?.frequencyCap != null) {
       final maxCount = settings!.frequencyCap!.maxCount;
       final windowSeconds = settings.frequencyCap!.windowSeconds;
@@ -163,6 +158,32 @@ class CampaignProcessor {
 
       final recentTriggerCount = snapshot.triggerHistory
           .where((history) => history.triggeredAt.compareTo(windowStart) >= 0)
+          .length;
+
+      if (recentTriggerCount >= maxCount) {
+        return createSkipDecision(
+          campaignId,
+          'Frequency cap exceeded '
+          '($recentTriggerCount/$maxCount within ${windowSeconds}s)',
+          SkipReason.campaignFrequencyCapExceeded,
+        );
+      }
+    }
+
+    if (campaign.frequencyCap != null) {
+      final maxCount = campaign.frequencyCap!.maxCount;
+      final windowSeconds = campaign.frequencyCap!.windowSeconds;
+      final nowDate = parseDateTimeMaybe(now) ?? DateTime.now().toUtc();
+      final windowStart = nowDate
+          .subtract(Duration(seconds: windowSeconds))
+          .toIso8601String();
+
+      final recentTriggerCount = snapshot.triggerHistory
+          .where(
+            (history) =>
+                history.campaignId == campaignId &&
+                history.triggeredAt.compareTo(windowStart) >= 0,
+          )
           .length;
 
       if (recentTriggerCount >= maxCount) {

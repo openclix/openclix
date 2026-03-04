@@ -43,6 +43,7 @@ export interface Campaign {
   description: string;
   status: CampaignStatus;
   trigger: CampaignTrigger;
+  frequency_cap?: FrequencyCap;
   message: Message;
 }
 

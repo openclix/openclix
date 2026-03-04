@@ -348,6 +348,27 @@ fun validateConfig(config: Config): ValidationResult {
             )
         }
 
+        campaign.frequency_cap?.let { frequencyCap ->
+            if (frequencyCap.max_count < 1) {
+                errors.add(
+                    ValidationIssue(
+                        path = "$basePath.frequency_cap.max_count",
+                        code = "INVALID_FREQUENCY_CAP",
+                        message = "frequency_cap.max_count must be an integer >= 1"
+                    )
+                )
+            }
+            if (frequencyCap.window_seconds < 1) {
+                errors.add(
+                    ValidationIssue(
+                        path = "$basePath.frequency_cap.window_seconds",
+                        code = "INVALID_FREQUENCY_CAP",
+                        message = "frequency_cap.window_seconds must be an integer >= 1"
+                    )
+                )
+            }
+        }
+
         if (!validTriggerTypes.contains(campaign.trigger.type.value)) {
             errors.add(
                 ValidationIssue(

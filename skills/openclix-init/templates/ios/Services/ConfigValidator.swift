@@ -263,6 +263,28 @@ public func validateConfig(_ config: Config) -> ValidationResult {
             )
         }
 
+        if let frequencyCap = campaign.frequency_cap {
+            if frequencyCap.max_count < 1 {
+                errors.append(
+                    ValidationIssue(
+                        path: "\(basePath).frequency_cap.max_count",
+                        code: "INVALID_FREQUENCY_CAP",
+                        message: "frequency_cap.max_count must be an integer >= 1"
+                    )
+                )
+            }
+
+            if frequencyCap.window_seconds < 1 {
+                errors.append(
+                    ValidationIssue(
+                        path: "\(basePath).frequency_cap.window_seconds",
+                        code: "INVALID_FREQUENCY_CAP",
+                        message: "frequency_cap.window_seconds must be an integer >= 1"
+                    )
+                )
+            }
+        }
+
         switch campaign.trigger.type {
         case .event:
             guard let eventTrigger = campaign.trigger.event else {

@@ -188,17 +188,28 @@ public final class CampaignProcessor {
             )
         }
 
-        if campaign.trigger.type != .recurring,
-           campaignState?.triggered == true {
-            return createSkipDecision(
-                campaignId: campaignId,
-                reason: "Campaign already triggered"
-            )
-        }
-
         if let frequencyCap = settings?.frequency_cap {
             let windowStartDate = nowDate.addingTimeInterval(-Double(frequencyCap.window_seconds))
             let countInWindow = snapshot.trigger_history.reduce(into: 0) { partial, row in
+                guard let triggeredAtDate = parseIsoDate(row.triggered_at) else { return }
+                if triggeredAtDate >= windowStartDate {
+                    partial += 1
+                }
+            }
+
+            if countInWindow >= frequencyCap.max_count {
+                return createSkipDecision(
+                    campaignId: campaignId,
+                    reason: "Frequency cap exceeded (\(countInWindow)/\(frequencyCap.max_count) within \(frequencyCap.window_seconds)s)",
+                    skipReason: .campaign_frequency_cap_exceeded
+                )
+            }
+        }
+
+        if let frequencyCap = campaign.frequency_cap {
+            let windowStartDate = nowDate.addingTimeInterval(-Double(frequencyCap.window_seconds))
+            let countInWindow = snapshot.trigger_history.reduce(into: 0) { partial, row in
+                guard row.campaign_id == campaignId else { return }
                 guard let triggeredAtDate = parseIsoDate(row.triggered_at) else { return }
                 if triggeredAtDate >= windowStartDate {
                     partial += 1

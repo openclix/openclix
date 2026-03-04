@@ -397,7 +397,7 @@ export function validateConfig(config: Config): ValidationResult {
 
       validateNoAdditionalProperties(
         campaign,
-        ['name', 'type', 'description', 'status', 'trigger', 'message'],
+        ['name', 'type', 'description', 'status', 'trigger', 'frequency_cap', 'message'],
         basePath,
         errors,
         'UNEXPECTED_CAMPAIGN_PROPERTY',
@@ -441,6 +441,46 @@ export function validateConfig(config: Config): ValidationResult {
           code: 'INVALID_CAMPAIGN_STATUS',
           message: `Campaign status '${String(campaign.status)}' is not valid (expected 'running' or 'paused')`,
         });
+      }
+
+      if (campaign.frequency_cap !== undefined) {
+        if (!isObjectRecord(campaign.frequency_cap)) {
+          errors.push({
+            path: `${basePath}.frequency_cap`,
+            code: 'INVALID_FREQUENCY_CAP',
+            message: 'frequency_cap must be an object',
+          });
+        } else {
+          validateNoAdditionalProperties(
+            campaign.frequency_cap,
+            ['max_count', 'window_seconds'],
+            `${basePath}.frequency_cap`,
+            errors,
+            'UNEXPECTED_FREQUENCY_CAP_PROPERTY',
+          );
+
+          if (
+            !isInteger(campaign.frequency_cap.max_count) ||
+            campaign.frequency_cap.max_count < 1
+          ) {
+            errors.push({
+              path: `${basePath}.frequency_cap.max_count`,
+              code: 'INVALID_FREQUENCY_CAP',
+              message: 'frequency_cap.max_count must be an integer >= 1',
+            });
+          }
+
+          if (
+            !isInteger(campaign.frequency_cap.window_seconds) ||
+            campaign.frequency_cap.window_seconds < 1
+          ) {
+            errors.push({
+              path: `${basePath}.frequency_cap.window_seconds`,
+              code: 'INVALID_FREQUENCY_CAP',
+              message: 'frequency_cap.window_seconds must be an integer >= 1',
+            });
+          }
+        }
       }
 
       if (!isObjectRecord(campaign.trigger)) {

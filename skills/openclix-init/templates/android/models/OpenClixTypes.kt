@@ -95,6 +95,7 @@ data class Campaign(
     val description: String,
     val status: CampaignStatus,
     val trigger: CampaignTrigger,
+    val frequency_cap: FrequencyCap? = null,
     val message: Message
 ) {
     companion object {
@@ -104,6 +105,11 @@ data class Campaign(
             description = json.optString("description", ""),
             status = CampaignStatus.fromValue(json.getString("status")),
             trigger = CampaignTrigger.fromJson(json.getJSONObject("trigger")),
+            frequency_cap = if (json.has("frequency_cap") && !json.isNull("frequency_cap")) {
+                FrequencyCap.fromJson(json.getJSONObject("frequency_cap"))
+            } else {
+                null
+            },
             message = Message.fromJson(json.getJSONObject("message"))
         )
     }
