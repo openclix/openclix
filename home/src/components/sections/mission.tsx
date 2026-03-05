@@ -1,31 +1,26 @@
-import { Card, CardContent } from "@/components/ui/card";
-
 export function Mission() {
   return (
-    <section className="section-shell glow">
-      <div className="rounded-3xl border border-border/80 bg-gradient-to-br from-card via-card to-primary/5 p-1">
-        <Card className="w-full border-border/70 bg-background/65 shadow-none">
-          <CardContent className="p-8 md:p-14 text-left md:text-center">
-            <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
-              Belief / Mission
-            </p>
-            <p className="mt-4 font-heading text-3xl md:text-4xl font-bold tracking-tight leading-tight text-balance">
-              We believe everyone can now run a great app and solve bigger
-              problems.
-            </p>
+    <>
+      <div className="section-divider" />
+      <section className="section-shell">
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="eyebrow justify-center">Belief / Mission</p>
 
-            <p className="mt-6 text-sm md:text-base leading-relaxed text-muted-foreground max-w-2xl mx-auto">
-              Great apps should not be gated by infrastructure complexity,
-              vendor lock-in, or hidden systems.
-            </p>
+          <h2 className="mt-6 font-heading text-3xl font-bold tracking-tight leading-tight text-balance md:text-5xl">
+            Retention tooling should be simple, open, and fully yours.
+          </h2>
 
-            <p className="mt-4 text-sm md:text-base leading-relaxed text-muted-foreground max-w-2xl mx-auto">
-              OpenClix exists to give builders a practical, open, agent-friendly
-              starting point for retention and engagement.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    </section>
+          <p className="mx-auto mt-6 max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
+            OpenClix gives builders 100% control with source in-repo, no complex
+            setup burden, and a single-file configuration model.
+          </p>
+
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
+            It is intentionally agent-friendly, with explicit interfaces and
+            clear edit points for safe, reviewable iteration.
+          </p>
+        </div>
+      </section>
+    </>
   );
 }

@@ -94,7 +94,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${clashDisplay.variable} ${satoshi.variable}`}>
+    <html lang="en" className={`${clashDisplay.variable} ${satoshi.variable} scroll-smooth`}>
       <body className="min-h-screen">{children}</body>
     </html>
   );
