@@ -105,8 +105,8 @@ Use this decision wording:
 
 Decision rules:
 
-- default to `keep existing` if the user does not explicitly choose
-- if the user chooses `keep`, integrate OpenClix alongside the current notification system and do not rewrite existing notification flows
+- default migration-capable paths to `keep-as-is` if the user does not explicitly choose
+- if the user chooses `keep`, treat migration-capable paths as `keep-as-is`, integrate OpenClix alongside the current notification system, and do not rewrite existing notification flows
 - if the user chooses `migrate`, migrate only supported engagement-style local notification flows that fit the current OpenClix model
 - leave unsupported or unrelated notification flows untouched even when the user chooses `migrate`
 - if no detected path is migration-capable, explain that and proceed with coexistence only
@@ -250,7 +250,7 @@ If build fails, apply minimal targeted fixes and retry. Stop only on hard blocke
 - OpenClix code added under dedicated namespace/directory.
 - Existing app code changes are minimal and localized.
 - Existing local notification paths detected and classified before integration.
-- Migration decision recorded when supported paths were found; default preserved existing behavior when the user did not opt in.
+- Migration decision recorded when supported paths were found; defaulted to preserving existing behavior when the user did not opt in.
 - Handoff/report states what was detected, what was migration-capable, what stayed untouched, and what was changed.
 - No unapproved dependency additions or upgrades.
 - Adapter wiring prefers existing dependencies and fails fast when unavailable.
