@@ -14,6 +14,8 @@ Use this prompt in your coding agent:
 Install OpenClix skills from https://github.com/openclix/openclix and integrate OpenClix into this project.
 Use openclix-init to detect platform, copy templates into the dedicated OpenClix namespace,
 wire initialization/event/lifecycle touchpoints, and run build verification.
+If this project already has local notifications outside OpenClix, detect whether they are migration-capable,
+ask whether to migrate supported flows into OpenClix or keep them as-is, and default to keeping them unchanged.
 Then use openclix-design-campaigns to create .openclix/campaigns/app-profile.json
 and generate .openclix/campaigns/openclix-config.json.
 Then use openclix-analytics to detect installed Firebase/PostHog/Mixpanel/Amplitude,
@@ -33,7 +35,7 @@ Do not add dependencies without approval.
 npx skills add openclix/openclix
 ```
 
-2. Run `openclix-init` in your app project.
+2. Run `openclix-init` in your app project. If local notifications already exist, it will detect those paths, determine whether supported flows are migration-capable, and default to keeping the current implementation unless you explicitly choose migration.
 3. Run `openclix-design-campaigns` to generate campaign config.
 4. Run `openclix-analytics` to wire event forwarding and produce impact outputs.
 5. Run `openclix-update-campaigns` to draft campaign operation changes.

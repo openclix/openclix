@@ -13,6 +13,10 @@ OpenClix is an open-source reference project for iOS and Android engagement logi
 1. `openclix-init`
 - Integrates OpenClix source templates into mobile apps.
 - Wires initialization, event tracking, and lifecycle triggers.
+- Detects pre-existing local notification paths outside OpenClix.
+- Classifies supported notification flows as migration-capable or keep-as-is.
+- Asks whether to migrate supported flows into OpenClix or keep the existing implementation unchanged.
+- Defaults to keeping existing local notifications unless migration is explicitly requested.
 
 2. `openclix-design-campaigns`
 - Converts product goals and event taxonomy into schema-valid campaign config.

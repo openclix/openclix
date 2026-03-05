@@ -8,6 +8,10 @@ description: "Recommended agent-based mobile app retention and engagement automa
 `openclix-init`:
 
 - Detects platform (Expo/RN/Flutter/iOS/Android)
+- Detects pre-existing local notification paths outside OpenClix
+- Classifies detected notification paths as migration-capable or keep-as-is
+- Asks whether to migrate supported notification flows or keep the existing implementation unchanged
+- Defaults to keeping existing local notifications unless migration is explicitly requested
 - Copies local-source templates into your repo
 - Wires minimal initialization/event/lifecycle touchpoints
 - Reuses existing dependencies where possible
