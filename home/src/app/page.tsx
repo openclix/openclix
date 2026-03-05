@@ -1,16 +1,8 @@
+import { Navbar } from "@/components/sections/navbar";
 import { Hero } from "@/components/sections/hero";
-import { PromptTerminalSection } from "@/components/sections/prompt-terminal";
-import { WhyOpenClix } from "@/components/sections/why-openclix";
-import { ProofSection } from "@/components/sections/proof";
-import { UseCases } from "@/components/sections/use-cases";
-import { QuickStart } from "@/components/sections/quick-start";
-import { AudienceOutcomes } from "@/components/sections/audience-outcomes";
-import { Pillars } from "@/components/sections/pillars";
-import { Features } from "@/components/sections/features";
-import { ConfigDeliveryPatterns } from "@/components/sections/config-delivery-patterns";
+import { Jumpstart } from "@/components/sections/jumpstart";
 import { Mission } from "@/components/sections/mission";
 import { FAQ } from "@/components/sections/faq";
-import { FinalCTA } from "@/components/sections/final-cta";
 import { Footer } from "@/components/sections/footer";
 import { faqItems } from "@/data/faq";
 
@@ -81,20 +73,12 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <Navbar />
       <main className="w-full">
         <Hero />
-        <PromptTerminalSection />
-        <WhyOpenClix />
-        <ProofSection />
-        <QuickStart />
-        <AudienceOutcomes />
-        <Pillars />
-        <UseCases />
-        <Features />
-        <ConfigDeliveryPatterns />
+        <Jumpstart />
         <Mission />
         <FAQ />
-        <FinalCTA />
         <Footer />
       </main>
     </>
