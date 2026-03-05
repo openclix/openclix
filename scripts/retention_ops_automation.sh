@@ -35,7 +35,7 @@ Options:
   --impact-file <path>              Path to impact-metrics.json
   --campaign-metrics-file <path>    Path to campaign-metrics.json
   --config-file <path>              Path to openclix-config.json
-  --output-dir <path>               Output directory (default: .clix/automation)
+  --output-dir <path>               Output directory (default: .openclix/automation)
   --dry-run                         Keep evaluator outputs inside output directory only
   --help                            Show this help
 
@@ -295,10 +295,10 @@ if [[ ! -d "$ROOT" ]]; then
 fi
 
 ROOT="$(cd "$ROOT" && pwd)"
-IMPACT_FILE="${IMPACT_FILE:-$ROOT/.clix/analytics/impact-metrics.json}"
-CAMPAIGN_METRICS_FILE="${CAMPAIGN_METRICS_FILE:-$ROOT/.clix/analytics/campaign-metrics.json}"
-CONFIG_FILE="${CONFIG_FILE:-$ROOT/.clix/campaigns/openclix-config.json}"
-OUTPUT_DIR="${OUTPUT_DIR:-$ROOT/.clix/automation}"
+IMPACT_FILE="${IMPACT_FILE:-$ROOT/.openclix/analytics/impact-metrics.json}"
+CAMPAIGN_METRICS_FILE="${CAMPAIGN_METRICS_FILE:-$ROOT/.openclix/analytics/campaign-metrics.json}"
+CONFIG_FILE="${CONFIG_FILE:-$ROOT/.openclix/campaigns/openclix-config.json}"
+OUTPUT_DIR="${OUTPUT_DIR:-$ROOT/.openclix/automation}"
 
 IMPACT_FILE="$(resolve_path "$ROOT" "$IMPACT_FILE")"
 CAMPAIGN_METRICS_FILE="$(resolve_path "$ROOT" "$CAMPAIGN_METRICS_FILE")"

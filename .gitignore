@@ -23,6 +23,6 @@ Thumbs.db
 # Agents
 .agent/
 .claude/
-.clix/
+.openclix/
 .cursor/
 .gemini/
