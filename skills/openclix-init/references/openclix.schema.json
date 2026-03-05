@@ -26,10 +26,10 @@
         },
         "schema_version": {
           "type": "string",
-          "const": "openclix/config/v1",
-          "description": "Schema contract version. The SDK uses this value to select the correct parser.",
+          "const": "0.1.0",
+          "description": "Semantic schema contract version synced with the codebase release. The SDK uses this value to select the correct parser.",
           "examples": [
-            "openclix/config/v1"
+            "0.1.0"
           ]
         },
         "config_version": {

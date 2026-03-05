@@ -81,8 +81,8 @@ if ! jq -e '."$schema" == "https://openclix.ai/schemas/openclix.schema.json"' "$
 fi
 
 # 3b. schema_version value
-if ! jq -e '.schema_version == "openclix/config/v1"' "${CONFIG_FILE}" >/dev/null 2>&1; then
-  print_fail "schema_version must be exactly \"openclix/config/v1\""
+if ! jq -e '.schema_version == "0.1.0"' "${CONFIG_FILE}" >/dev/null 2>&1; then
+  print_fail "schema_version must be exactly \"0.1.0\""
 fi
 
 # 3c. Ensure .campaigns exists and is an object

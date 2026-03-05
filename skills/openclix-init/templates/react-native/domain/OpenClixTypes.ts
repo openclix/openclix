@@ -10,7 +10,7 @@ export type JsonValue = string | number | boolean | null | JsonValue[] | { [key:
 export interface Config {
   /** Canonical config schema URL (optional but recommended). */
   '$schema'?: 'https://openclix.ai/schemas/openclix.schema.json';
-  schema_version: 'openclix/config/v1';
+  schema_version: '0.1.0';
   config_version: string;
   settings?: Settings;
   /** Map of campaign ID (kebab-case) to campaign definition. */

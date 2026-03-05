@@ -106,7 +106,7 @@ Use this shape to capture campaign design context:
 `openclix.schema.json` is the source of truth. Key constraints:
 
 - `"$schema"` must be `https://openclix.ai/schemas/openclix.schema.json`
-- `schema_version` must be `openclix/config/v1`
+- `schema_version` must be `0.1.0`
 - campaign keys must be kebab-case
 - one campaign has one `message`
 - `trigger.type` must be `event`, `scheduled`, or `recurring`
@@ -118,7 +118,7 @@ Minimal valid example:
 ```json
 {
   "$schema": "https://openclix.ai/schemas/openclix.schema.json",
-  "schema_version": "openclix/config/v1",
+  "schema_version": "0.1.0",
   "config_version": "rev-2026-02-26-a",
   "settings": {
     "frequency_cap": {
@@ -181,7 +181,7 @@ Complete config with a one-time scheduled trigger:
 ```json
 {
   "$schema": "https://openclix.ai/schemas/openclix.schema.json",
-  "schema_version": "openclix/config/v1",
+  "schema_version": "0.1.0",
   "config_version": "rev-2026-03-01-a",
   "settings": {
     "frequency_cap": {
@@ -224,7 +224,7 @@ Complete config with a weekly recurring trigger:
 ```json
 {
   "$schema": "https://openclix.ai/schemas/openclix.schema.json",
-  "schema_version": "openclix/config/v1",
+  "schema_version": "0.1.0",
   "config_version": "rev-2026-03-01-b",
   "settings": {
     "frequency_cap": {

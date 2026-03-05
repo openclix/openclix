@@ -112,7 +112,7 @@ Remote delivery note:
 Guarantee these invariants:
 
 - `"$schema"` is exactly `https://openclix.ai/schemas/openclix.schema.json`.
-- `schema_version` is exactly `openclix/config/v1`.
+- `schema_version` is exactly `0.1.0`.
 - `config_version` is explicit and traceable.
 - Campaign IDs are kebab-case.
 - Campaign `type` is `campaign`.
@@ -143,7 +143,7 @@ Fallback path (outside the repo or when the script is unavailable):
      `npx --yes -p ajv-cli@5.0.0 -p ajv-formats@3.0.1 ajv validate --spec=draft2020 -c ajv-formats -s ./references/schemas/openclix.schema.json -d <config-file>`
    - If you are outside the repo (no local schema), use the published canonical schema URL:
      `npx --yes -p ajv-cli@5.0.0 -p ajv-formats@3.0.1 ajv validate --spec=draft2020 -c ajv-formats -s https://openclix.ai/schemas/openclix.schema.json -d <config-file>`
-3. Manually verify: `$schema` is `https://openclix.ai/schemas/openclix.schema.json`, `schema_version` is `openclix/config/v1`, campaign keys are kebab-case, every campaign has `type: "campaign"`, and each `trigger.type` value has its matching sub-object key.
+3. Manually verify: `$schema` is `https://openclix.ai/schemas/openclix.schema.json`, `schema_version` is `0.1.0`, campaign keys are kebab-case, every campaign has `type: "campaign"`, and each `trigger.type` value has its matching sub-object key.
 
 ### App Profile Validation
 
@@ -246,7 +246,7 @@ Completion requirements for implementation tasks:
 - Use lowercase `openclix-config.json` unless an existing runtime loader already requires another exact filename.
 - Do not rely on non-HTTP endpoints being auto-loaded by `OpenClix.initialize(...)`.
 - For local JSON delivery, always set `OpenClixConfig.endpoint` to the chosen bundled path and wire explicit resource load + `OpenClixCampaignManager.replaceConfig(...)`.
-- For remote JSON delivery, set `OpenClixConfig.endpoint` to HTTPS URL and keep the payload schema-compatible with `openclix/config/v1`.
+- For remote JSON delivery, set `OpenClixConfig.endpoint` to HTTPS URL and keep the payload schema-compatible with `0.1.0`.
 - When asked, provide environment-specific upload guidance rather than generic hosting advice.
 - Keep integration edits minimal and aligned with existing project structure.
 

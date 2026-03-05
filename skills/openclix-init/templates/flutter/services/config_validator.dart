@@ -204,12 +204,12 @@ ValidationResult validateConfig(Config config) {
   final errors = <ValidationIssue>[];
   final warnings = <ValidationIssue>[];
 
-  if (config.schemaVersion != 'openclix/config/v1') {
+  if (config.schemaVersion != '0.1.0') {
     errors.add(
       ValidationIssue(
         path: '.schema_version',
         code: 'INVALID_SCHEMA_VERSION',
-        message: "Expected 'openclix/config/v1', got '${config.schemaVersion}'",
+        message: "Expected '0.1.0', got '${config.schemaVersion}'",
       ),
     );
   }

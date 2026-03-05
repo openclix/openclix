@@ -145,12 +145,12 @@ public func validateConfig(_ config: Config) -> ValidationResult {
     var warnings: [ValidationIssue] = []
     // TODO: Validate additionalProperties with raw JSON before Codable decoding.
 
-    if config.schema_version != "openclix/config/v1" {
+    if config.schema_version != "0.1.0" {
         errors.append(
             ValidationIssue(
                 path: ".schema_version",
                 code: "INVALID_SCHEMA_VERSION",
-                message: "Expected 'openclix/config/v1', got '\(config.schema_version)'"
+                message: "Expected '0.1.0', got '\(config.schema_version)'"
             )
         )
     }

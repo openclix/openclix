@@ -223,12 +223,12 @@ fun validateConfig(config: Config): ValidationResult {
     val errors = mutableListOf<ValidationIssue>()
     val warnings = mutableListOf<ValidationIssue>()
 
-    if (config.schema_version != "openclix/config/v1") {
+    if (config.schema_version != "0.1.0") {
         errors.add(
             ValidationIssue(
                 path = ".schema_version",
                 code = "INVALID_SCHEMA_VERSION",
-                message = "Expected 'openclix/config/v1', got '${config.schema_version}'"
+                message = "Expected '0.1.0', got '${config.schema_version}'"
             )
         )
     }
