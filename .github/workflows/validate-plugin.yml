@@ -37,6 +37,10 @@ jobs:
             openclix-init \
             openclix-design-campaigns \
             openclix-analytics \
+            openclix-update \
             openclix-update-campaigns; do
-            printf '%s\n' "$SKILLS_OUTPUT" | grep -q "$SKILL"
+            if ! printf '%s\n' "$SKILLS_OUTPUT" | grep -qF "$SKILL"; then
+              echo "Missing skill from discovery output: $SKILL" >&2
+              exit 1
+            fi
           done

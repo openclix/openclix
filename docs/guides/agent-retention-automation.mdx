@@ -4,6 +4,7 @@ description: "Run a repeatable, agent-based mobile app retention and engagement 
 ---
 
 Use this guide after the base workflow (`openclix-init`, `openclix-design-campaigns`, `openclix-analytics`, `openclix-update-campaigns`) is already producing artifacts.
+Run `openclix-update` separately when template baseline updates are needed.
 This is OpenClix's primary agent-based mobile app retention automation operating loop.
 
 ## Why this layer exists
@@ -16,6 +17,7 @@ OpenClix already gives deterministic config + metrics artifacts. This guide adds
 - `openclix-design-campaigns`: campaign config automation
 - `openclix-analytics`: retention/engagement measurement automation
 - `openclix-update-campaigns`: campaign action proposal automation
+- `openclix-update`: source-template synchronization for baseline maintenance
 - `retention_ops_automation.sh`: OpenClaw/Claude Code/Codex review prompt automation
 
 ## Operations loop

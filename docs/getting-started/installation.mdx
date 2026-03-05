@@ -16,6 +16,8 @@ Use openclix-init to detect platform, copy templates into the dedicated OpenClix
 wire initialization/event/lifecycle touchpoints, and run build verification.
 Then use openclix-design-campaigns to create .openclix/campaigns/app-profile.json
 and generate .openclix/campaigns/openclix-config.json.
+Then use openclix-update when updating plugin integrations to refresh source files
+from the latest openclix-init templates.
 Then use openclix-analytics to detect installed Firebase/PostHog/Mixpanel/Amplitude,
 forward OpenClix events with openclix tags, and produce a pre/post impact report
 for D7 retention and engagement metrics.
@@ -37,7 +39,9 @@ npx skills add openclix/openclix
 3. Run `openclix-design-campaigns` to generate campaign config.
 4. Run `openclix-analytics` to wire event forwarding and produce impact outputs.
 5. Run `openclix-update-campaigns` to draft campaign operation changes.
-6. Run `scripts/retention_ops_automation.sh` to generate OpenClaw/Claude Code/Codex review prompts.
+6. Run `openclix-update` when you want to re-sync OpenClix source files after
+   template updates from this repository.
+7. Run `scripts/retention_ops_automation.sh` to generate OpenClaw/Claude Code/Codex review prompts.
 
 ## Option C: Claude Code plugin marketplace
 

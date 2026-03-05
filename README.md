@@ -70,6 +70,15 @@ actions from campaign metrics and produce openclix-config.next.json before
 applying any change to the active config.
 ```
 
+**To sync OpenClix source code**
+
+```text
+Use openclix-update to re-sync existing OpenClix source integration files
+with the latest openclix-init template baseline.
+This keeps custom campaign logic updates (openclix-update-campaigns) and
+template maintenance (openclix-update) clearly separated.
+```
+
 </details>
 
 <details>
@@ -85,6 +94,8 @@ npx skills add openclix/openclix
 3. Run `openclix-design-campaigns` to generate `.openclix/campaigns/openclix-config.json`.
 4. Run `openclix-analytics` to detect provider wiring and generate impact artifacts.
 5. Run `openclix-update-campaigns` to produce conservative recommendation drafts.
+6. Run `openclix-update` when the plugin template baseline changes and source files
+   need re-synchronization.
 
 </details>
 

@@ -39,7 +39,29 @@ Expected output:
 - `.openclix/analytics/impact-metrics.json`
 - `.openclix/analytics/impact-report.md`
 
-## 4. Draft campaign operations with `openclix-update-campaigns`
+## 4. Sync source integration when template baseline changes
+
+`openclix-update`:
+
+- Detects template drift in your existing OpenClix integration
+- Proposes per-file updates while preserving custom code areas when markers exist
+- Offers conflict reporting for files requiring manual review
+- Keeps `openclix-update-campaigns` focused on campaign recommendations only
+
+```bash
+bash skills/openclix-update/scripts/detect_integration.sh --root <target-project-root>
+bash skills/openclix-update/scripts/plan_sync.sh --root <target-project-root> --plan .openclix/openclix-update/openclix-update-plan.json
+bash skills/openclix-update/scripts/apply_sync.sh --root <target-project-root> --plan .openclix/openclix-update/openclix-update-plan.json --apply
+bash skills/openclix-update/scripts/report.sh --plan .openclix/openclix-update/openclix-update-plan.json
+```
+
+Expected output:
+
+- `.openclix/openclix-update/openclix-update-plan.json`
+- `.openclix/openclix-update/openclix-update-apply.json`
+- `.openclix/openclix-update/openclix-update-report.md`
+
+## 5. Draft campaign operations with `openclix-update-campaigns`
 
 `openclix-update-campaigns`:
 
@@ -52,7 +74,7 @@ Expected output:
 - `.openclix/campaigns/update-recommendations.json`
 - `.openclix/campaigns/openclix-config.next.json`
 
-## 5. Run agent retention operations with `retention_ops_automation.sh`
+## 6. Run agent retention operations with `retention_ops_automation.sh`
 
 Use the helper script when you want OpenClaw, Claude Code, and/or Codex prompts generated from the latest OpenClix artifacts.
 
@@ -73,7 +95,7 @@ Expected output:
 - `.openclix/automation/prompts/claude-code.md`
 - `.openclix/automation/prompts/codex.md`
 
-## 6. Maintain Claude plugin registration
+## 7. Maintain Claude plugin registration
 
 Keep Claude Code marketplace metadata current as OpenClix evolves:
 
