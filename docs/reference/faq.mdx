@@ -19,6 +19,10 @@ Not for the local-first path. You can start without APNS/FCM send pipelines.
 
 No. OpenClix is designed to run in your app with your own integrations.
 
+## What happens if my app already has local notifications?
+
+`openclix-init` first detects pre-existing local notification paths outside OpenClix. If supported paths can migrate into the current OpenClix model, the agent asks whether to migrate those flows or keep the existing implementation unchanged. If you do not choose, the default is to keep the current local notifications as-is. Unsupported or unrelated notification flows stay untouched.
+
 ## How can I deliver `openclix-config.json`?
 
 Serve `openclix-config.json` over HTTP either as a static file or from a dynamic API that returns JSON. Updating that static file or API response lets you change campaign settings without shipping a new app release.

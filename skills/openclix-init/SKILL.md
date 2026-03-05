@@ -46,16 +46,85 @@ If signals conflict, trust concrete file evidence and report the mismatch.
 
 `templates/react-native/` is the canonical reference when platform ports need alignment.
 
+## Existing Local Notification Detection
+
+Before copying templates or wiring OpenClix touchpoints, inspect the host app for pre-existing local notification code outside the OpenClix namespace.
+
+Detection must cover these paths when they exist:
+
+- notification scheduling
+- notification permission request/status
+- foreground display handling
+- notification tap/open handling
+
+For each detected path, classify it as either:
+
+- `migration-capable`: can be redirected into OpenClix with localized edits, no new dependencies, and no broad refactor
+- `keep-as-is`: should remain untouched during OpenClix integration
+
+If no existing local notification code is found, continue with the normal integration flow.
+
+If existing local notification code is found, report:
+
+- the files or entry points detected
+- whether each path is `migration-capable` or `keep-as-is`
+- why any path is not migration-capable
+
+## Migration Capability Rules
+
+Use these rules conservatively:
+
+- React Native / Expo:
+  - `migration-capable` only when the app already uses `@notifee/react-native` or `expo-notifications`
+  - detect and classify existing scheduler, permission, foreground, and open-handling code against those libraries
+  - other notification stacks remain `keep-as-is`
+- Flutter:
+  - `migration-capable` only when the existing plugin can provide the current OpenClix callback contract for `schedule`, `cancel`, `listPending`, permission request/status, and optional foreground setup
+  - if the plugin cannot satisfy that contract without adding dependencies or broad rewrites, mark it `keep-as-is`
+- iOS native:
+  - `migration-capable` when the app already uses `UNUserNotificationCenter` local notifications and the existing permission/delegate path can be reused with localized edits
+  - preserve any unsupported notification behavior outside the OpenClix content model
+- Android native:
+  - `migration-capable` when the current local notification flow is platform-local scheduling/display that can be redirected into the OpenClix scheduler path without adding dependencies or broad refactors
+  - vendor-owned or heavily customized flows remain `keep-as-is`
+
+Always mark these scenarios as `keep-as-is` unless the user asks for a separate redesign:
+
+- remote push delivery infrastructure
+- vendor-specific notification products outside current OpenClix adapters
+- rich actions or advanced features not represented by the current OpenClix content model
+- notification flows tightly coupled to unrelated business logic
+
+## Migration Decision
+
+If one or more detected paths are `migration-capable`, ask the user before rewriting existing notification behavior.
+
+Use this decision wording:
+
+`I found existing local notifications outside OpenClix. Some paths are migration-capable. Do you want me to migrate the supported local-notification flows into OpenClix, or keep the existing implementation unchanged? If you do not choose, I will keep the existing implementation.`
+
+Decision rules:
+
+- default to `keep existing` if the user does not explicitly choose
+- if the user chooses `keep`, integrate OpenClix alongside the current notification system and do not rewrite existing notification flows
+- if the user chooses `migrate`, migrate only supported engagement-style local notification flows that fit the current OpenClix model
+- leave unsupported or unrelated notification flows untouched even when the user chooses `migrate`
+- if no detected path is migration-capable, explain that and proceed with coexistence only
+- never silently replace an existing notification implementation
+- include the final user choice in the integration handoff/report
+
 ## Integration Workflow
 
 1. Identify platform and current startup/event/lifecycle entry points.
-2. Copy the selected template into a dedicated OpenClix area in the user project.
-3. Wire only required touchpoints:
+2. Detect pre-existing local notification paths and classify them as `migration-capable` or `keep-as-is`.
+3. If migration-capable paths exist, ask whether to migrate supported flows or keep the existing implementation unchanged. Default to keeping the existing implementation.
+4. Copy the selected template into a dedicated OpenClix area in the user project.
+5. Wire only required touchpoints:
    - initialization at app startup
    - event tracking call path
    - foreground/app lifecycle trigger
-4. Keep existing architecture and code style intact; avoid broad refactors.
-5. Validate against `references/openclix.schema.json` when config/schema changes are involved.
+6. Keep existing architecture and code style intact; avoid broad refactors.
+7. Validate against `references/openclix.schema.json` when config/schema changes are involved.
 
 ## Adapter Selection Rules
 
@@ -180,6 +249,9 @@ If build fails, apply minimal targeted fixes and retry. Stop only on hard blocke
 
 - OpenClix code added under dedicated namespace/directory.
 - Existing app code changes are minimal and localized.
+- Existing local notification paths detected and classified before integration.
+- Migration decision recorded when supported paths were found; default preserved existing behavior when the user did not opt in.
+- Handoff/report states what was detected, what was migration-capable, what stayed untouched, and what was changed.
 - No unapproved dependency additions or upgrades.
 - Adapter wiring prefers existing dependencies and fails fast when unavailable.
 - Bundled config path/filename parity verified when using local resource delivery.

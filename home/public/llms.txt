@@ -6,7 +6,7 @@ OpenClix is a source-first reference project for iOS and Android teams that want
 
 ## Capabilities by skill/script
 
-- `openclix-init`: Automates OpenClix integration wiring (startup, event, lifecycle touchpoints).
+- `openclix-init`: Automates OpenClix integration wiring (startup, event, lifecycle touchpoints), detects pre-existing local notifications, and defaults to preserving them unless supported flows are explicitly migrated.
 - `openclix-design-campaigns`: Automates schema-valid campaign config generation.
 - `openclix-analytics`: Automates provider detection and retention-impact reporting.
 - `openclix-update-campaigns`: Automates conservative campaign action proposals.
