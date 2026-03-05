@@ -56,6 +56,7 @@ bash skills/openclix-update/scripts/detect_integration.sh --root <target-project
 bash skills/openclix-update/scripts/plan_sync.sh \
   --root <target-project-root> \
   [--platform react-native|flutter|ios|android] \
+  [--target-root <platform-root>] \
   [--plan <openclix-update-plan.json>]
 ```
 

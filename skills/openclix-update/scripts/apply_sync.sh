@@ -164,7 +164,7 @@ apply_marker_merge() {
 
   tmp_file="$(mktemp)"
   {
-    sed -n "1,$((start_line-1))p" "$target"
+    sed -n "1,$start_line" "$target"
     cat "$template"
     sed -n "${end_line},\$p" "$target"
   } > "$tmp_file"

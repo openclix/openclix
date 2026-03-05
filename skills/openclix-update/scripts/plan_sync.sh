@@ -5,6 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="${PWD}"
 PLATFORM=""
 PLAN_FILE=""
+TARGET_ROOT=""
 
 usage() {
 cat <<'USAGE'
@@ -12,6 +13,7 @@ Usage:
   bash skills/openclix-update/scripts/plan_sync.sh \
     --root <target-project-root> \
     [--platform react-native|flutter|ios|android] \
+    [--target-root <platform-root>] \
     [--plan <plan-json-path>]
 
 Generates a dry-run plan for OpenClix source sync.
@@ -30,6 +32,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --plan)
       PLAN_FILE="$2"
+      shift 2
+      ;;
+    --target-root)
+      TARGET_ROOT="$2"
       shift 2
       ;;
     -h|--help)
@@ -125,6 +131,20 @@ fi
 
 mapfile -t PLATFORM_ROOTS < <(jq -r --arg p "$PLATFORM" '.platform_roots[$p][]?' <<<"$DETECT_JSON" | awk 'NF')
 
+if [[ -n "$TARGET_ROOT" ]]; then
+  if [[ ! -d "$TARGET_ROOT" ]]; then
+    echo "Target root does not exist: $TARGET_ROOT" >&2
+    exit 1
+  fi
+  TARGET_ROOT="$(cd "$TARGET_ROOT" && pwd)"
+  ROOT_PREFIX="${ROOT}/"
+  if [[ "${TARGET_ROOT}/" != "${ROOT_PREFIX}"* ]]; then
+    echo "Target root must be within project root: $ROOT" >&2
+    echo "Received: $TARGET_ROOT" >&2
+    exit 1
+  fi
+fi
+
 if [[ ${#PLATFORM_ROOTS[@]} -eq 0 ]]; then
   case "$PLATFORM" in
     react-native)
@@ -161,22 +181,41 @@ if [[ ${#PLATFORM_ROOTS[@]} -eq 0 ]]; then
 fi
 
 PLATFORM_ROOT=""
-if [[ ${#PLATFORM_ROOTS[@]} -gt 0 ]]; then
+if [[ -n "$TARGET_ROOT" ]]; then
+  if [[ ${#PLATFORM_ROOTS[@]} -gt 0 ]]; then
+    ROOT_MATCHED=0
+    for candidate in "${PLATFORM_ROOTS[@]}"; do
+      if [[ "$candidate" == "$TARGET_ROOT" ]]; then
+        ROOT_MATCHED=1
+        break
+      fi
+    done
+    if [[ "$ROOT_MATCHED" -eq 0 ]]; then
+      echo "Target root '$TARGET_ROOT' is not one of detected ${PLATFORM} roots:" >&2
+      for candidate in "${PLATFORM_ROOTS[@]}"; do
+        echo "  - $candidate" >&2
+      done
+      exit 1
+    fi
+  fi
+  PLATFORM_ROOT="$TARGET_ROOT"
+elif [[ ${#PLATFORM_ROOTS[@]} -eq 1 ]]; then
   PLATFORM_ROOT="${PLATFORM_ROOTS[0]}"
-fi
-
-if [[ -z "$PLATFORM_ROOT" ]]; then
+elif [[ ${#PLATFORM_ROOTS[@]} -eq 0 ]]; then
   echo "Could not resolve platform root for $PLATFORM in $ROOT" >&2
+  exit 1
+else
+  echo "Multiple '${PLATFORM}' candidates found. Re-run with --target-root <platform-root>." >&2
+  echo "Candidates:" >&2
+  for candidate in "${PLATFORM_ROOTS[@]}"; do
+    echo "  - $candidate" >&2
+  done
   exit 1
 fi
 
 if [[ ! -d "$PLATFORM_ROOT" ]]; then
-  if [[ "$PLATFORM" == "android" ]]; then
-    mkdir -p "$PLATFORM_ROOT"
-  else
-    echo "Platform root does not exist: $PLATFORM_ROOT" >&2
-    exit 1
-  fi
+  echo "Platform root does not exist: $PLATFORM_ROOT" >&2
+  exit 1
 fi
 
 mkdir -p "$(dirname "$PLAN_FILE")"
