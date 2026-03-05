@@ -39,8 +39,8 @@ Paste this prompt into your coding agent:
 Install OpenClix skills from https://github.com/openclix/openclix and integrate OpenClix into this project.
 Use openclix-init to detect platform, copy templates into the dedicated OpenClix namespace,
 wire initialization/event/lifecycle touchpoints, and run build verification.
-Then use openclix-design-campaigns to create .clix/campaigns/app-profile.json
-and generate .clix/campaigns/openclix-config.json.
+Then use openclix-design-campaigns to create .openclix/campaigns/app-profile.json
+and generate .openclix/campaigns/openclix-config.json.
 Do not add dependencies without approval.
 ```
 
@@ -82,7 +82,7 @@ npx skills add openclix/openclix
 ```
 
 2. Run `openclix-init` to integrate templates and touchpoints.
-3. Run `openclix-design-campaigns` to generate `.clix/campaigns/openclix-config.json`.
+3. Run `openclix-design-campaigns` to generate `.openclix/campaigns/openclix-config.json`.
 4. Run `openclix-analytics` to detect provider wiring and generate impact artifacts.
 5. Run `openclix-update-campaigns` to produce conservative recommendation drafts.
 
