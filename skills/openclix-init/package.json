@@ -1,0 +1,7 @@
+{
+  "name": "openclix-init-tests",
+  "private": true,
+  "scripts": {
+    "test": "TZ=UTC bun test"
+  }
+}

@@ -244,6 +244,18 @@ verify_react_native_template() {
 
   run_common_checks 'react-native' "${template_dir}"
 
+  if has_command bun; then
+    # Runs all test files including cross-platform parity checks against android/ios/flutter.
+    print_info 'react-native: running bun test suite'
+    if (cd "${SKILL_DIR}" && TZ=UTC bun test 2>&1); then
+      print_info 'react-native: bun test suite passed'
+    else
+      print_fail 'react-native: bun test suite failed'
+    fi
+  else
+    print_warn 'react-native: bun not found, skipped test suite'
+  fi
+
   if rg -n "require\\(['\"](${optional_dependency_pattern})['\"]\\)" "${template_dir}" >/dev/null; then
     print_fail 'react-native: runtime optional dependency detection found'
     rg -n "require\\(['\"](${optional_dependency_pattern})['\"]\\)" "${template_dir}" || true
