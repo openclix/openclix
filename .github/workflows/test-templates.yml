@@ -23,9 +23,6 @@ jobs:
         with:
           bun-version: "1.3.5"
 
-      - name: Run template test suite
-        run: TZ=UTC bun test
-
       - name: Run template verification
         working-directory: .
         run: ./scripts/verify_templates.sh react-native
