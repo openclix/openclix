@@ -9,6 +9,7 @@ description: "Current project status and implementation focus."
 | Source-distributed reference runtime | Available (template-based) | `openclix-init` provides React Native / Flutter / iOS / Android source templates with verification scripts. |
 | Config JSON runtime model | Implemented in current templates | `openclix/config/v1` schema and runtime touchpoints for bundled or HTTPS config are available in the workflow. |
 | Agent retention operations workflow | Implemented (review-loop automation) | `openclix-analytics` + `openclix-update-campaigns` + `retention_ops_automation.sh` generate review artifacts with explicit human approval gates. |
+| OpenClix source synchronization workflow | Implemented | `openclix-update` maintains existing source integrations when template baseline changes; campaign optimization remains with `openclix-update-campaigns`. |
 | `openclix-config.json` HTTP delivery | Supported (app-owned endpoint) | Hosted JSON delivery is supported without requiring OpenClix-hosted services. |
 | Hosted control plane | Not required | Local-first path does not require Clix-hosted services. |
 

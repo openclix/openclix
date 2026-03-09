@@ -6,13 +6,13 @@
   },
   "metadata": {
     "description": "OpenClix plugin marketplace for local-first mobile retention workflows.",
-    "version": "0.1.0"
+    "version": "0.1.1"
   },
   "plugins": [
     {
       "name": "openclix",
       "description": "OpenClix skills for mobile retention and engagement automation.",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "category": "development",
       "tags": [
         "mobile",
