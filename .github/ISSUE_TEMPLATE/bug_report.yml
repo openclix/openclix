@@ -1,0 +1,70 @@
+name: Bug Report
+description: Report a bug in OpenClix templates, schema, website, or tooling
+labels: ["kind:bug"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of the project is affected?
+      options:
+        - Templates (skills/*/templates/)
+        - Skills (skills/)
+        - Schema (openclix.schema.json)
+        - Website (home/)
+        - CI/CD (.github/workflows/)
+        - Docs (docs/)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      description: If template-related, which platform?
+      options:
+        - React Native
+        - Flutter
+        - iOS
+        - Android
+        - N/A
+    validations:
+      required: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs Actual behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, runtime, OpenClix config version, etc.
+      render: shell
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Logs, screenshots, or links

@@ -1,0 +1,45 @@
+name: Feature Request
+description: Propose a new feature or enhancement
+labels: ["kind:enhancement"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of the project would this affect?
+      options:
+        - Templates (skills/*/templates/)
+        - Skills (skills/)
+        - Schema (openclix.schema.json)
+        - Website (home/)
+        - CI/CD (.github/workflows/)
+        - Docs (docs/)
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or motivation
+      description: What problem does this solve? Why is it needed?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+
+  - type: checkboxes
+    id: cross_platform
+    attributes:
+      label: Cross-platform impact
+      options:
+        - label: This affects multiple platforms and needs cross-platform parity review
