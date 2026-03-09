@@ -1,7 +1,9 @@
 import '../engine/trigger_service.dart';
+import '../infrastructure/flutter_device_locale_provider.dart';
 import '../models/openclix_types.dart';
 import '../services/config_loader.dart';
 import '../services/config_validator.dart';
+import '../services/language_resolver.dart';
 import '../services/utils.dart';
 
 class OpenClixDependencies {
@@ -111,6 +113,7 @@ class OpenClix {
   static OpenClixLifecycleStateReader? lifecycleStateReader;
   static OpenClixLogger? logger;
   static OpenClixDependencies? dependencies;
+  static LanguageResolver? _languageResolver;
 
   OpenClix._();
 
@@ -133,6 +136,11 @@ class OpenClix {
         dependencies.lifecycleStateReader ?? DefaultLifecycleStateReader();
     logger = dependencies.logger ?? DefaultLogger(config.logLevel);
     logger?.setLogLevel(config.logLevel);
+
+    _languageResolver = LanguageResolver(
+      sdkDefaultLanguage: config.defaultLanguage,
+      deviceLocaleProvider: FlutterDeviceLocaleProvider(),
+    );
 
     triggerService = TriggerService(createTriggerServiceDependencies());
 
@@ -363,12 +371,25 @@ class OpenClix {
     lifecycleStateReader = null;
     logger = null;
     dependencies = null;
+    _languageResolver = null;
 
     loggerAtResetStart?.info('OpenClix SDK reset complete.');
   }
 
   static void setLogLevel(OpenClixLogLevel level) {
     logger?.setLogLevel(level);
+  }
+
+  static void setLanguage(String languageCode) {
+    _languageResolver?.setLanguage(languageCode);
+  }
+
+  static String? getLanguage() {
+    return _languageResolver?.getLanguage();
+  }
+
+  static void clearLanguage() {
+    _languageResolver?.clearLanguage();
   }
 
   static void handleAppForeground() {
@@ -416,6 +437,7 @@ class OpenClix {
       recordEvent: (event) async {
         await persistEvent(event);
       },
+      languageResolver: _languageResolver,
     );
   }
 

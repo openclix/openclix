@@ -19,6 +19,7 @@ import ai.openclix.models.SystemEventName
 import ai.openclix.models.TriggerContext
 import ai.openclix.models.TriggerResult
 import ai.openclix.models.TriggerType
+import ai.openclix.services.LanguageResolver
 import java.util.UUID
 
 data class TriggerServiceDependencies(
@@ -26,7 +27,8 @@ data class TriggerServiceDependencies(
     val scheduler: OpenClixLocalMessageScheduler,
     val clock: OpenClixClock,
     val logger: OpenClixLogger,
-    val recordEvent: (suspend (Event) -> Unit)? = null
+    val recordEvent: (suspend (Event) -> Unit)? = null,
+    val languageResolver: LanguageResolver? = null
 )
 
 private const val MAXIMUM_TRIGGER_HISTORY_SIZE = 5_000
@@ -101,7 +103,8 @@ class TriggerService(
                         eventConditionProcessor = eventConditionProcessor,
                         scheduleCalculator = scheduleCalculator,
                         logger = logger,
-                        settings = loadedConfig.settings
+                        settings = loadedConfig.settings,
+                        languageResolver = dependencies.languageResolver
                     )
                 )
 

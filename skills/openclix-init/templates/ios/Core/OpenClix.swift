@@ -96,6 +96,7 @@ public final class OpenClix {
         private var clock: OpenClixClock?
         private var lifecycleReader: DefaultLifecycleReader?
         private var logger: DefaultLogger?
+        private var languageResolver: LanguageResolver?
 
         func initialize(config: OpenClixConfig) async {
             guard !initialized else {
@@ -117,6 +118,12 @@ public final class OpenClix {
             self.lifecycleReader = lifecycleReader
             self.logger = logger
 
+            let languageResolver = LanguageResolver(
+                sdkDefaultLanguage: config.defaultLanguage,
+                deviceLocaleProvider: IOSDeviceLocaleProvider()
+            )
+            self.languageResolver = languageResolver
+
             logger.info("Initializing OpenClix SDK...")
 
             let triggerService = TriggerService(
@@ -124,7 +131,8 @@ public final class OpenClix {
                     campaignStateRepository: campaignStateRepository,
                     messageScheduler: messageScheduler,
                     clock: clock,
-                    logger: logger
+                    logger: logger,
+                    languageResolver: languageResolver
                 )
             )
             self.triggerService = triggerService
@@ -333,6 +341,7 @@ public final class OpenClix {
             clock = nil
             lifecycleReader = nil
             logger = nil
+            languageResolver = nil
 
             previousLogger?.info("OpenClix SDK reset complete.")
         }
@@ -357,6 +366,18 @@ public final class OpenClix {
                     )
                 )
             }
+        }
+
+        func setLanguage(_ languageCode: String) {
+            languageResolver?.setLanguage(languageCode)
+        }
+
+        func getLanguage() -> String? {
+            return languageResolver?.getLanguage()
+        }
+
+        func clearLanguage() {
+            languageResolver?.clearLanguage()
         }
 
         func getTriggerService() -> TriggerService? { return triggerService }
@@ -461,6 +482,22 @@ public final class OpenClix {
     public static func handleAppForeground() {
         Task {
             await coordinator.handleAppForeground()
+        }
+    }
+
+    public static func setLanguage(_ languageCode: String) {
+        Task {
+            await coordinator.setLanguage(languageCode)
+        }
+    }
+
+    public static func getLanguage() async -> String? {
+        return await coordinator.getLanguage()
+    }
+
+    public static func clearLanguage() {
+        Task {
+            await coordinator.clearLanguage()
         }
     }
 }

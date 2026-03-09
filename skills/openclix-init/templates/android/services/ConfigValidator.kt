@@ -34,6 +34,7 @@ private val validEventFields = setOf("name", "property")
 private val validEventOperators = EventConditionOperator.entries.map { operator -> operator.value }.toSet()
 private const val MAX_MESSAGE_TITLE_LENGTH = 120
 private const val MAX_MESSAGE_BODY_LENGTH = 500
+private val languageCodePattern = Regex("^[a-z]{2}$")
 
 // TODO: Additional-properties validation is not enforced after typed decoding; reject unknown keys in the decoder layer for strict schema parity.
 
@@ -269,6 +270,18 @@ fun validateConfig(config: Config): ValidationResult {
                     path = ".settings.frequency_cap.window_seconds",
                     code = "INVALID_FREQUENCY_CAP",
                     message = "frequency_cap.window_seconds must be an integer >= 1"
+                )
+            )
+        }
+    }
+
+    config.settings?.default_language?.let { defaultLanguage ->
+        if (!languageCodePattern.matches(defaultLanguage)) {
+            errors.add(
+                ValidationIssue(
+                    path = ".settings.default_language",
+                    code = "INVALID_DEFAULT_LANGUAGE",
+                    message = "default_language must be a 2-letter ISO 639-1 language code"
                 )
             )
         }
@@ -618,6 +631,70 @@ fun validateConfig(config: Config): ValidationResult {
                     message = "landing_url must be a valid URI reference"
                 )
             )
+        }
+
+        campaign.default_language?.let { defaultLanguage ->
+            if (!languageCodePattern.matches(defaultLanguage)) {
+                errors.add(
+                    ValidationIssue(
+                        path = "$basePath.default_language",
+                        code = "INVALID_DEFAULT_LANGUAGE",
+                        message = "default_language must be a 2-letter ISO 639-1 language code"
+                    )
+                )
+            }
+        }
+
+        campaign.message.content.localized?.let { localized ->
+            for ((langKey, entry) in localized) {
+                val localizedPath = "$basePath.message.content.localized[\"$langKey\"]"
+
+                if (!languageCodePattern.matches(langKey)) {
+                    errors.add(
+                        ValidationIssue(
+                            path = localizedPath,
+                            code = "INVALID_LANGUAGE_KEY",
+                            message = "localized key '$langKey' must be a 2-letter ISO 639-1 language code"
+                        )
+                    )
+                }
+
+                if (entry.title.isBlank()) {
+                    errors.add(
+                        ValidationIssue(
+                            path = "$localizedPath.title",
+                            code = "MISSING_LOCALIZED_TITLE",
+                            message = "Localized content entry must have a title"
+                        )
+                    )
+                } else if (entry.title.length > MAX_MESSAGE_TITLE_LENGTH) {
+                    errors.add(
+                        ValidationIssue(
+                            path = "$localizedPath.title",
+                            code = "INVALID_LOCALIZED_TITLE_LENGTH",
+                            message = "localized title must be $MAX_MESSAGE_TITLE_LENGTH characters or less"
+                        )
+                    )
+                }
+
+                if (entry.body.isBlank()) {
+                    errors.add(
+                        ValidationIssue(
+                            path = "$localizedPath.body",
+                            code = "MISSING_LOCALIZED_BODY",
+                            message = "Localized content entry must have a body"
+                        )
+                    )
+                } else if (entry.body.length > MAX_MESSAGE_BODY_LENGTH) {
+                    errors.add(
+                        ValidationIssue(
+                            path = "$localizedPath.body",
+                            code = "INVALID_LOCALIZED_BODY_LENGTH",
+                            message = "localized body must be $MAX_MESSAGE_BODY_LENGTH characters or less"
+                        )
+                    )
+                }
+            }
         }
     }
 

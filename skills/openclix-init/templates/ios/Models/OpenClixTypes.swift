@@ -89,13 +89,17 @@ public struct Config: Codable, Equatable {
 public struct Settings: Codable, Equatable {
     public let frequency_cap: FrequencyCap?
     public let do_not_disturb: DoNotDisturb?
+    /// SDK-level default language. Used when no campaign-level default_language is set.
+    public let default_language: String?
 
     public init(
         frequency_cap: FrequencyCap? = nil,
-        do_not_disturb: DoNotDisturb? = nil
+        do_not_disturb: DoNotDisturb? = nil,
+        default_language: String? = nil
     ) {
         self.frequency_cap = frequency_cap
         self.do_not_disturb = do_not_disturb
+        self.default_language = default_language
     }
 }
 
@@ -132,6 +136,8 @@ public struct Campaign: Codable, Equatable {
     public let trigger: CampaignTrigger
     public let frequency_cap: FrequencyCap?
     public let message: Message
+    /// ISO 639-1 default language for this campaign. Overrides SDK-level defaultLanguage.
+    public let default_language: String?
 
     public init(
         name: String,
@@ -140,7 +146,8 @@ public struct Campaign: Codable, Equatable {
         status: CampaignStatus,
         trigger: CampaignTrigger,
         frequency_cap: FrequencyCap? = nil,
-        message: Message
+        message: Message,
+        default_language: String? = nil
     ) {
         self.name = name
         self.type = type
@@ -149,6 +156,7 @@ public struct Campaign: Codable, Equatable {
         self.trigger = trigger
         self.frequency_cap = frequency_cap
         self.message = message
+        self.default_language = default_language
     }
 }
 
@@ -337,7 +345,7 @@ public struct Message: Codable, Equatable {
     }
 }
 
-public struct MessageContent: Codable, Equatable {
+public struct LocalizedContentEntry: Codable, Equatable {
     public let title: String
     public let body: String
     public let image_url: String?
@@ -353,6 +361,33 @@ public struct MessageContent: Codable, Equatable {
         self.body = body
         self.image_url = image_url
         self.landing_url = landing_url
+    }
+}
+
+public protocol DeviceLocaleProvider {
+    func getLocale() -> String?
+}
+
+public struct MessageContent: Codable, Equatable {
+    public let title: String
+    public let body: String
+    public let image_url: String?
+    public let landing_url: String?
+    /// Language-keyed content overrides. Keys are ISO 639-1 codes.
+    public let localized: [String: LocalizedContentEntry]?
+
+    public init(
+        title: String,
+        body: String,
+        image_url: String? = nil,
+        landing_url: String? = nil,
+        localized: [String: LocalizedContentEntry]? = nil
+    ) {
+        self.title = title
+        self.body = body
+        self.image_url = image_url
+        self.landing_url = landing_url
+        self.localized = localized
     }
 }
 
@@ -625,6 +660,8 @@ public struct OpenClixConfig {
     public var logLevel: OpenClixLogLevel
     public var extraHeaders: [String: String]?
     public var sessionTimeoutMs: Int?
+    /// SDK-level default language (ISO 639-1). Overridden by settings.default_language or campaign.default_language.
+    public var defaultLanguage: String?
 
     public init(
         endpoint: String,
@@ -632,7 +669,8 @@ public struct OpenClixConfig {
         apiKey: String? = nil,
         logLevel: OpenClixLogLevel = .warn,
         extraHeaders: [String: String]? = nil,
-        sessionTimeoutMs: Int? = nil
+        sessionTimeoutMs: Int? = nil,
+        defaultLanguage: String? = nil
     ) {
         self.endpoint = endpoint
         self.projectId = projectId
@@ -640,6 +678,7 @@ public struct OpenClixConfig {
         self.logLevel = logLevel
         self.extraHeaders = extraHeaders
         self.sessionTimeoutMs = sessionTimeoutMs
+        self.defaultLanguage = defaultLanguage
     }
 }
 
