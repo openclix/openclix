@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://openclix.ai
+    about: Check the docs before filing
+  - name: Discussions
+    url: https://github.com/openclix/openclix/discussions
+    about: Ask questions and share ideas
