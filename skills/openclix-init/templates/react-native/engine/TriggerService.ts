@@ -12,6 +12,7 @@ import type {
   Logger,
   JsonValue,
 } from '../domain/OpenClixTypes';
+import type { LanguageResolver } from '../domain/LanguageResolver';
 import {
   EventConditionProcessor,
   ScheduleCalculator,
@@ -25,6 +26,7 @@ export interface TriggerServiceDependencies {
   messageScheduler: MessageScheduler;
   clock: Clock;
   logger: Logger;
+  languageResolver?: LanguageResolver;
   recordEvent?: (event: Event) => Promise<void>;
   campaignStateService?: CampaignStateService;
 }
@@ -122,6 +124,7 @@ export class TriggerService {
             scheduleCalculator: this.scheduleCalculator,
             logger,
             settings: this.config.settings,
+            languageResolver: this.dependencies.languageResolver,
           },
         );
 

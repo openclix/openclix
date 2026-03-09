@@ -314,11 +314,21 @@ export function validateConfig(config: Config): ValidationResult {
     } else {
       validateNoAdditionalProperties(
         config.settings,
-        ['frequency_cap', 'do_not_disturb'],
+        ['frequency_cap', 'do_not_disturb', 'default_language'],
         '.settings',
         errors,
         'UNEXPECTED_SETTINGS_PROPERTY',
       );
+
+      if (config.settings.default_language !== undefined) {
+        if (typeof config.settings.default_language !== 'string' || !/^[a-z]{2}$/.test(config.settings.default_language)) {
+          errors.push({
+            path: '.settings.default_language',
+            code: 'INVALID_DEFAULT_LANGUAGE',
+            message: 'default_language must be a 2-letter ISO 639-1 code',
+          });
+        }
+      }
     }
   }
 
@@ -397,11 +407,21 @@ export function validateConfig(config: Config): ValidationResult {
 
       validateNoAdditionalProperties(
         campaign,
-        ['name', 'type', 'description', 'status', 'trigger', 'frequency_cap', 'message'],
+        ['name', 'type', 'description', 'status', 'trigger', 'frequency_cap', 'message', 'default_language'],
         basePath,
         errors,
         'UNEXPECTED_CAMPAIGN_PROPERTY',
       );
+
+      if (campaign.default_language !== undefined) {
+        if (typeof campaign.default_language !== 'string' || !/^[a-z]{2}$/.test(campaign.default_language)) {
+          errors.push({
+            path: `${basePath}.default_language`,
+            code: 'INVALID_DEFAULT_LANGUAGE',
+            message: 'default_language must be a 2-letter ISO 639-1 code',
+          });
+        }
+      }
 
       if (!KEBAB_CASE_PATTERN.test(campaignId)) {
         errors.push({
@@ -773,7 +793,7 @@ export function validateConfig(config: Config): ValidationResult {
 
         validateNoAdditionalProperties(
           content,
-          ['title', 'body', 'image_url', 'landing_url'],
+          ['title', 'body', 'image_url', 'landing_url', 'localized'],
           `${basePath}.message.content`,
           errors,
           'UNEXPECTED_MESSAGE_CONTENT_PROPERTY',
@@ -824,6 +844,43 @@ export function validateConfig(config: Config): ValidationResult {
             code: 'INVALID_LANDING_URL',
             message: 'landing_url must be a valid URI reference',
           });
+        }
+
+        if (content.localized !== undefined) {
+          if (typeof content.localized !== 'object' || content.localized === null || Array.isArray(content.localized)) {
+            errors.push({
+              path: `${basePath}.message.content.localized`,
+              code: 'INVALID_LOCALIZED',
+              message: 'localized must be an object',
+            });
+          } else {
+            for (const [langCode, entry] of Object.entries(content.localized as Record<string, unknown>)) {
+              if (!/^[a-z]{2}$/.test(langCode)) {
+                errors.push({
+                  path: `${basePath}.message.content.localized.${langCode}`,
+                  code: 'INVALID_LANGUAGE_CODE',
+                  message: `Invalid language code '${langCode}'. Must be a 2-letter ISO 639-1 code.`,
+                });
+              }
+              if (typeof entry === 'object' && entry !== null) {
+                const e = entry as Record<string, unknown>;
+                if (typeof e.title !== 'string' || e.title.length === 0 || (e.title as string).length > MAX_MESSAGE_TITLE_LENGTH) {
+                  errors.push({
+                    path: `${basePath}.message.content.localized.${langCode}.title`,
+                    code: 'INVALID_TITLE',
+                    message: `title must be a string between 1-${MAX_MESSAGE_TITLE_LENGTH} characters`,
+                  });
+                }
+                if (typeof e.body !== 'string' || e.body.length === 0 || (e.body as string).length > MAX_MESSAGE_BODY_LENGTH) {
+                  errors.push({
+                    path: `${basePath}.message.content.localized.${langCode}.body`,
+                    code: 'INVALID_BODY',
+                    message: `body must be a string between 1-${MAX_MESSAGE_BODY_LENGTH} characters`,
+                  });
+                }
+              }
+            }
+          }
         }
       }
     }

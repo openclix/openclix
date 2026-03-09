@@ -20,6 +20,8 @@ export interface Config {
 export interface Settings {
   frequency_cap?: FrequencyCap;
   do_not_disturb?: DoNotDisturb;
+  /** SDK-level default language. Used when no campaign-level default_language is set. */
+  default_language?: string;
 }
 
 export interface FrequencyCap {
@@ -45,6 +47,8 @@ export interface Campaign {
   trigger: CampaignTrigger;
   frequency_cap?: FrequencyCap;
   message: Message;
+  /** ISO 639-1 default language for this campaign. Overrides SDK-level defaultLanguage. */
+  default_language?: string;
 }
 
 export type TriggerType = 'event' | 'scheduled' | 'recurring';
@@ -144,6 +148,17 @@ export interface Message {
   content: MessageContent;
 }
 
+export interface LocalizedContentEntry {
+  title: string;
+  body: string;
+  image_url?: string;
+  landing_url?: string;
+}
+
+export interface DeviceLocaleProvider {
+  getLocale(): string | undefined;
+}
+
 export interface MessageContent {
   /** Supports {{key}} template variables. Max 120 chars. */
   title: string;
@@ -152,6 +167,8 @@ export interface MessageContent {
   image_url?: string;
   /** URL or deep link opened on notification tap. */
   landing_url?: string;
+  /** Language-keyed content overrides. Keys are ISO 639-1 codes. */
+  localized?: Record<string, LocalizedContentEntry>;
 }
 
 // ---------------------------------------------------------------------------
@@ -282,6 +299,8 @@ export interface OpenClixConfig {
   extraHeaders?: Record<string, string>;
   /** Optional config fetch timeout override in milliseconds. */
   sessionTimeoutMs?: number;
+  /** SDK-level default language (ISO 639-1). Overridden by settings.default_language or campaign.default_language. */
+  defaultLanguage?: string;
 }
 
 export interface Clock {
