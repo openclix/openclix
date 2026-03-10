@@ -485,19 +485,15 @@ public final class OpenClix {
         }
     }
 
-    public static func setLanguage(_ languageCode: String) {
-        Task {
-            await coordinator.setLanguage(languageCode)
-        }
+    public static func setLanguage(_ languageCode: String) async {
+        await coordinator.setLanguage(languageCode)
     }
 
     public static func getLanguage() async -> String? {
         return await coordinator.getLanguage()
     }
 
-    public static func clearLanguage() {
-        Task {
-            await coordinator.clearLanguage()
-        }
+    public static func clearLanguage() async {
+        await coordinator.clearLanguage()
     }
 }

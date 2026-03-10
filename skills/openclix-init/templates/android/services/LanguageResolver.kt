@@ -11,12 +11,19 @@ data class ResolvedContent(
 )
 
 class LanguageResolver(
-    private val sdkDefaultLanguage: String? = null,
+    sdkDefaultLanguage: String? = null,
     private val deviceLocaleProvider: DeviceLocaleProvider? = null
 ) {
     companion object {
         private val LANGUAGE_CODE_PATTERN = Regex("^[a-z]{2}$")
+
+        private fun normalizeLanguageCode(code: String): String? {
+            val normalized = code.take(2).lowercase(java.util.Locale.ROOT)
+            return if (LANGUAGE_CODE_PATTERN.matches(normalized)) normalized else null
+        }
     }
+
+    private val sdkDefaultLanguage: String? = sdkDefaultLanguage?.let { normalizeLanguageCode(it) }
 
     @Volatile
     private var explicitLanguage: String? = null
@@ -25,8 +32,7 @@ class LanguageResolver(
     private var settingsDefaultLanguage: String? = null
 
     fun setLanguage(languageCode: String) {
-        val normalized = languageCode.take(2).lowercase(java.util.Locale.ROOT)
-        explicitLanguage = if (LANGUAGE_CODE_PATTERN.matches(normalized)) normalized else null
+        explicitLanguage = normalizeLanguageCode(languageCode)
     }
 
     fun getLanguage(): String? = explicitLanguage
@@ -36,7 +42,7 @@ class LanguageResolver(
     }
 
     fun setSettingsDefaultLanguage(language: String?) {
-        settingsDefaultLanguage = language
+        settingsDefaultLanguage = language?.let { normalizeLanguageCode(it) }
     }
 
     /**
@@ -52,8 +58,8 @@ class LanguageResolver(
 
         val deviceLocale = deviceLocaleProvider?.getLocale()
         if (deviceLocale != null) {
-            val normalized = deviceLocale.take(2).lowercase(java.util.Locale.ROOT)
-            if (LANGUAGE_CODE_PATTERN.matches(normalized)) return normalized
+            val normalized = normalizeLanguageCode(deviceLocale)
+            if (normalized != null) return normalized
         }
 
         if (campaignDefaultLanguage != null) return campaignDefaultLanguage

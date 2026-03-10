@@ -1,5 +1,12 @@
 import type { MessageContent, DeviceLocaleProvider } from './OpenClixTypes';
 
+const LANGUAGE_CODE_PATTERN = /^[a-z]{2}$/;
+
+function normalizeLanguageCode(code: string): string | undefined {
+  const normalized = code.substring(0, 2).toLowerCase();
+  return LANGUAGE_CODE_PATTERN.test(normalized) ? normalized : undefined;
+}
+
 export interface LanguageResolverConfig {
   sdkDefaultLanguage?: string;
   deviceLocaleProvider?: DeviceLocaleProvider;
@@ -12,13 +19,12 @@ export class LanguageResolver {
   private readonly deviceLocaleProvider: DeviceLocaleProvider | undefined;
 
   constructor(config: LanguageResolverConfig) {
-    this.sdkDefaultLanguage = config.sdkDefaultLanguage;
+    this.sdkDefaultLanguage = normalizeLanguageCode(config.sdkDefaultLanguage ?? '');
     this.deviceLocaleProvider = config.deviceLocaleProvider;
   }
 
   setLanguage(languageCode: string): void {
-    const normalized = languageCode.substring(0, 2).toLowerCase();
-    this.explicitLanguage = /^[a-z]{2}$/.test(normalized) ? normalized : undefined;
+    this.explicitLanguage = normalizeLanguageCode(languageCode);
   }
 
   getLanguage(): string | undefined {
@@ -30,7 +36,7 @@ export class LanguageResolver {
   }
 
   setSettingsDefaultLanguage(language: string | undefined): void {
-    this.settingsDefaultLanguage = language;
+    this.settingsDefaultLanguage = language ? normalizeLanguageCode(language) : undefined;
   }
 
   /**
@@ -46,8 +52,8 @@ export class LanguageResolver {
 
     const deviceLocale = this.deviceLocaleProvider?.getLocale();
     if (deviceLocale) {
-      const normalized = deviceLocale.substring(0, 2).toLowerCase();
-      if (/^[a-z]{2}$/.test(normalized)) return normalized;
+      const normalized = normalizeLanguageCode(deviceLocale);
+      if (normalized) return normalized;
     }
 
     if (campaignDefaultLanguage) return campaignDefaultLanguage;

@@ -22,17 +22,21 @@ class LanguageResolver {
 
   static final RegExp _languageCodePattern = RegExp(r'^[a-z]{2}$');
 
+  static String? _normalizeLanguageCode(String code) {
+    final normalized = code.length >= 2
+        ? code.substring(0, 2).toLowerCase()
+        : code.toLowerCase();
+    return _languageCodePattern.hasMatch(normalized) ? normalized : null;
+  }
+
   LanguageResolver({
     String? sdkDefaultLanguage,
     DeviceLocaleProvider? deviceLocaleProvider,
-  })  : _sdkDefaultLanguage = sdkDefaultLanguage,
+  })  : _sdkDefaultLanguage = sdkDefaultLanguage != null ? _normalizeLanguageCode(sdkDefaultLanguage) : null,
         _deviceLocaleProvider = deviceLocaleProvider;
 
   void setLanguage(String languageCode) {
-    final normalized = languageCode.length >= 2
-        ? languageCode.substring(0, 2).toLowerCase()
-        : languageCode.toLowerCase();
-    _explicitLanguage = _languageCodePattern.hasMatch(normalized) ? normalized : null;
+    _explicitLanguage = _normalizeLanguageCode(languageCode);
   }
 
   String? getLanguage() {
@@ -44,7 +48,7 @@ class LanguageResolver {
   }
 
   void setSettingsDefaultLanguage(String? language) {
-    _settingsDefaultLanguage = language;
+    _settingsDefaultLanguage = language != null ? _normalizeLanguageCode(language) : null;
   }
 
   /// Resolution chain:
@@ -57,9 +61,9 @@ class LanguageResolver {
     if (_explicitLanguage != null) return _explicitLanguage;
 
     final deviceLocale = _deviceLocaleProvider?.getLocale();
-    if (deviceLocale != null && deviceLocale.length >= 2) {
-      final normalized = deviceLocale.substring(0, 2).toLowerCase();
-      if (_languageCodePattern.hasMatch(normalized)) return normalized;
+    if (deviceLocale != null) {
+      final normalized = _normalizeLanguageCode(deviceLocale);
+      if (normalized != null) return normalized;
     }
 
     if (campaignDefaultLanguage != null) return campaignDefaultLanguage;

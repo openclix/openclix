@@ -15,6 +15,7 @@ import type {
   DeviceLocaleProvider,
 } from '../domain/OpenClixTypes';
 import { LanguageResolver } from '../domain/LanguageResolver';
+import { ReactNativeDeviceLocaleProvider } from '../infrastructure/ReactNativeDeviceLocaleProvider';
 import { TriggerService } from '../engine/TriggerService';
 import type { TriggerServiceDependencies } from '../engine/TriggerService';
 import { loadConfig } from '../infrastructure/ConfigLoader';
@@ -133,7 +134,7 @@ export class OpenClix {
     OpenClix.messageScheduler = dependencies.messageScheduler;
     OpenClix.languageResolver = new LanguageResolver({
       sdkDefaultLanguage: config.defaultLanguage,
-      deviceLocaleProvider: dependencies.deviceLocaleProvider,
+      deviceLocaleProvider: dependencies.deviceLocaleProvider ?? new ReactNativeDeviceLocaleProvider(),
     });
     OpenClix.triggerService = new TriggerService(OpenClix.createTriggerServiceDependencies());
 
@@ -360,7 +361,12 @@ export class OpenClix {
   static setLanguage(languageCode: string): void {
     OpenClix.assertInitialized();
     OpenClix.languageResolver?.setLanguage(languageCode);
-    OpenClix.logger?.info(`Language set to '${languageCode}'`);
+    const stored = OpenClix.languageResolver?.getLanguage();
+    if (stored) {
+      OpenClix.logger?.info(`Language set to '${stored}'`);
+    } else {
+      OpenClix.logger?.warn(`Language '${languageCode}' could not be normalized to a valid ISO 639-1 code`);
+    }
   }
 
   static getLanguage(): string | undefined {

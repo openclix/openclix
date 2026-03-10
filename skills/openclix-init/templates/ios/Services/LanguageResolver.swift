@@ -21,6 +21,12 @@ public struct ResolvedContent: Equatable {
 
 private let languageCodePattern = try! NSRegularExpression(pattern: "^[a-z]{2}$")
 
+private func normalizeLanguageCode(_ code: String) -> String? {
+    let candidate = String(code.prefix(2)).lowercased()
+    let range = NSRange(candidate.startIndex..., in: candidate)
+    return languageCodePattern.firstMatch(in: candidate, range: range) != nil ? candidate : nil
+}
+
 public final class LanguageResolver: @unchecked Sendable {
 
     private let lock = NSLock()
@@ -33,16 +39,14 @@ public final class LanguageResolver: @unchecked Sendable {
         sdkDefaultLanguage: String? = nil,
         deviceLocaleProvider: DeviceLocaleProvider? = nil
     ) {
-        self.sdkDefaultLanguage = sdkDefaultLanguage
+        self.sdkDefaultLanguage = sdkDefaultLanguage.flatMap { normalizeLanguageCode($0) }
         self.deviceLocaleProvider = deviceLocaleProvider
     }
 
     public func setLanguage(_ languageCode: String) {
         lock.lock()
         defer { lock.unlock() }
-        let candidate = String(languageCode.prefix(2)).lowercased()
-        let range = NSRange(candidate.startIndex..., in: candidate)
-        explicitLanguage = languageCodePattern.firstMatch(in: candidate, range: range) != nil ? candidate : nil
+        explicitLanguage = normalizeLanguageCode(languageCode)
     }
 
     public func getLanguage() -> String? {
@@ -60,7 +64,7 @@ public final class LanguageResolver: @unchecked Sendable {
     public func setSettingsDefaultLanguage(_ language: String?) {
         lock.lock()
         defer { lock.unlock() }
-        settingsDefaultLanguage = language
+        settingsDefaultLanguage = language.flatMap { normalizeLanguageCode($0) }
     }
 
     /// Resolution chain:
@@ -79,12 +83,9 @@ public final class LanguageResolver: @unchecked Sendable {
             return explicit
         }
 
-        if let deviceLocale = deviceLocaleProvider?.getLocale() {
-            let prefix = String(deviceLocale.prefix(2)).lowercased()
-            let range = NSRange(prefix.startIndex..., in: prefix)
-            if languageCodePattern.firstMatch(in: prefix, range: range) != nil {
-                return prefix
-            }
+        if let deviceLocale = deviceLocaleProvider?.getLocale(),
+           let normalized = normalizeLanguageCode(deviceLocale) {
+            return normalized
         }
 
         if let campaignDefaultLanguage {
