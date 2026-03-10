@@ -557,6 +557,63 @@ describe('validateConfig', () => {
       );
       expect(hasError(result, 'INVALID_DEFAULT_LANGUAGE')).toBe(true);
     });
+
+    test('non-object localized entry produces INVALID_LOCALIZED_ENTRY', () => {
+      const result = validateWithCampaign(
+        'test-campaign',
+        makeEventCampaign({
+          message: {
+            channel_type: 'app_push',
+            content: {
+              title: 'Title',
+              body: 'Body',
+              localized: {
+                ko: 'not an object' as any,
+              },
+            },
+          },
+        }),
+      );
+      expect(hasError(result, 'INVALID_LOCALIZED_ENTRY')).toBe(true);
+    });
+
+    test('invalid image_url in localized entry produces INVALID_IMAGE_URL', () => {
+      const result = validateWithCampaign(
+        'test-campaign',
+        makeEventCampaign({
+          message: {
+            channel_type: 'app_push',
+            content: {
+              title: 'Title',
+              body: 'Body',
+              localized: {
+                ko: { title: 'Korean', body: 'Korean Body', image_url: 'not a url' },
+              },
+            },
+          },
+        }),
+      );
+      expect(hasError(result, 'INVALID_IMAGE_URL')).toBe(true);
+    });
+
+    test('invalid landing_url in localized entry produces INVALID_LANDING_URL', () => {
+      const result = validateWithCampaign(
+        'test-campaign',
+        makeEventCampaign({
+          message: {
+            channel_type: 'app_push',
+            content: {
+              title: 'Title',
+              body: 'Body',
+              localized: {
+                ko: { title: 'Korean', body: 'Korean Body', landing_url: 'not a valid url' },
+              },
+            },
+          },
+        }),
+      );
+      expect(hasError(result, 'INVALID_LANDING_URL')).toBe(true);
+    });
   });
 
   describe('message', () => {

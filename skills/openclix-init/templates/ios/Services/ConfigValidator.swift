@@ -589,8 +589,8 @@ public func validateConfig(_ config: Config) -> ValidationResult {
                     errors.append(
                         ValidationIssue(
                             path: "\(entryPath).image_url",
-                            code: "INVALID_LOCALIZED_IMAGE_URL",
-                            message: "Localized image_url must be a valid URI"
+                            code: "INVALID_IMAGE_URL",
+                            message: "image_url must be a valid URI"
                         )
                     )
                 }
@@ -599,8 +599,8 @@ public func validateConfig(_ config: Config) -> ValidationResult {
                     errors.append(
                         ValidationIssue(
                             path: "\(entryPath).landing_url",
-                            code: "INVALID_LOCALIZED_LANDING_URL",
-                            message: "Localized landing_url must be a valid URI reference"
+                            code: "INVALID_LANDING_URL",
+                            message: "landing_url must be a valid URI reference"
                         )
                     )
                 }

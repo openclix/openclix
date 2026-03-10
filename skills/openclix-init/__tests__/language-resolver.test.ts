@@ -47,9 +47,22 @@ describe('LanguageResolver', () => {
       expect(resolver.resolveLanguage('fr')).toBe('fr');
     });
 
-    test('returns SDK default when no explicit, device, or campaign default', () => {
+    test('returns settings default when no explicit, device, or campaign default', () => {
+      const resolver = makeResolver({ sdkDefaultLanguage: 'de' });
+      resolver.setSettingsDefaultLanguage('zh');
+      expect(resolver.resolveLanguage()).toBe('zh');
+    });
+
+    test('returns SDK default when no explicit, device, campaign, or settings default', () => {
       const resolver = makeResolver({ sdkDefaultLanguage: 'de' });
       expect(resolver.resolveLanguage()).toBe('de');
+    });
+
+    test('settings default takes priority over SDK default but not campaign default', () => {
+      const resolver = makeResolver({ sdkDefaultLanguage: 'de' });
+      resolver.setSettingsDefaultLanguage('zh');
+      expect(resolver.resolveLanguage()).toBe('zh');
+      expect(resolver.resolveLanguage('fr')).toBe('fr');
     });
 
     test('returns undefined when nothing is configured', () => {
