@@ -29,17 +29,20 @@ public struct CampaignProcessorDependencies {
     public let scheduleCalculator: ScheduleCalculator
     public let logger: OpenClixLogger
     public let settings: Settings?
+    public let languageResolver: LanguageResolver?
 
     public init(
         eventConditionProcessor: EventConditionProcessor,
         scheduleCalculator: ScheduleCalculator,
         logger: OpenClixLogger,
-        settings: Settings? = nil
+        settings: Settings? = nil,
+        languageResolver: LanguageResolver? = nil
     ) {
         self.eventConditionProcessor = eventConditionProcessor
         self.scheduleCalculator = scheduleCalculator
         self.logger = logger
         self.settings = settings
+        self.languageResolver = languageResolver
     }
 }
 
@@ -281,6 +284,21 @@ public final class CampaignProcessor {
             )
         }
 
+        let resolvedContent: ResolvedContent
+        if let languageResolver = dependencies.languageResolver {
+            resolvedContent = languageResolver.resolveContent(
+                campaign.message.content,
+                campaignDefaultLanguage: campaign.default_language
+            )
+        } else {
+            resolvedContent = ResolvedContent(
+                title: campaign.message.content.title,
+                body: campaign.message.content.body,
+                image_url: campaign.message.content.image_url,
+                landing_url: campaign.message.content.landing_url
+            )
+        }
+
         var templateVariables: [String: Any] = [:]
         if let eventProperties = context.event?.properties {
             for (key, value) in eventProperties {
@@ -288,8 +306,8 @@ public final class CampaignProcessor {
             }
         }
 
-        let renderedTitle = renderTemplate(campaign.message.content.title, variables: templateVariables)
-        let renderedBody = renderTemplate(campaign.message.content.body, variables: templateVariables)
+        let renderedTitle = renderTemplate(resolvedContent.title, variables: templateVariables)
+        let renderedBody = renderTemplate(resolvedContent.body, variables: templateVariables)
 
         let queuedMessage = QueuedMessage(
             id: generateUUID(),
@@ -299,8 +317,8 @@ public final class CampaignProcessor {
             content: QueuedMessageContent(
                 title: renderedTitle,
                 body: renderedBody,
-                image_url: campaign.message.content.image_url,
-                landing_url: campaign.message.content.landing_url
+                image_url: resolvedContent.image_url,
+                landing_url: resolvedContent.landing_url
             ),
             trigger_event_id: resolved.triggerEventId,
             execute_at: scheduleResult.execute_at,

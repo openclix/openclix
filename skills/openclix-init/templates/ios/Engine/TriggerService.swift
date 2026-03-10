@@ -5,17 +5,20 @@ public struct TriggerServiceDependencies: Sendable {
     public let messageScheduler: OpenClixMessageScheduler
     public let clock: OpenClixClock
     public let logger: OpenClixLogger
+    public let languageResolver: LanguageResolver?
 
     public init(
         campaignStateRepository: OpenClixCampaignStateRepository,
         messageScheduler: OpenClixMessageScheduler,
         clock: OpenClixClock,
-        logger: OpenClixLogger
+        logger: OpenClixLogger,
+        languageResolver: LanguageResolver? = nil
     ) {
         self.campaignStateRepository = campaignStateRepository
         self.messageScheduler = messageScheduler
         self.clock = clock
         self.logger = logger
+        self.languageResolver = languageResolver
     }
 }
 
@@ -49,6 +52,9 @@ public actor TriggerService {
 
     public func replaceConfig(_ config: Config) {
         self.config = config
+        dependencies.languageResolver?.setSettingsDefaultLanguage(
+            config.settings?.default_language
+        )
         dependencies.logger.info(
             "[TriggerService] Config replaced (version: \(config.config_version), campaigns: \(config.campaigns.count))"
         )
@@ -114,7 +120,8 @@ public actor TriggerService {
                     eventConditionProcessor: eventConditionProcessor,
                     scheduleCalculator: scheduleCalculator,
                     logger: dependencies.logger,
-                    settings: config.settings
+                    settings: config.settings,
+                    languageResolver: dependencies.languageResolver
                 )
             )
 

@@ -154,6 +154,23 @@ export function makeAppBootContext(now?: string): TriggerContext {
   };
 }
 
+export function makeLocalizedEventCampaign(overrides?: Partial<Campaign>): Campaign {
+  return makeEventCampaign({
+    message: {
+      channel_type: 'app_push',
+      content: {
+        title: 'Hello {{username}}',
+        body: 'You clicked the button!',
+        localized: {
+          ko: { title: '안녕 {{username}}', body: '버튼을 클릭했습니다!' },
+          ja: { title: 'こんにちは {{username}}', body: 'ボタンをクリックしました！' },
+        },
+      },
+    },
+    ...overrides,
+  });
+}
+
 export function makeQueuedMessage(overrides?: Partial<QueuedMessage>): QueuedMessage {
   return {
     id: 'msg-001',

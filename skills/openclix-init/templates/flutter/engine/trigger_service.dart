@@ -1,4 +1,5 @@
 import '../models/openclix_types.dart';
+import '../services/language_resolver.dart';
 import '../services/utils.dart';
 import 'campaign_processor.dart';
 import 'campaign_state_service.dart';
@@ -12,6 +13,7 @@ class TriggerServiceDependencies {
   final OpenClixLogger logger;
   final Future<void> Function(Event event)? recordEvent;
   final CampaignStateService? campaignStateService;
+  final LanguageResolver? languageResolver;
 
   TriggerServiceDependencies({
     required this.campaignStateRepository,
@@ -20,6 +22,7 @@ class TriggerServiceDependencies {
     required this.logger,
     this.recordEvent,
     this.campaignStateService,
+    this.languageResolver,
   });
 }
 
@@ -44,6 +47,9 @@ class TriggerService {
 
   void replaceConfig(Config config) {
     this.config = config;
+    dependencies.languageResolver?.setSettingsDefaultLanguage(
+      config.settings?.defaultLanguage,
+    );
     dependencies.logger.info(
       '[TriggerService] Config replaced '
       '(version: ${config.configVersion}, campaigns: ${config.campaigns.length})',
@@ -119,6 +125,7 @@ class TriggerService {
             scheduleCalculator: scheduleCalculator,
             logger: logger,
             settings: config!.settings,
+            languageResolver: dependencies.languageResolver,
           ),
         );
 

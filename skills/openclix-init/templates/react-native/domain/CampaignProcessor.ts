@@ -11,6 +11,7 @@ import type {
   DayOfWeek,
   RecurringTriggerConfig,
 } from './OpenClixTypes';
+import type { LanguageResolver } from './LanguageResolver';
 import {
   EventConditionProcessor,
   ScheduleCalculator,
@@ -30,6 +31,7 @@ export interface CampaignProcessorDeps {
   scheduleCalculator: ScheduleCalculator;
   logger: Logger;
   settings?: Settings;
+  languageResolver?: LanguageResolver;
 }
 
 function createTrace(
@@ -103,7 +105,7 @@ export class CampaignProcessor {
     snapshot: CampaignStateSnapshot,
     dependencies: CampaignProcessorDeps,
   ): CampaignDecision {
-    const { eventConditionProcessor, scheduleCalculator, logger, settings } = dependencies;
+    const { eventConditionProcessor, scheduleCalculator, logger, settings, languageResolver } = dependencies;
     const now = context.now ?? new Date().toISOString();
     const campaignState = this.getCampaignState(snapshot, campaignId);
 
@@ -214,8 +216,21 @@ export class CampaignProcessor {
       ...(context.event?.properties ?? {}),
     };
 
-    const renderedTitle = renderTemplate(campaign.message.content.title, templateVars);
-    const renderedBody = renderTemplate(campaign.message.content.body, templateVars);
+    // Resolve localized content before template rendering
+    const resolvedContent = languageResolver
+      ? languageResolver.resolveContent(
+          campaign.message.content,
+          campaign.default_language,
+        )
+      : {
+          title: campaign.message.content.title,
+          body: campaign.message.content.body,
+          image_url: campaign.message.content.image_url,
+          landing_url: campaign.message.content.landing_url,
+        };
+
+    const renderedTitle = renderTemplate(resolvedContent.title, templateVars);
+    const renderedBody = renderTemplate(resolvedContent.body, templateVars);
 
     const queuedMessage: QueuedMessage = {
       id: generateUUID(),
@@ -225,8 +240,8 @@ export class CampaignProcessor {
       content: {
         title: renderedTitle,
         body: renderedBody,
-        image_url: campaign.message.content.image_url,
-        landing_url: campaign.message.content.landing_url,
+        image_url: resolvedContent.image_url,
+        landing_url: resolvedContent.landing_url,
       },
       trigger_event_id: resolved.trigger_event_id,
       execute_at: scheduleResult.execute_at,

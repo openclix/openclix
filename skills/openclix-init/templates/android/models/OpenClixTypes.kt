@@ -36,7 +36,9 @@ data class Config(
 
 data class Settings(
     val frequency_cap: FrequencyCap? = null,
-    val do_not_disturb: DoNotDisturb? = null
+    val do_not_disturb: DoNotDisturb? = null,
+    /** SDK-level default language. Used when no campaign-level default_language is set. */
+    val default_language: String? = null
 ) {
     companion object {
         fun fromJson(json: JSONObject): Settings = Settings(
@@ -47,6 +49,11 @@ data class Settings(
             },
             do_not_disturb = if (json.has("do_not_disturb") && !json.isNull("do_not_disturb")) {
                 DoNotDisturb.fromJson(json.getJSONObject("do_not_disturb"))
+            } else {
+                null
+            },
+            default_language = if (json.has("default_language") && !json.isNull("default_language")) {
+                json.getString("default_language")
             } else {
                 null
             }
@@ -96,7 +103,9 @@ data class Campaign(
     val status: CampaignStatus,
     val trigger: CampaignTrigger,
     val frequency_cap: FrequencyCap? = null,
-    val message: Message
+    val message: Message,
+    /** ISO 639-1 default language for this campaign. Overrides SDK-level defaultLanguage. */
+    val default_language: String? = null
 ) {
     companion object {
         fun fromJson(json: JSONObject): Campaign = Campaign(
@@ -110,7 +119,12 @@ data class Campaign(
             } else {
                 null
             },
-            message = Message.fromJson(json.getJSONObject("message"))
+            message = Message.fromJson(json.getJSONObject("message")),
+            default_language = if (json.has("default_language") && !json.isNull("default_language")) {
+                json.getString("default_language")
+            } else {
+                null
+            }
         )
     }
 }
@@ -380,14 +394,14 @@ data class Message(
     }
 }
 
-data class MessageContent(
+data class LocalizedContentEntry(
     val title: String,
     val body: String,
     val image_url: String? = null,
     val landing_url: String? = null
 ) {
     companion object {
-        fun fromJson(json: JSONObject): MessageContent = MessageContent(
+        fun fromJson(json: JSONObject): LocalizedContentEntry = LocalizedContentEntry(
             title = json.getString("title"),
             body = json.getString("body"),
             image_url = if (json.has("image_url") && !json.isNull("image_url")) {
@@ -401,6 +415,50 @@ data class MessageContent(
                 null
             }
         )
+    }
+}
+
+interface DeviceLocaleProvider {
+    fun getLocale(): String?
+}
+
+data class MessageContent(
+    val title: String,
+    val body: String,
+    val image_url: String? = null,
+    val landing_url: String? = null,
+    /** Language-keyed content overrides. Keys are ISO 639-1 codes. */
+    val localized: Map<String, LocalizedContentEntry>? = null
+) {
+    companion object {
+        fun fromJson(json: JSONObject): MessageContent {
+            val localized = if (json.has("localized") && !json.isNull("localized")) {
+                val localizedJson = json.getJSONObject("localized")
+                val map = mutableMapOf<String, LocalizedContentEntry>()
+                for (key in localizedJson.keys()) {
+                    map[key] = LocalizedContentEntry.fromJson(localizedJson.getJSONObject(key))
+                }
+                map
+            } else {
+                null
+            }
+
+            return MessageContent(
+                title = json.getString("title"),
+                body = json.getString("body"),
+                image_url = if (json.has("image_url") && !json.isNull("image_url")) {
+                    json.getString("image_url")
+                } else {
+                    null
+                },
+                landing_url = if (json.has("landing_url") && !json.isNull("landing_url")) {
+                    json.getString("landing_url")
+                } else {
+                    null
+                },
+                localized = localized
+            )
+        }
     }
 }
 
@@ -774,7 +832,9 @@ data class OpenClixConfig(
     val apiKey: String? = null,
     val logLevel: OpenClixLogLevel = OpenClixLogLevel.WARN,
     val extraHeaders: Map<String, String>? = null,
-    val sessionTimeoutMs: Int? = null
+    val sessionTimeoutMs: Int? = null,
+    /** SDK-level default language (ISO 639-1). Overridden by settings.default_language or campaign.default_language. */
+    val defaultLanguage: String? = null
 )
 
 interface OpenClixClock {

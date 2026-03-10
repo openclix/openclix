@@ -84,8 +84,10 @@ class Config {
 class Settings {
   final FrequencyCap? frequencyCap;
   final DoNotDisturb? doNotDisturb;
+  /// SDK-level default language. Used when no campaign-level default_language is set.
+  final String? defaultLanguage;
 
-  Settings({this.frequencyCap, this.doNotDisturb});
+  Settings({this.frequencyCap, this.doNotDisturb, this.defaultLanguage});
 
   factory Settings.fromJson(Map<String, dynamic> json) {
     return Settings(
@@ -105,6 +107,7 @@ class Settings {
               Map<String, dynamic>.from(json['do_not_disturb'] as Map),
             )
           : null,
+      defaultLanguage: json['default_language'] as String?,
     );
   }
 
@@ -112,6 +115,7 @@ class Settings {
     return {
       if (frequencyCap != null) 'frequency_cap': frequencyCap!.toJson(),
       if (doNotDisturb != null) 'do_not_disturb': doNotDisturb!.toJson(),
+      if (defaultLanguage != null) 'default_language': defaultLanguage,
     };
   }
 }
@@ -193,6 +197,8 @@ class Campaign {
   final CampaignTrigger trigger;
   final FrequencyCap? frequencyCap;
   final Message message;
+  /// ISO 639-1 default language for this campaign. Overrides SDK-level defaultLanguage.
+  final String? defaultLanguage;
 
   Campaign({
     required this.name,
@@ -202,6 +208,7 @@ class Campaign {
     required this.trigger,
     this.frequencyCap,
     required this.message,
+    this.defaultLanguage,
   });
 
   factory Campaign.fromJson(Map<String, dynamic> json) {
@@ -223,6 +230,7 @@ class Campaign {
       message: Message.fromJson(
         Map<String, dynamic>.from(json['message'] as Map? ?? const {}),
       ),
+      defaultLanguage: json['default_language'] as String?,
     );
   }
 
@@ -235,6 +243,7 @@ class Campaign {
       'trigger': trigger.toJson(),
       if (frequencyCap != null) 'frequency_cap': frequencyCap!.toJson(),
       'message': message.toJson(),
+      if (defaultLanguage != null) 'default_language': defaultLanguage,
     };
   }
 }
@@ -647,21 +656,21 @@ class Message {
   }
 }
 
-class MessageContent {
+class LocalizedContentEntry {
   final String title;
   final String body;
   final String? imageUrl;
   final String? landingUrl;
 
-  MessageContent({
+  LocalizedContentEntry({
     required this.title,
     required this.body,
     this.imageUrl,
     this.landingUrl,
   });
 
-  factory MessageContent.fromJson(Map<String, dynamic> json) {
-    return MessageContent(
+  factory LocalizedContentEntry.fromJson(Map<String, dynamic> json) {
+    return LocalizedContentEntry(
       title: json['title'] as String? ?? '',
       body: json['body'] as String? ?? '',
       imageUrl: json['image_url'] as String?,
@@ -675,6 +684,64 @@ class MessageContent {
       'body': body,
       if (imageUrl != null) 'image_url': imageUrl,
       if (landingUrl != null) 'landing_url': landingUrl,
+    };
+  }
+}
+
+abstract class DeviceLocaleProvider {
+  String? getLocale();
+}
+
+class MessageContent {
+  final String title;
+  final String body;
+  final String? imageUrl;
+  final String? landingUrl;
+  /// Language-keyed content overrides. Keys are ISO 639-1 codes.
+  final Map<String, LocalizedContentEntry>? localized;
+
+  MessageContent({
+    required this.title,
+    required this.body,
+    this.imageUrl,
+    this.landingUrl,
+    this.localized,
+  });
+
+  factory MessageContent.fromJson(Map<String, dynamic> json) {
+    Map<String, LocalizedContentEntry>? localizedMap;
+    final rawLocalized = json['localized'];
+    if (rawLocalized is Map) {
+      final castMap = Map<String, dynamic>.from(rawLocalized);
+      localizedMap = castMap.map(
+        (key, value) => MapEntry(
+          key,
+          LocalizedContentEntry.fromJson(
+            Map<String, dynamic>.from(value as Map),
+          ),
+        ),
+      );
+    }
+
+    return MessageContent(
+      title: json['title'] as String? ?? '',
+      body: json['body'] as String? ?? '',
+      imageUrl: json['image_url'] as String?,
+      landingUrl: json['landing_url'] as String?,
+      localized: localizedMap,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'body': body,
+      if (imageUrl != null) 'image_url': imageUrl,
+      if (landingUrl != null) 'landing_url': landingUrl,
+      if (localized != null)
+        'localized': localized!.map(
+          (key, entry) => MapEntry(key, entry.toJson()),
+        ),
     };
   }
 }
@@ -1110,6 +1177,8 @@ class OpenClixConfig {
   final OpenClixLogLevel logLevel;
   final Map<String, String>? extraHeaders;
   final int? sessionTimeoutMs;
+  /// SDK-level default language (ISO 639-1). Overridden by settings.default_language or campaign.default_language.
+  final String? defaultLanguage;
 
   OpenClixConfig({
     required this.endpoint,
@@ -1118,6 +1187,7 @@ class OpenClixConfig {
     this.logLevel = OpenClixLogLevel.warn,
     this.extraHeaders,
     this.sessionTimeoutMs,
+    this.defaultLanguage,
   });
 }
 

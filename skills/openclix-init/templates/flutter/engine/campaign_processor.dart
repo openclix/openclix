@@ -1,4 +1,5 @@
 import '../models/openclix_types.dart';
+import '../services/language_resolver.dart';
 import '../services/utils.dart';
 import 'event_condition_processor.dart';
 import 'schedule_calculator.dart';
@@ -22,12 +23,14 @@ class CampaignProcessorDependencies {
   final ScheduleCalculator scheduleCalculator;
   final OpenClixLogger logger;
   final Settings? settings;
+  final LanguageResolver? languageResolver;
 
   CampaignProcessorDependencies({
     required this.eventConditionProcessor,
     required this.scheduleCalculator,
     required this.logger,
     this.settings,
+    this.languageResolver,
   });
 }
 
@@ -243,18 +246,34 @@ class CampaignProcessor {
       );
     }
 
+    final languageResolver = dependencies.languageResolver;
+    String contentTitle;
+    String contentBody;
+    String? contentImageUrl;
+    String? contentLandingUrl;
+
+    if (languageResolver != null) {
+      final resolvedContent = languageResolver.resolveContent(
+        campaign.message.content,
+        campaignDefaultLanguage: campaign.defaultLanguage,
+      );
+      contentTitle = resolvedContent.title;
+      contentBody = resolvedContent.body;
+      contentImageUrl = resolvedContent.imageUrl;
+      contentLandingUrl = resolvedContent.landingUrl;
+    } else {
+      contentTitle = campaign.message.content.title;
+      contentBody = campaign.message.content.body;
+      contentImageUrl = campaign.message.content.imageUrl;
+      contentLandingUrl = campaign.message.content.landingUrl;
+    }
+
     final templateVariables = <String, dynamic>{
       ...(context.event?.properties ?? const {}),
     };
 
-    final renderedTitle = renderTemplate(
-      campaign.message.content.title,
-      templateVariables,
-    );
-    final renderedBody = renderTemplate(
-      campaign.message.content.body,
-      templateVariables,
-    );
+    final renderedTitle = renderTemplate(contentTitle, templateVariables);
+    final renderedBody = renderTemplate(contentBody, templateVariables);
 
     final queuedMessage = QueuedMessage(
       id: generateUUID(),
@@ -264,8 +283,8 @@ class CampaignProcessor {
       content: MessageContent(
         title: renderedTitle,
         body: renderedBody,
-        imageUrl: campaign.message.content.imageUrl,
-        landingUrl: campaign.message.content.landingUrl,
+        imageUrl: contentImageUrl,
+        landingUrl: contentLandingUrl,
       ),
       triggerEventId: resolved.triggerEventId,
       executeAt: scheduleResult.executeAt,
