@@ -1,4 +1,4 @@
-import type { MessageContent, LocalizedContentEntry, DeviceLocaleProvider } from './OpenClixTypes';
+import type { MessageContent, DeviceLocaleProvider } from './OpenClixTypes';
 
 export interface LanguageResolverConfig {
   sdkDefaultLanguage?: string;
@@ -7,6 +7,7 @@ export interface LanguageResolverConfig {
 
 export class LanguageResolver {
   private explicitLanguage: string | undefined;
+  private settingsDefaultLanguage: string | undefined;
   private readonly sdkDefaultLanguage: string | undefined;
   private readonly deviceLocaleProvider: DeviceLocaleProvider | undefined;
 
@@ -27,12 +28,17 @@ export class LanguageResolver {
     this.explicitLanguage = undefined;
   }
 
+  setSettingsDefaultLanguage(language: string | undefined): void {
+    this.settingsDefaultLanguage = language;
+  }
+
   /**
    * Resolution chain:
    * 1. Explicit setLanguage()
    * 2. Device locale (first 2 chars, lowercased)
    * 3. Campaign default_language
-   * 4. SDK defaultLanguage
+   * 4. Settings default_language (from remote config)
+   * 5. SDK defaultLanguage
    */
   resolveLanguage(campaignDefaultLanguage?: string): string | undefined {
     if (this.explicitLanguage) return this.explicitLanguage;
@@ -44,6 +50,7 @@ export class LanguageResolver {
     }
 
     if (campaignDefaultLanguage) return campaignDefaultLanguage;
+    if (this.settingsDefaultLanguage) return this.settingsDefaultLanguage;
     if (this.sdkDefaultLanguage) return this.sdkDefaultLanguage;
 
     return undefined;

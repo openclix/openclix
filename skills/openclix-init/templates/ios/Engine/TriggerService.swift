@@ -52,6 +52,9 @@ public actor TriggerService {
 
     public func replaceConfig(_ config: Config) {
         self.config = config
+        dependencies.languageResolver?.setSettingsDefaultLanguage(
+            config.settings?.default_language
+        )
         dependencies.logger.info(
             "[TriggerService] Config replaced (version: \(config.config_version), campaigns: \(config.campaigns.count))"
         )

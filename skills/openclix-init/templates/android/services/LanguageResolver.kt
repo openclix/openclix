@@ -14,7 +14,15 @@ class LanguageResolver(
     private val sdkDefaultLanguage: String? = null,
     private val deviceLocaleProvider: DeviceLocaleProvider? = null
 ) {
+    companion object {
+        private val LANGUAGE_CODE_PATTERN = Regex("^[a-z]{2}$")
+    }
+
+    @Volatile
     private var explicitLanguage: String? = null
+
+    @Volatile
+    private var settingsDefaultLanguage: String? = null
 
     fun setLanguage(languageCode: String) {
         explicitLanguage = languageCode
@@ -26,12 +34,17 @@ class LanguageResolver(
         explicitLanguage = null
     }
 
+    fun setSettingsDefaultLanguage(language: String?) {
+        settingsDefaultLanguage = language
+    }
+
     /**
      * Resolution chain:
      * 1. Explicit setLanguage()
      * 2. Device locale (first 2 chars, lowercased)
      * 3. Campaign default_language
-     * 4. SDK defaultLanguage
+     * 4. Settings default_language (from remote config)
+     * 5. SDK defaultLanguage
      */
     fun resolveLanguage(campaignDefaultLanguage: String? = null): String? {
         if (explicitLanguage != null) return explicitLanguage
@@ -39,10 +52,11 @@ class LanguageResolver(
         val deviceLocale = deviceLocaleProvider?.getLocale()
         if (deviceLocale != null) {
             val normalized = deviceLocale.take(2).lowercase()
-            if (Regex("^[a-z]{2}$").matches(normalized)) return normalized
+            if (LANGUAGE_CODE_PATTERN.matches(normalized)) return normalized
         }
 
         if (campaignDefaultLanguage != null) return campaignDefaultLanguage
+        if (settingsDefaultLanguage != null) return settingsDefaultLanguage
         if (sdkDefaultLanguage != null) return sdkDefaultLanguage
 
         return null

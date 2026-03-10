@@ -676,7 +676,7 @@ ValidationResult validateConfig(Config config) {
           errors.add(
             ValidationIssue(
               path: entryPath,
-              code: 'INVALID_LOCALIZED_LANGUAGE_KEY',
+              code: 'INVALID_LANGUAGE_KEY',
               message:
                   'localized key "$langKey" must be a 2-letter ISO 639-1 language code',
             ),
@@ -717,6 +717,27 @@ ValidationResult validateConfig(Config config) {
               code: 'INVALID_LOCALIZED_BODY_LENGTH',
               message:
                   'localized body must be $maximumMessageBodyLength characters or less',
+            ),
+          );
+        }
+
+        if (entry.imageUrl != null && !isValidUri(entry.imageUrl)) {
+          errors.add(
+            ValidationIssue(
+              path: '$entryPath.image_url',
+              code: 'INVALID_IMAGE_URL',
+              message: 'image_url must be a valid URI',
+            ),
+          );
+        }
+
+        if (entry.landingUrl != null &&
+            !isValidUriReference(entry.landingUrl)) {
+          errors.add(
+            ValidationIssue(
+              path: '$entryPath.landing_url',
+              code: 'INVALID_LANDING_URL',
+              message: 'landing_url must be a valid URI reference',
             ),
           );
         }

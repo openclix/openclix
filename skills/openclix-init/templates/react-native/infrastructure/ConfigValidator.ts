@@ -858,26 +858,58 @@ export function validateConfig(config: Config): ValidationResult {
               if (!/^[a-z]{2}$/.test(langCode)) {
                 errors.push({
                   path: `${basePath}.message.content.localized.${langCode}`,
-                  code: 'INVALID_LANGUAGE_CODE',
+                  code: 'INVALID_LANGUAGE_KEY',
                   message: `Invalid language code '${langCode}'. Must be a 2-letter ISO 639-1 code.`,
                 });
               }
               if (typeof entry === 'object' && entry !== null) {
                 const e = entry as Record<string, unknown>;
-                if (typeof e.title !== 'string' || e.title.length === 0 || (e.title as string).length > MAX_MESSAGE_TITLE_LENGTH) {
+                if (!isNonEmptyString(e.title)) {
                   errors.push({
                     path: `${basePath}.message.content.localized.${langCode}.title`,
-                    code: 'INVALID_TITLE',
-                    message: `title must be a string between 1-${MAX_MESSAGE_TITLE_LENGTH} characters`,
+                    code: 'MISSING_LOCALIZED_TITLE',
+                    message: 'Localized entry must have a title',
+                  });
+                } else if ((e.title as string).length > MAX_MESSAGE_TITLE_LENGTH) {
+                  errors.push({
+                    path: `${basePath}.message.content.localized.${langCode}.title`,
+                    code: 'INVALID_LOCALIZED_TITLE_LENGTH',
+                    message: `localized title must be ${MAX_MESSAGE_TITLE_LENGTH} characters or less`,
                   });
                 }
-                if (typeof e.body !== 'string' || e.body.length === 0 || (e.body as string).length > MAX_MESSAGE_BODY_LENGTH) {
+                if (!isNonEmptyString(e.body)) {
                   errors.push({
                     path: `${basePath}.message.content.localized.${langCode}.body`,
-                    code: 'INVALID_BODY',
-                    message: `body must be a string between 1-${MAX_MESSAGE_BODY_LENGTH} characters`,
+                    code: 'MISSING_LOCALIZED_BODY',
+                    message: 'Localized entry must have a body',
+                  });
+                } else if ((e.body as string).length > MAX_MESSAGE_BODY_LENGTH) {
+                  errors.push({
+                    path: `${basePath}.message.content.localized.${langCode}.body`,
+                    code: 'INVALID_LOCALIZED_BODY_LENGTH',
+                    message: `localized body must be ${MAX_MESSAGE_BODY_LENGTH} characters or less`,
                   });
                 }
+                if (e.image_url !== undefined && !isValidUri(String(e.image_url))) {
+                  errors.push({
+                    path: `${basePath}.message.content.localized.${langCode}.image_url`,
+                    code: 'INVALID_IMAGE_URL',
+                    message: 'image_url must be a valid URI',
+                  });
+                }
+                if (e.landing_url !== undefined && !isValidUriReference(String(e.landing_url))) {
+                  errors.push({
+                    path: `${basePath}.message.content.localized.${langCode}.landing_url`,
+                    code: 'INVALID_LANDING_URL',
+                    message: 'landing_url must be a valid URI reference',
+                  });
+                }
+              } else {
+                errors.push({
+                  path: `${basePath}.message.content.localized.${langCode}`,
+                  code: 'INVALID_LOCALIZED_ENTRY',
+                  message: 'Each localized entry must be an object with title and body',
+                });
               }
             }
           }

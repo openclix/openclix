@@ -45,6 +45,9 @@ class TriggerService(
 
     fun replaceConfig(newConfig: Config) {
         config = newConfig
+        dependencies.languageResolver?.setSettingsDefaultLanguage(
+            newConfig.settings?.default_language
+        )
         dependencies.logger.info(
             "[TriggerService] Config replaced (version: ${newConfig.config_version}, campaigns: ${newConfig.campaigns.size})"
         )

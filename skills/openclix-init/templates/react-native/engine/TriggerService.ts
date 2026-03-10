@@ -54,6 +54,9 @@ export class TriggerService {
 
   replaceConfig(config: Config): void {
     this.config = config;
+    this.dependencies.languageResolver?.setSettingsDefaultLanguage(
+      config.settings?.default_language,
+    );
     this.dependencies.logger.info(
       `[TriggerService] Config replaced (version: ${config.config_version}, campaigns: ${Object.keys(config.campaigns).length})`,
     );

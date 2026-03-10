@@ -16,6 +16,7 @@ class ResolvedContent {
 
 class LanguageResolver {
   String? _explicitLanguage;
+  String? _settingsDefaultLanguage;
   final String? _sdkDefaultLanguage;
   final DeviceLocaleProvider? _deviceLocaleProvider;
 
@@ -39,11 +40,16 @@ class LanguageResolver {
     _explicitLanguage = null;
   }
 
+  void setSettingsDefaultLanguage(String? language) {
+    _settingsDefaultLanguage = language;
+  }
+
   /// Resolution chain:
   /// 1. Explicit setLanguage()
   /// 2. Device locale (first 2 chars, lowercased)
   /// 3. Campaign default_language
-  /// 4. SDK defaultLanguage
+  /// 4. Settings default_language (from remote config)
+  /// 5. SDK defaultLanguage
   String? resolveLanguage({String? campaignDefaultLanguage}) {
     if (_explicitLanguage != null) return _explicitLanguage;
 
@@ -54,6 +60,7 @@ class LanguageResolver {
     }
 
     if (campaignDefaultLanguage != null) return campaignDefaultLanguage;
+    if (_settingsDefaultLanguage != null) return _settingsDefaultLanguage;
     if (_sdkDefaultLanguage != null) return _sdkDefaultLanguage;
 
     return null;

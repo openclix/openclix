@@ -5,6 +5,7 @@ import {
   makeEventCampaign,
   makeScheduledCampaign,
   makeRecurringCampaign,
+  makeLocalizedEventCampaign,
   makeEmptySnapshot,
   makeEvent,
   makeEventTrackedContext,
@@ -13,6 +14,7 @@ import {
   makeSnapshotWithQueuedMessages,
 } from './helpers/fixtures';
 import { createMockLogger } from './helpers/mocks';
+import { LanguageResolver } from '../templates/react-native/domain/LanguageResolver';
 import type { CampaignProcessorDeps } from '../templates/react-native/domain/CampaignProcessor';
 import type { Settings, TriggerContext } from '../templates/react-native/domain/OpenClixTypes';
 
@@ -467,5 +469,75 @@ describe('CampaignProcessor', () => {
       makeDeps(),
     );
     expect(decision.action).toBe('skip');
+  });
+
+  describe('localized content', () => {
+    test('campaign without localized field works as before (backward compat)', () => {
+      const decision = processor.process(
+        'test-campaign',
+        makeEventCampaign(),
+        makeEventTrackedContext(makeEvent({ properties: { username: 'Alice' } })),
+        makeEmptySnapshot(),
+        makeDeps(),
+      );
+      expect(decision.action).toBe('trigger');
+      expect(decision.queued_message?.content.title).toBe('Hello Alice');
+      expect(decision.queued_message?.content.body).toBe('You clicked the button!');
+    });
+
+    test('campaign with localized field resolves to correct language', () => {
+      const languageResolver = new LanguageResolver({});
+      languageResolver.setLanguage('ko');
+      const deps: CampaignProcessorDeps = {
+        eventConditionProcessor,
+        scheduleCalculator,
+        logger: createMockLogger(),
+        languageResolver,
+      };
+      const decision = processor.process(
+        'test-campaign',
+        makeLocalizedEventCampaign(),
+        makeEventTrackedContext(makeEvent({ properties: { username: 'Alice' } })),
+        makeEmptySnapshot(),
+        deps,
+      );
+      expect(decision.action).toBe('trigger');
+      expect(decision.queued_message?.content.title).toBe('안녕 Alice');
+      expect(decision.queued_message?.content.body).toBe('버튼을 클릭했습니다!');
+    });
+
+    test('template variables ({{var}}) work in localized content', () => {
+      const languageResolver = new LanguageResolver({});
+      languageResolver.setLanguage('ja');
+      const deps: CampaignProcessorDeps = {
+        eventConditionProcessor,
+        scheduleCalculator,
+        logger: createMockLogger(),
+        languageResolver,
+      };
+      const decision = processor.process(
+        'test-campaign',
+        makeLocalizedEventCampaign(),
+        makeEventTrackedContext(makeEvent({ properties: { username: 'Bob' } })),
+        makeEmptySnapshot(),
+        deps,
+      );
+      expect(decision.action).toBe('trigger');
+      expect(decision.queued_message?.content.title).toBe('こんにちは Bob');
+      expect(decision.queued_message?.content.body).toBe('ボタンをクリックしました！');
+    });
+
+    test('when languageResolver is not in deps, flat content is used', () => {
+      const decision = processor.process(
+        'test-campaign',
+        makeLocalizedEventCampaign(),
+        makeEventTrackedContext(makeEvent({ properties: { username: 'Alice' } })),
+        makeEmptySnapshot(),
+        makeDeps(),
+      );
+      expect(decision.action).toBe('trigger');
+      expect(decision.queued_message?.content.title).toBe('Hello Alice');
+      expect(decision.queued_message?.content.body).toBe('You clicked the button!');
+    });
   });
 });

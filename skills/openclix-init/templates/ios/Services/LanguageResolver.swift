@@ -25,6 +25,7 @@ public final class LanguageResolver: @unchecked Sendable {
 
     private let lock = NSLock()
     private var explicitLanguage: String?
+    private var settingsDefaultLanguage: String?
     private let sdkDefaultLanguage: String?
     private let deviceLocaleProvider: DeviceLocaleProvider?
 
@@ -54,14 +55,22 @@ public final class LanguageResolver: @unchecked Sendable {
         explicitLanguage = nil
     }
 
+    public func setSettingsDefaultLanguage(_ language: String?) {
+        lock.lock()
+        defer { lock.unlock() }
+        settingsDefaultLanguage = language
+    }
+
     /// Resolution chain:
     /// 1. Explicit setLanguage()
     /// 2. Device locale (first 2 chars, lowercased)
     /// 3. Campaign default_language
-    /// 4. SDK defaultLanguage
+    /// 4. Settings default_language (from remote config)
+    /// 5. SDK defaultLanguage
     public func resolveLanguage(campaignDefaultLanguage: String? = nil) -> String? {
         lock.lock()
         let explicit = explicitLanguage
+        let settingsDefault = settingsDefaultLanguage
         lock.unlock()
 
         if let explicit {
@@ -78,6 +87,10 @@ public final class LanguageResolver: @unchecked Sendable {
 
         if let campaignDefaultLanguage {
             return campaignDefaultLanguage
+        }
+
+        if let settingsDefault {
+            return settingsDefault
         }
 
         if let sdkDefaultLanguage {

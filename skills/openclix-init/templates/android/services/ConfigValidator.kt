@@ -694,6 +694,26 @@ fun validateConfig(config: Config): ValidationResult {
                         )
                     )
                 }
+
+                if (entry.image_url != null && !isValidUri(entry.image_url)) {
+                    errors.add(
+                        ValidationIssue(
+                            path = "$localizedPath.image_url",
+                            code = "INVALID_IMAGE_URL",
+                            message = "image_url must be a valid URI"
+                        )
+                    )
+                }
+
+                if (entry.landing_url != null && !isValidUriReference(entry.landing_url)) {
+                    errors.add(
+                        ValidationIssue(
+                            path = "$localizedPath.landing_url",
+                            code = "INVALID_LANDING_URL",
+                            message = "landing_url must be a valid URI reference"
+                        )
+                    )
+                }
             }
         }
     }
