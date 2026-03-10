@@ -40,7 +40,9 @@ public final class LanguageResolver: @unchecked Sendable {
     public func setLanguage(_ languageCode: String) {
         lock.lock()
         defer { lock.unlock() }
-        explicitLanguage = languageCode
+        let candidate = String(languageCode.prefix(2)).lowercased()
+        let range = NSRange(candidate.startIndex..., in: candidate)
+        explicitLanguage = languageCodePattern.firstMatch(in: candidate, range: range) != nil ? candidate : nil
     }
 
     public func getLanguage() -> String? {

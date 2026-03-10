@@ -654,8 +654,7 @@
           "propertyNames": { "pattern": "^[a-z]{2}$" },
           "additionalProperties": {
             "$ref": "#/$defs/localized_content_entry"
-          },
-          "minProperties": 1
+          }
         }
       }
     },

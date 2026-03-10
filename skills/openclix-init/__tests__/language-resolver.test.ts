@@ -100,6 +100,14 @@ describe('LanguageResolver', () => {
       expect(resolver.getLanguage()).toBeUndefined();
     });
 
+    test('setLanguage normalizes input (e.g., EN -> en, en-US -> en)', () => {
+      const resolver = makeResolver();
+      resolver.setLanguage('EN');
+      expect(resolver.getLanguage()).toBe('en');
+      resolver.setLanguage('ko-KR');
+      expect(resolver.getLanguage()).toBe('ko');
+    });
+
     test('after clear, falls back to next in chain', () => {
       const resolver = makeResolver({
         deviceLocaleProvider: { getLocale: () => 'ja' },

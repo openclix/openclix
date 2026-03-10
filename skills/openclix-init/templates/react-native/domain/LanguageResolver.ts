@@ -17,7 +17,8 @@ export class LanguageResolver {
   }
 
   setLanguage(languageCode: string): void {
-    this.explicitLanguage = languageCode;
+    const normalized = languageCode.substring(0, 2).toLowerCase();
+    this.explicitLanguage = /^[a-z]{2}$/.test(normalized) ? normalized : undefined;
   }
 
   getLanguage(): string | undefined {

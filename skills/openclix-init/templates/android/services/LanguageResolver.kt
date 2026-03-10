@@ -25,7 +25,8 @@ class LanguageResolver(
     private var settingsDefaultLanguage: String? = null
 
     fun setLanguage(languageCode: String) {
-        explicitLanguage = languageCode
+        val normalized = languageCode.take(2).lowercase(java.util.Locale.ROOT)
+        explicitLanguage = if (LANGUAGE_CODE_PATTERN.matches(normalized)) normalized else null
     }
 
     fun getLanguage(): String? = explicitLanguage
@@ -51,7 +52,7 @@ class LanguageResolver(
 
         val deviceLocale = deviceLocaleProvider?.getLocale()
         if (deviceLocale != null) {
-            val normalized = deviceLocale.take(2).lowercase()
+            val normalized = deviceLocale.take(2).lowercase(java.util.Locale.ROOT)
             if (LANGUAGE_CODE_PATTERN.matches(normalized)) return normalized
         }
 

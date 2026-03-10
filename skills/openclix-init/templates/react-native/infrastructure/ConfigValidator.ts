@@ -23,6 +23,7 @@ const MAX_MESSAGE_TITLE_LENGTH = 120;
 const MAX_MESSAGE_BODY_LENGTH = 500;
 
 const KEBAB_CASE_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+const LANGUAGE_CODE_PATTERN = /^[a-z]{2}$/;
 const VALID_STATUSES: ReadonlySet<string> = new Set<CampaignStatus>(['running', 'paused']);
 const VALID_CHANNEL_TYPES: ReadonlySet<string> = new Set<ChannelType>(['app_push']);
 const VALID_TRIGGER_TYPES: ReadonlySet<string> = new Set<TriggerType>([
@@ -321,7 +322,7 @@ export function validateConfig(config: Config): ValidationResult {
       );
 
       if (config.settings.default_language !== undefined) {
-        if (typeof config.settings.default_language !== 'string' || !/^[a-z]{2}$/.test(config.settings.default_language)) {
+        if (typeof config.settings.default_language !== 'string' || !LANGUAGE_CODE_PATTERN.test(config.settings.default_language)) {
           errors.push({
             path: '.settings.default_language',
             code: 'INVALID_DEFAULT_LANGUAGE',
@@ -414,7 +415,7 @@ export function validateConfig(config: Config): ValidationResult {
       );
 
       if (campaign.default_language !== undefined) {
-        if (typeof campaign.default_language !== 'string' || !/^[a-z]{2}$/.test(campaign.default_language)) {
+        if (typeof campaign.default_language !== 'string' || !LANGUAGE_CODE_PATTERN.test(campaign.default_language)) {
           errors.push({
             path: `${basePath}.default_language`,
             code: 'INVALID_DEFAULT_LANGUAGE',
@@ -855,14 +856,14 @@ export function validateConfig(config: Config): ValidationResult {
             });
           } else {
             for (const [langCode, entry] of Object.entries(content.localized as Record<string, unknown>)) {
-              if (!/^[a-z]{2}$/.test(langCode)) {
+              if (!LANGUAGE_CODE_PATTERN.test(langCode)) {
                 errors.push({
                   path: `${basePath}.message.content.localized.${langCode}`,
                   code: 'INVALID_LANGUAGE_KEY',
                   message: `Invalid language code '${langCode}'. Must be a 2-letter ISO 639-1 code.`,
                 });
               }
-              if (typeof entry === 'object' && entry !== null) {
+              if (typeof entry === 'object' && entry !== null && !Array.isArray(entry)) {
                 const e = entry as Record<string, unknown>;
                 if (!isNonEmptyString(e.title)) {
                   errors.push({

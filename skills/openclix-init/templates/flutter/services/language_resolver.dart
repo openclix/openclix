@@ -29,7 +29,10 @@ class LanguageResolver {
         _deviceLocaleProvider = deviceLocaleProvider;
 
   void setLanguage(String languageCode) {
-    _explicitLanguage = languageCode;
+    final normalized = languageCode.length >= 2
+        ? languageCode.substring(0, 2).toLowerCase()
+        : languageCode.toLowerCase();
+    _explicitLanguage = _languageCodePattern.hasMatch(normalized) ? normalized : null;
   }
 
   String? getLanguage() {

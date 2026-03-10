@@ -381,14 +381,17 @@ class OpenClix {
   }
 
   static void setLanguage(String languageCode) {
+    assertInitialized();
     _languageResolver?.setLanguage(languageCode);
   }
 
   static String? getLanguage() {
+    assertInitialized();
     return _languageResolver?.getLanguage();
   }
 
   static void clearLanguage() {
+    assertInitialized();
     _languageResolver?.clearLanguage();
   }
 
