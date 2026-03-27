@@ -94,14 +94,16 @@ Rollback defaults:
 - `hosted_http`: roll back to previous JSON version at stable HTTPS URL.
 - `dual`: revert both hosted primary and local fallback together.
 
-## OpenClaw-specific safety constraints
+## Third-party OpenClaw plugin review
 
-OpenClaw can be part of the same workflow, but treat skills/plugins as a supply-chain risk surface.
+OpenClix's own skills (`openclix-init`, `openclix-design-campaigns`, `openclix-analytics`, `openclix-update-campaigns`, `openclix-update`) are first-party and source-auditable in this repository.
 
-- Review skill source before execution.
-- Run unknown skills in sandboxed or isolated environments.
-- Prefer read-only analysis prompts for first-pass review.
-- Require human approval before config apply.
+When the retention ops loop incorporates **additional third-party OpenClaw plugins** that are not part of this repository, apply these review steps to those external plugins:
+
+- Review the external plugin's source before execution.
+- Run unfamiliar external plugins in sandboxed or isolated environments.
+- Prefer read-only analysis prompts for first-pass review of external plugins.
+- Require human approval before applying config changes from any source.
 
 ## Failure codes from helper script
 

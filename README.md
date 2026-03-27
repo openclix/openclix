@@ -36,7 +36,8 @@ OpenClix is delivered as skills + source templates.
 Paste this prompt into your coding agent:
 
 ```text
-Install OpenClix skills from https://github.com/openclix/openclix and integrate OpenClix into this project.
+OpenClix is an open-source, MIT-licensed project (https://github.com/openclix/openclix).
+Install OpenClix first-party skills and templates from this repository and integrate OpenClix into this project.
 Use openclix-init to detect platform, copy templates into the dedicated OpenClix namespace,
 wire initialization/event/lifecycle touchpoints, and run build verification.
 If this project already has local notifications outside OpenClix, detect whether they are migration-capable,
