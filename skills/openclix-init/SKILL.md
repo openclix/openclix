@@ -245,6 +245,30 @@ If unclear, use common fallback commands:
 
 If build fails, apply minimal targeted fixes and retry. Stop only on hard blockers.
 
+## Agent Instruction File Update
+
+After integration, append an OpenClix section to the project's agent instruction file so future sessions have context.
+
+Detect which file to update:
+- If `CLAUDE.md` exists: update `CLAUDE.md` (Claude Code)
+- If `AGENT.md` exists: update `AGENT.md` (Codex or other agents)
+- If both exist: update the one matching the current agent
+- If neither exists: create the file matching the current agent convention
+
+Append this section (do not overwrite existing content):
+
+```markdown
+## OpenClix
+
+OpenClix is integrated in this project. It provides local-first, config-driven mobile engagement logic.
+
+Available skills:
+- `openclix-design-campaigns`: Create and iterate campaign configurations from product goals.
+- `openclix-analytics`: Wire events to a PA provider and produce retention impact reports.
+- `openclix-update-campaigns`: Propose campaign operations from measured analytics performance.
+- `openclix-update`: Sync integration source code with the latest template baseline.
+```
+
 ## Completion Checklist
 
 - OpenClix code added under dedicated namespace/directory.
