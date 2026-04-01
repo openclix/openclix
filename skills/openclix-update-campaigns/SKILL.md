@@ -1,6 +1,6 @@
 ---
 name: openclix-update-campaigns
-description: Update OpenClix campaigns from analytics performance by proposing pause/resume/add/delete/update actions per campaign, producing a next config draft, and applying only after user confirmation. Use when users ask to optimize campaign operations from PA metrics or adjust campaign status/rules based on retention and engagement outcomes.
+description: Propose campaign operations (pause/resume/add/delete/update) from measured analytics performance, produce openclix-config.next.json, and apply only after user confirmation. TRIGGER when the user asks to "optimize campaigns", "pause underperforming notifications", "adjust campaigns based on data", or review campaign performance for operational decisions — even if they say "this campaign isn't working, what should I do?". DO NOT trigger for initial campaign design (openclix-design-campaigns), analytics wiring (openclix-analytics), or source template updates (openclix-update).
 ---
 
 # OpenClix Update Campaigns

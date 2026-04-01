@@ -1,6 +1,6 @@
 ---
 name: openclix-init
-description: Integrate OpenClix by adding local client code templates into an existing mobile app with minimal edits, strict dependency reuse, and post-integration build verification.
+description: Set up OpenClix in a mobile app by detecting the platform, copying source templates into a dedicated namespace, wiring initialization/event/lifecycle touchpoints, and running build verification. TRIGGER when the user asks to "integrate OpenClix", "set up local notifications", "add engagement logic", or mentions OpenClix for the first time in a project without an existing integration — even if they don't mention this skill by name. DO NOT trigger when OpenClix is already integrated and the user is asking about campaigns, analytics, or template updates — those belong to other openclix-* skills.
 ---
 
 # OpenClix Init

@@ -1,6 +1,6 @@
 ---
 name: openclix-design-campaigns
-description: Design and iterate OpenClix campaign configurations from product goals and app events. Use this skill when users ask to create, refine, or validate OpenClix local notification campaigns, trigger logic (event/scheduled/recurring), suppression rules (do_not_disturb/frequency_cap), or campaign message content in JSON config files.
+description: Design, create, and iterate OpenClix campaign configurations from product goals and app events, producing schema-valid openclix-config.json with delivery mode setup. TRIGGER when the user asks to "create campaigns", "design notifications", "configure engagement messages", "set up onboarding/re-engagement/streak flows", or refine trigger logic, suppression rules, or message content — even if they just describe a retention goal without mentioning campaigns. DO NOT trigger for campaign performance analysis or optimization from metrics — that belongs to openclix-update-campaigns.
 ---
 
 # OpenClix Campaign Design
