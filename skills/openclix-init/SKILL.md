@@ -1,6 +1,6 @@
 ---
 name: openclix-init
-description: Integrate OpenClix by adding local client code templates into an existing mobile app with minimal edits, strict dependency reuse, and post-integration build verification.
+description: Set up OpenClix in a mobile app by detecting the platform, copying source templates into a dedicated namespace, wiring initialization/event/lifecycle touchpoints, and running build verification. TRIGGER when the user asks to "integrate OpenClix", "set up local notifications", "add engagement logic", or mentions OpenClix for the first time in a project without an existing integration — even if they don't mention this skill by name. DO NOT trigger when OpenClix is already integrated and the user is asking about campaigns, analytics, or template updates — those belong to other openclix-* skills.
 ---
 
 # OpenClix Init
@@ -27,13 +27,13 @@ Use a local-source integration model (shadcn-style): copy, adapt, wire, verify.
 
 Use file evidence in this order:
 
-| Priority | Platform | Required Evidence |
-|----------|----------|-------------------|
-| 1 | Expo | `app.json` or `app.config.*` with `expo` |
-| 2 | React Native | `package.json` with `react-native` and typical `ios/` + `android/` structure |
-| 3 | Flutter | `pubspec.yaml` with Flutter SDK |
-| 4 | iOS native | `*.xcodeproj` or `*.xcworkspace` or `Package.swift` |
-| 5 | Android native | `build.gradle` or `build.gradle.kts` |
+| Priority | Platform       | Required Evidence                                                            |
+| -------- | -------------- | ---------------------------------------------------------------------------- |
+| 1        | Expo           | `app.json` or `app.config.*` with `expo`                                     |
+| 2        | React Native   | `package.json` with `react-native` and typical `ios/` + `android/` structure |
+| 3        | Flutter        | `pubspec.yaml` with Flutter SDK                                              |
+| 4        | iOS native     | `*.xcodeproj` or `*.xcworkspace` or `Package.swift`                          |
+| 5        | Android native | `build.gradle` or `build.gradle.kts`                                         |
 
 If signals conflict, trust concrete file evidence and report the mismatch.
 
@@ -244,6 +244,32 @@ If unclear, use common fallback commands:
 - Flutter: `flutter analyze`
 
 If build fails, apply minimal targeted fixes and retry. Stop only on hard blockers.
+
+## Agent Instruction File Update
+
+After integration, append an OpenClix section to the project's agent instruction file so future sessions have context.
+
+Detect which file to update:
+
+- If `CLAUDE.md` exists: update `CLAUDE.md` (Claude Code)
+- If `AGENTS.md` exists: update `AGENTS.md` (Codex or other agents)
+- If both exist: update the one matching the current agent
+- If neither exists: create the file matching the current agent convention
+
+Append this section (do not overwrite existing content):
+
+```markdown
+## OpenClix
+
+OpenClix is integrated in this project. It provides local-first, config-driven mobile engagement logic.
+
+Available skills:
+
+- `openclix-design-campaigns`: Create and iterate campaign configurations from product goals.
+- `openclix-analytics`: Wire events to a PA provider and produce retention impact reports.
+- `openclix-update-campaigns`: Propose campaign operations from measured analytics performance.
+- `openclix-update`: Sync integration source code with the latest template baseline.
+```
 
 ## Completion Checklist
 

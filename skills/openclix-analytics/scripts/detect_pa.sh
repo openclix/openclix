@@ -124,7 +124,7 @@ if command -v rg >/dev/null 2>&1; then
       --glob '!**/scripts/**' \
       --glob '!**/docs/**' \
       --glob '!**/README.md' \
-      --glob '!**/AGENT.md' \
+      --glob '!**/AGENTS.md' \
       --max-count 1 | head -n 20 || true
   )
 fi

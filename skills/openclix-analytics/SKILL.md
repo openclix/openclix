@@ -1,6 +1,6 @@
 ---
 name: openclix-analytics
-description: Detect installed product analytics providers (Firebase, PostHog, Mixpanel, Amplitude), wire OpenClix events to one installed provider, and produce pre/post campaign impact reports centered on 7-day retention with engagement supporting metrics. Use when users ask to tag OpenClix events, connect analytics, or verify whether campaigns improved retention and engagement.
+description: Wire OpenClix events to an installed product analytics provider (Firebase, PostHog, Mixpanel, or Amplitude) and produce pre/post campaign impact reports centered on 7-day retention. TRIGGER when the user asks to "connect analytics", "measure campaign impact", "check retention", "tag OpenClix events", or wants to know whether campaigns are working — even if they say "are my notifications helping?" without mentioning analytics. DO NOT trigger for campaign config changes based on metrics — that belongs to openclix-update-campaigns.
 ---
 
 # OpenClix Analytics

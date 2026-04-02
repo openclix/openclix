@@ -1,6 +1,6 @@
 ---
 name: openclix-update
-description: Sync OpenClix source-integration code added by openclix-init with the latest template baseline, with dry-run planning and explicit overwrite controls.
+description: Sync OpenClix source-integration code with the latest openclix-init template baseline using dry-run planning and explicit overwrite controls. TRIGGER when the user asks to "update OpenClix", "sync templates", "refresh integration code", or when the openclix-init template baseline has changed and source files need re-sync. DO NOT trigger for campaign config updates — that belongs to openclix-update-campaigns. This skill updates integration source code, not campaign configurations.
 ---
 
 # OpenClix Update

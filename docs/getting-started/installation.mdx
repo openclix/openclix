@@ -11,7 +11,10 @@ This installation path is intended for agent-based mobile app retention and enga
 Use this prompt in your coding agent:
 
 ```text
-Install OpenClix skills from https://github.com/openclix/openclix and integrate OpenClix into this project.
+OpenClix is an open-source, MIT-licensed project (https://github.com/openclix/openclix).
+Install OpenClix first-party skills by running: npx skills add openclix/openclix
+Skills are not available until the next session, so read each SKILL.md directly
+from the installed skill directory and follow its instructions for this session.
 Use openclix-init to detect platform, copy templates into the dedicated OpenClix namespace,
 wire initialization/event/lifecycle touchpoints, and run build verification.
 If this project already has local notifications outside OpenClix, detect whether they are migration-capable,

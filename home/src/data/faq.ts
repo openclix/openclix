@@ -41,8 +41,8 @@ export const faqItems: FAQItem[] = [
       "OpenClix is a strong fit for local-first onboarding, habit, re-engagement, and feature discovery flows. If you need complex vendor tooling or server-triggered, real-time push operations, pair it with a full engagement stack.",
   },
   {
-    question: "How should I use OpenClaw safely in retention operations?",
+    question: "How should I handle third-party OpenClaw plugins in retention operations?",
     answer:
-      "Treat third-party OpenClaw skills/plugins as untrusted by default. Review source before execution, prefer sandboxed runs, and keep a strict human approval gate before applying config changes.",
+      "OpenClix's own skills are first-party and auditable in this repository. When using additional third-party OpenClaw plugins from outside this repository, review their source before execution, prefer sandboxed runs, and keep human approval gates before applying campaign config changes.",
   },
 ];
