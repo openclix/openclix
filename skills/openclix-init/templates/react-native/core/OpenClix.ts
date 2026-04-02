@@ -12,7 +12,10 @@ import type {
   Logger,
   JsonValue,
   SystemEventName,
+  DeviceLocaleProvider,
 } from '../domain/OpenClixTypes';
+import { LanguageResolver } from '../domain/LanguageResolver';
+import { ReactNativeDeviceLocaleProvider } from '../infrastructure/ReactNativeDeviceLocaleProvider';
 import { TriggerService } from '../engine/TriggerService';
 import type { TriggerServiceDependencies } from '../engine/TriggerService';
 import { loadConfig } from '../infrastructure/ConfigLoader';
@@ -26,6 +29,7 @@ export interface OpenClixDependencies {
   clock?: Clock;
   lifecycleStateReader?: LifecycleStateReader;
   logger?: Logger;
+  deviceLocaleProvider?: DeviceLocaleProvider;
 }
 
 function isRemoteEndpoint(endpoint: string): boolean {
@@ -101,6 +105,7 @@ export class OpenClix {
   private static clock: Clock | null = null;
   private static lifecycleStateReader: LifecycleStateReader | null = null;
   private static logger: Logger | null = null;
+  private static languageResolver: LanguageResolver | null = null;
   private static dependencies: OpenClixDependencies | null = null;
 
   private constructor() {}
@@ -127,6 +132,10 @@ export class OpenClix {
     OpenClix.logger.setLogLevel?.(config.logLevel ?? 'warn');
     OpenClix.campaignStateRepository = dependencies.campaignStateRepository;
     OpenClix.messageScheduler = dependencies.messageScheduler;
+    OpenClix.languageResolver = new LanguageResolver({
+      sdkDefaultLanguage: config.defaultLanguage,
+      deviceLocaleProvider: dependencies.deviceLocaleProvider ?? new ReactNativeDeviceLocaleProvider(),
+    });
     OpenClix.triggerService = new TriggerService(OpenClix.createTriggerServiceDependencies());
 
     const logger = OpenClix.logger;
@@ -339,6 +348,7 @@ export class OpenClix {
     OpenClix.clock = null;
     OpenClix.lifecycleStateReader = null;
     OpenClix.logger = null;
+    OpenClix.languageResolver = null;
     OpenClix.dependencies = null;
 
     logger?.info('OpenClix SDK reset complete.');
@@ -346,6 +356,27 @@ export class OpenClix {
 
   static setLogLevel(level: OpenClixLogLevel): void {
     OpenClix.logger?.setLogLevel?.(level);
+  }
+
+  static setLanguage(languageCode: string): void {
+    OpenClix.assertInitialized();
+    OpenClix.languageResolver?.setLanguage(languageCode);
+    const stored = OpenClix.languageResolver?.getLanguage();
+    if (stored) {
+      OpenClix.logger?.info(`Language set to '${stored}'`);
+    } else {
+      OpenClix.logger?.warn(`Language '${languageCode}' could not be normalized to a valid ISO 639-1 code`);
+    }
+  }
+
+  static getLanguage(): string | undefined {
+    return OpenClix.languageResolver?.getLanguage();
+  }
+
+  static clearLanguage(): void {
+    OpenClix.assertInitialized();
+    OpenClix.languageResolver?.clearLanguage();
+    OpenClix.logger?.info('Language preference cleared');
   }
 
   static handleAppForeground(): void {
@@ -400,6 +431,7 @@ export class OpenClix {
       messageScheduler: OpenClix.messageScheduler!,
       clock: OpenClix.clock!,
       logger: OpenClix.logger!,
+      languageResolver: OpenClix.languageResolver ?? undefined,
       recordEvent: async (event: Event) => {
         await OpenClix.persistEvent(event);
       },

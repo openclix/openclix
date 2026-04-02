@@ -14,6 +14,7 @@ import ai.openclix.models.SkipReason
 import ai.openclix.models.TriggerContext
 import ai.openclix.models.TriggerType
 import ai.openclix.models.OpenClixLogger
+import ai.openclix.services.LanguageResolver
 import ai.openclix.services.renderTemplate
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -33,7 +34,8 @@ data class CampaignProcessorDependencies(
     val eventConditionProcessor: EventConditionProcessor,
     val scheduleCalculator: ScheduleCalculator,
     val logger: OpenClixLogger,
-    val settings: Settings? = null
+    val settings: Settings? = null,
+    val languageResolver: LanguageResolver? = null
 )
 
 private data class ExecutionResolution(
@@ -243,8 +245,20 @@ class CampaignProcessor {
             templateVariables.putAll(eventProperties)
         }
 
-        val renderedTitle = renderTemplate(campaign.message.content.title, templateVariables)
-        val renderedBody = renderTemplate(campaign.message.content.body, templateVariables)
+        val languageResolver = dependencies.languageResolver
+        val resolvedContent = if (languageResolver != null) {
+            languageResolver.resolveContent(campaign.message.content, campaign.default_language)
+        } else {
+            null
+        }
+
+        val contentTitle = resolvedContent?.title ?: campaign.message.content.title
+        val contentBody = resolvedContent?.body ?: campaign.message.content.body
+        val contentImageUrl = resolvedContent?.image_url ?: campaign.message.content.image_url
+        val contentLandingUrl = resolvedContent?.landing_url ?: campaign.message.content.landing_url
+
+        val renderedTitle = renderTemplate(contentTitle, templateVariables)
+        val renderedBody = renderTemplate(contentBody, templateVariables)
 
         val queuedMessage = QueuedMessage(
             id = UUID.randomUUID().toString(),
@@ -254,8 +268,8 @@ class CampaignProcessor {
             content = QueuedMessageContent(
                 title = renderedTitle,
                 body = renderedBody,
-                image_url = campaign.message.content.image_url,
-                landing_url = campaign.message.content.landing_url
+                image_url = contentImageUrl,
+                landing_url = contentLandingUrl
             ),
             trigger_event_id = executionResolution.trigger_event_id,
             execute_at = scheduleResult.execute_at,

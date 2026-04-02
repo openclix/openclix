@@ -17,6 +17,8 @@ import ai.openclix.models.EventSourceType
 import ai.openclix.models.SystemEventName
 import ai.openclix.models.TriggerContext
 import ai.openclix.models.TriggerResult
+import ai.openclix.infrastructure.AndroidDeviceLocaleProvider
+import ai.openclix.services.LanguageResolver
 import ai.openclix.services.loadConfig
 import ai.openclix.services.validateConfig
 import java.util.UUID
@@ -37,6 +39,7 @@ object OpenClix {
     private var clock: OpenClixClock? = null
     private var lifecycleStateReader: MutableLifecycleStateReader? = null
     private var logger: DefaultLogger? = null
+    private var languageResolver: LanguageResolver? = null
 
     @JvmStatic
     suspend fun initialize(
@@ -68,6 +71,11 @@ object OpenClix {
 
         val defaultLifecycleStateReader = MutableLifecycleStateReader()
         lifecycleStateReader = defaultLifecycleStateReader
+
+        languageResolver = LanguageResolver(
+            sdkDefaultLanguage = config.defaultLanguage,
+            deviceLocaleProvider = AndroidDeviceLocaleProvider()
+        )
 
         triggerService = TriggerService(createTriggerServiceDependencies())
 
@@ -259,9 +267,23 @@ object OpenClix {
         messageScheduler = null
         clock = null
         lifecycleStateReader = null
+        languageResolver = null
         logger = null
 
         activeLogger?.info("OpenClix SDK reset complete.")
+    }
+
+    @JvmStatic
+    fun setLanguage(languageCode: String) {
+        languageResolver?.setLanguage(languageCode)
+    }
+
+    @JvmStatic
+    fun getLanguage(): String? = languageResolver?.getLanguage()
+
+    @JvmStatic
+    fun clearLanguage() {
+        languageResolver?.clearLanguage()
     }
 
     @JvmStatic
@@ -317,7 +339,8 @@ object OpenClix {
             logger = logger!!,
             recordEvent = { event ->
                 persistEvent(event)
-            }
+            },
+            languageResolver = languageResolver
         )
     }
 

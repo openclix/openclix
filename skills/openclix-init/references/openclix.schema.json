@@ -70,6 +70,11 @@
         "do_not_disturb": {
           "$ref": "#/$defs/do_not_disturb",
           "description": "Time window during which message delivery is suppressed."
+        },
+        "default_language": {
+          "type": "string",
+          "pattern": "^[a-z]{2}$",
+          "description": "SDK-level default language. Used when no campaign-level default_language is set."
         }
       }
     },
@@ -177,6 +182,11 @@
         "message": {
           "$ref": "#/$defs/message",
           "description": "The single message delivered by this campaign."
+        },
+        "default_language": {
+          "type": "string",
+          "pattern": "^[a-z]{2}$",
+          "description": "ISO 639-1 default language for this campaign. Overrides SDK-level defaultLanguage."
         }
       }
     },
@@ -596,6 +606,17 @@
         }
       }
     },
+    "localized_content_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "body"],
+      "properties": {
+        "title": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "body": { "type": "string", "minLength": 1, "maxLength": 500 },
+        "image_url": { "type": "string", "format": "uri" },
+        "landing_url": { "type": "string", "format": "uri-reference" }
+      }
+    },
     "message_content": {
       "type": "object",
       "description": "Content payload for a notification or in-app message. Supports {{key}} template syntax in title and body, resolved from the trigger event payload at delivery time.",
@@ -626,6 +647,14 @@
           "type": "string",
           "format": "uri-reference",
           "description": "URL or deep link to navigate to when the user taps the notification. If omitted, tapping opens the app's default screen."
+        },
+        "localized": {
+          "type": "object",
+          "description": "Language-keyed content overrides. Keys are ISO 639-1 codes.",
+          "propertyNames": { "pattern": "^[a-z]{2}$" },
+          "additionalProperties": {
+            "$ref": "#/$defs/localized_content_entry"
+          }
         }
       }
     },

@@ -23,6 +23,7 @@ const MAX_MESSAGE_TITLE_LENGTH = 120;
 const MAX_MESSAGE_BODY_LENGTH = 500;
 
 const KEBAB_CASE_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+const LANGUAGE_CODE_PATTERN = /^[a-z]{2}$/;
 const VALID_STATUSES: ReadonlySet<string> = new Set<CampaignStatus>(['running', 'paused']);
 const VALID_CHANNEL_TYPES: ReadonlySet<string> = new Set<ChannelType>(['app_push']);
 const VALID_TRIGGER_TYPES: ReadonlySet<string> = new Set<TriggerType>([
@@ -314,11 +315,21 @@ export function validateConfig(config: Config): ValidationResult {
     } else {
       validateNoAdditionalProperties(
         config.settings,
-        ['frequency_cap', 'do_not_disturb'],
+        ['frequency_cap', 'do_not_disturb', 'default_language'],
         '.settings',
         errors,
         'UNEXPECTED_SETTINGS_PROPERTY',
       );
+
+      if (config.settings.default_language !== undefined) {
+        if (typeof config.settings.default_language !== 'string' || !LANGUAGE_CODE_PATTERN.test(config.settings.default_language)) {
+          errors.push({
+            path: '.settings.default_language',
+            code: 'INVALID_DEFAULT_LANGUAGE',
+            message: 'default_language must be a 2-letter ISO 639-1 code',
+          });
+        }
+      }
     }
   }
 
@@ -397,11 +408,21 @@ export function validateConfig(config: Config): ValidationResult {
 
       validateNoAdditionalProperties(
         campaign,
-        ['name', 'type', 'description', 'status', 'trigger', 'frequency_cap', 'message'],
+        ['name', 'type', 'description', 'status', 'trigger', 'frequency_cap', 'message', 'default_language'],
         basePath,
         errors,
         'UNEXPECTED_CAMPAIGN_PROPERTY',
       );
+
+      if (campaign.default_language !== undefined) {
+        if (typeof campaign.default_language !== 'string' || !LANGUAGE_CODE_PATTERN.test(campaign.default_language)) {
+          errors.push({
+            path: `${basePath}.default_language`,
+            code: 'INVALID_DEFAULT_LANGUAGE',
+            message: 'default_language must be a 2-letter ISO 639-1 code',
+          });
+        }
+      }
 
       if (!KEBAB_CASE_PATTERN.test(campaignId)) {
         errors.push({
@@ -773,7 +794,7 @@ export function validateConfig(config: Config): ValidationResult {
 
         validateNoAdditionalProperties(
           content,
-          ['title', 'body', 'image_url', 'landing_url'],
+          ['title', 'body', 'image_url', 'landing_url', 'localized'],
           `${basePath}.message.content`,
           errors,
           'UNEXPECTED_MESSAGE_CONTENT_PROPERTY',
@@ -824,6 +845,75 @@ export function validateConfig(config: Config): ValidationResult {
             code: 'INVALID_LANDING_URL',
             message: 'landing_url must be a valid URI reference',
           });
+        }
+
+        if (content.localized !== undefined) {
+          if (typeof content.localized !== 'object' || content.localized === null || Array.isArray(content.localized)) {
+            errors.push({
+              path: `${basePath}.message.content.localized`,
+              code: 'INVALID_LOCALIZED',
+              message: 'localized must be an object',
+            });
+          } else {
+            for (const [langCode, entry] of Object.entries(content.localized as Record<string, unknown>)) {
+              if (!LANGUAGE_CODE_PATTERN.test(langCode)) {
+                errors.push({
+                  path: `${basePath}.message.content.localized.${langCode}`,
+                  code: 'INVALID_LANGUAGE_KEY',
+                  message: `Invalid language code '${langCode}'. Must be a 2-letter ISO 639-1 code.`,
+                });
+              }
+              if (typeof entry === 'object' && entry !== null && !Array.isArray(entry)) {
+                const e = entry as Record<string, unknown>;
+                if (!isNonEmptyString(e.title)) {
+                  errors.push({
+                    path: `${basePath}.message.content.localized.${langCode}.title`,
+                    code: 'MISSING_LOCALIZED_TITLE',
+                    message: 'Localized entry must have a title',
+                  });
+                } else if ((e.title as string).length > MAX_MESSAGE_TITLE_LENGTH) {
+                  errors.push({
+                    path: `${basePath}.message.content.localized.${langCode}.title`,
+                    code: 'INVALID_LOCALIZED_TITLE_LENGTH',
+                    message: `localized title must be ${MAX_MESSAGE_TITLE_LENGTH} characters or less`,
+                  });
+                }
+                if (!isNonEmptyString(e.body)) {
+                  errors.push({
+                    path: `${basePath}.message.content.localized.${langCode}.body`,
+                    code: 'MISSING_LOCALIZED_BODY',
+                    message: 'Localized entry must have a body',
+                  });
+                } else if ((e.body as string).length > MAX_MESSAGE_BODY_LENGTH) {
+                  errors.push({
+                    path: `${basePath}.message.content.localized.${langCode}.body`,
+                    code: 'INVALID_LOCALIZED_BODY_LENGTH',
+                    message: `localized body must be ${MAX_MESSAGE_BODY_LENGTH} characters or less`,
+                  });
+                }
+                if (e.image_url !== undefined && !isValidUri(String(e.image_url))) {
+                  errors.push({
+                    path: `${basePath}.message.content.localized.${langCode}.image_url`,
+                    code: 'INVALID_IMAGE_URL',
+                    message: 'image_url must be a valid URI',
+                  });
+                }
+                if (e.landing_url !== undefined && !isValidUriReference(String(e.landing_url))) {
+                  errors.push({
+                    path: `${basePath}.message.content.localized.${langCode}.landing_url`,
+                    code: 'INVALID_LANDING_URL',
+                    message: 'landing_url must be a valid URI reference',
+                  });
+                }
+              } else {
+                errors.push({
+                  path: `${basePath}.message.content.localized.${langCode}`,
+                  code: 'INVALID_LOCALIZED_ENTRY',
+                  message: 'Each localized entry must be an object with title and body',
+                });
+              }
+            }
+          }
         }
       }
     }

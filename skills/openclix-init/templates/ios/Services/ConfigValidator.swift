@@ -27,6 +27,9 @@ public struct ValidationResult {
 private let kebabCaseExpression = try! NSRegularExpression(
     pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
 )
+private let languageCodeExpression = try! NSRegularExpression(
+    pattern: "^[a-z]{2}$"
+)
 private let maximumMessageTitleLength = 120
 private let maximumMessageBodyLength = 500
 
@@ -219,6 +222,19 @@ public func validateConfig(_ config: Config) -> ValidationResult {
         }
     }
 
+    if let defaultLanguage = config.settings?.default_language {
+        let range = NSRange(defaultLanguage.startIndex..., in: defaultLanguage)
+        if languageCodeExpression.firstMatch(in: defaultLanguage, range: range) == nil {
+            errors.append(
+                ValidationIssue(
+                    path: ".settings.default_language",
+                    code: "INVALID_DEFAULT_LANGUAGE",
+                    message: "default_language must be a 2-letter ISO 639-1 language code"
+                )
+            )
+        }
+    }
+
     for (campaignId, campaign) in config.campaigns {
         let basePath = ".campaigns[\"\(campaignId)\"]"
 
@@ -280,6 +296,19 @@ public func validateConfig(_ config: Config) -> ValidationResult {
                         path: "\(basePath).frequency_cap.window_seconds",
                         code: "INVALID_FREQUENCY_CAP",
                         message: "frequency_cap.window_seconds must be an integer >= 1"
+                    )
+                )
+            }
+        }
+
+        if let defaultLanguage = campaign.default_language {
+            let range = NSRange(defaultLanguage.startIndex..., in: defaultLanguage)
+            if languageCodeExpression.firstMatch(in: defaultLanguage, range: range) == nil {
+                errors.append(
+                    ValidationIssue(
+                        path: "\(basePath).default_language",
+                        code: "INVALID_DEFAULT_LANGUAGE",
+                        message: "default_language must be a 2-letter ISO 639-1 language code"
                     )
                 )
             }
@@ -503,6 +532,79 @@ public func validateConfig(_ config: Config) -> ValidationResult {
                     message: "landing_url must be a valid URI reference"
                 )
             )
+        }
+
+        if let localized = campaign.message.content.localized {
+            for (langKey, entry) in localized {
+                let entryPath = "\(basePath).message.content.localized[\"\(langKey)\"]"
+
+                let langRange = NSRange(langKey.startIndex..., in: langKey)
+                if languageCodeExpression.firstMatch(in: langKey, range: langRange) == nil {
+                    errors.append(
+                        ValidationIssue(
+                            path: entryPath,
+                            code: "INVALID_LANGUAGE_KEY",
+                            message: "Localized content key '\(langKey)' must be a 2-letter ISO 639-1 language code"
+                        )
+                    )
+                }
+
+                if isBlank(entry.title) {
+                    errors.append(
+                        ValidationIssue(
+                            path: "\(entryPath).title",
+                            code: "MISSING_LOCALIZED_TITLE",
+                            message: "Localized content entry must have a title"
+                        )
+                    )
+                } else if entry.title.count > maximumMessageTitleLength {
+                    errors.append(
+                        ValidationIssue(
+                            path: "\(entryPath).title",
+                            code: "INVALID_LOCALIZED_TITLE_LENGTH",
+                            message: "Localized title must be \(maximumMessageTitleLength) characters or less"
+                        )
+                    )
+                }
+
+                if isBlank(entry.body) {
+                    errors.append(
+                        ValidationIssue(
+                            path: "\(entryPath).body",
+                            code: "MISSING_LOCALIZED_BODY",
+                            message: "Localized content entry must have a body"
+                        )
+                    )
+                } else if entry.body.count > maximumMessageBodyLength {
+                    errors.append(
+                        ValidationIssue(
+                            path: "\(entryPath).body",
+                            code: "INVALID_LOCALIZED_BODY_LENGTH",
+                            message: "Localized body must be \(maximumMessageBodyLength) characters or less"
+                        )
+                    )
+                }
+
+                if entry.image_url != nil && !isValidUri(entry.image_url) {
+                    errors.append(
+                        ValidationIssue(
+                            path: "\(entryPath).image_url",
+                            code: "INVALID_IMAGE_URL",
+                            message: "image_url must be a valid URI"
+                        )
+                    )
+                }
+
+                if entry.landing_url != nil && !isValidUriReference(entry.landing_url) {
+                    errors.append(
+                        ValidationIssue(
+                            path: "\(entryPath).landing_url",
+                            code: "INVALID_LANDING_URL",
+                            message: "landing_url must be a valid URI reference"
+                        )
+                    )
+                }
+            }
         }
     }
 

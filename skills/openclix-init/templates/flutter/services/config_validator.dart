@@ -56,6 +56,8 @@ final Set<String> validEventOperators = EventConditionOperator.values
 const int maximumMessageTitleLength = 120;
 const int maximumMessageBodyLength = 500;
 
+final RegExp languageCodePattern = RegExp(r'^[a-z]{2}$');
+
 // TODO: Additional-property enforcement is skipped because this validator
 // receives typed Config models instead of the raw JSON object graph.
 
@@ -278,6 +280,19 @@ ValidationResult validateConfig(Config config) {
         ),
       );
     }
+  }
+
+  final settingsDefaultLanguage = config.settings?.defaultLanguage;
+  if (settingsDefaultLanguage != null &&
+      !languageCodePattern.hasMatch(settingsDefaultLanguage)) {
+    errors.add(
+      ValidationIssue(
+        path: '.settings.default_language',
+        code: 'INVALID_DEFAULT_LANGUAGE',
+        message:
+            'default_language must be a 2-letter ISO 639-1 language code',
+      ),
+    );
   }
 
   for (final campaignEntry in config.campaigns.entries) {
@@ -566,6 +581,19 @@ ValidationResult validateConfig(Config config) {
       }
     }
 
+    final campaignDefaultLanguage = campaign.defaultLanguage;
+    if (campaignDefaultLanguage != null &&
+        !languageCodePattern.hasMatch(campaignDefaultLanguage)) {
+      errors.add(
+        ValidationIssue(
+          path: '$basePath.default_language',
+          code: 'INVALID_DEFAULT_LANGUAGE',
+          message:
+              'default_language must be a 2-letter ISO 639-1 language code',
+        ),
+      );
+    }
+
     if (!validChannelTypes.contains(campaign.message.channelType.value)) {
       errors.add(
         ValidationIssue(
@@ -635,6 +663,85 @@ ValidationResult validateConfig(Config config) {
           message: 'landing_url must be a valid URI reference',
         ),
       );
+    }
+
+    final localized = campaign.message.content.localized;
+    if (localized != null) {
+      for (final localizedEntry in localized.entries) {
+        final langKey = localizedEntry.key;
+        final entry = localizedEntry.value;
+        final entryPath = '$basePath.message.content.localized["$langKey"]';
+
+        if (!languageCodePattern.hasMatch(langKey)) {
+          errors.add(
+            ValidationIssue(
+              path: entryPath,
+              code: 'INVALID_LANGUAGE_KEY',
+              message:
+                  'localized key "$langKey" must be a 2-letter ISO 639-1 language code',
+            ),
+          );
+        }
+
+        if (entry.title.isEmpty) {
+          errors.add(
+            ValidationIssue(
+              path: '$entryPath.title',
+              code: 'MISSING_LOCALIZED_TITLE',
+              message: 'Localized entry must have a title',
+            ),
+          );
+        } else if (entry.title.length > maximumMessageTitleLength) {
+          errors.add(
+            ValidationIssue(
+              path: '$entryPath.title',
+              code: 'INVALID_LOCALIZED_TITLE_LENGTH',
+              message:
+                  'localized title must be $maximumMessageTitleLength characters or less',
+            ),
+          );
+        }
+
+        if (entry.body.isEmpty) {
+          errors.add(
+            ValidationIssue(
+              path: '$entryPath.body',
+              code: 'MISSING_LOCALIZED_BODY',
+              message: 'Localized entry must have a body',
+            ),
+          );
+        } else if (entry.body.length > maximumMessageBodyLength) {
+          errors.add(
+            ValidationIssue(
+              path: '$entryPath.body',
+              code: 'INVALID_LOCALIZED_BODY_LENGTH',
+              message:
+                  'localized body must be $maximumMessageBodyLength characters or less',
+            ),
+          );
+        }
+
+        if (entry.imageUrl != null && !isValidUri(entry.imageUrl)) {
+          errors.add(
+            ValidationIssue(
+              path: '$entryPath.image_url',
+              code: 'INVALID_IMAGE_URL',
+              message: 'image_url must be a valid URI',
+            ),
+          );
+        }
+
+        if (entry.landingUrl != null &&
+            !isValidUriReference(entry.landingUrl)) {
+          errors.add(
+            ValidationIssue(
+              path: '$entryPath.landing_url',
+              code: 'INVALID_LANDING_URL',
+              message: 'landing_url must be a valid URI reference',
+            ),
+          );
+        }
+      }
     }
   }
 
